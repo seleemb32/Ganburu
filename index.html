@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Ganburu" />
-  <title>Ganburu V11.1</title>
+  <title>Ganburu V12</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600&display=swap" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -36,31 +36,37 @@ const storage = {
   delete: k => { try { localStorage.removeItem(k); return {key:k,deleted:true}; } catch { return null; } },
 };
 
-// ── RIR MAP ───────────────────────────────────────────────────────────────────
+// ── RIR MAP (shared across programs by exercise id) ─────────────────────────────
 const RIR_MAP = {
-  box_jump:          {type:'none',label:'Max intent'},
-  back_squat:        {type:'2-3'}, barbell_row:       {type:'2-3'},
-  bench_press:       {type:'2-3'}, hanging_knees:     {type:'none',label:'Time-based'},
-  landmine_rotation: {type:'2-3'},
-  tgu:               {type:'none',label:'Technique & control'},
-  db_row:            {type:'1-2'}, db_press:          {type:'1-2'},
-  face_pull:         {type:'1-2'}, low_incline_db:    {type:'1-2'},
-  cable_fly:         {type:'1-2'}, cossack:           {type:'1-2'},
-  hip_switch:        {type:'none',label:'Not RIR-governed'},
-  couch_stretch:     {type:'none',label:'Not RIR-governed'},
-  broad_jump:        {type:'none',label:'Max intent'},
-  sprints:           {type:'none',label:'Max intent'},
-  rdl:               {type:'2-3'}, bss:               {type:'2-3'},
-  hip_thrust:        {type:'2-3'}, bk_calf_raise:     {type:'2-3'},
-  tib_raise_ps:      {type:'2-3'}, tib_raise:         {type:'2-3'},
-  norwegian:         {type:'none',label:'HR-targeted'},
-  side_plank:        {type:'none',label:'Not RIR-governed'},
-  kb_clean_press:    {type:'2-3'}, sa_pulldown:       {type:'2-3'},
-  farmer:            {type:'none',label:'Not RIR-governed'},
-  kb_swings:         {type:'none',label:'HR/power-targeted'},
-  incline_db:        {type:'1-2'}, cable_row:         {type:'1-2'},
-  lat_pulldown:      {type:'1-2'}, cable_lateral:     {type:'1-2'},
-  hammer_curl:       {type:'1-2'}, back_ext:          {type:'2-3'},
+  box_jump:{type:'none',label:'Max intent'},
+  back_squat:{type:'2-3'}, barbell_row:{type:'2-3'},
+  bench_press:{type:'2-3'}, hanging_knees:{type:'2-3'},
+  landmine_rotation:{type:'2-3'},
+  tgu:{type:'none',label:'Technique & control'},
+  db_row:{type:'1-2'}, db_press:{type:'1-2'},
+  face_pull:{type:'1-2'}, low_incline_db:{type:'1-2'},
+  cable_fly:{type:'1-2'}, cossack:{type:'1-2'},
+  hip_switch:{type:'none',label:'Not RIR-governed'},
+  couch_stretch:{type:'none',label:'Not RIR-governed'},
+  broad_jump:{type:'none',label:'Max intent'},
+  sprints:{type:'none',label:'Max intent'},
+  rdl:{type:'2-3'}, bss:{type:'2-3'},
+  hip_thrust:{type:'2-3'}, bk_calf_raise:{type:'2-3'},
+  tib_raise_ps:{type:'2-3'}, tib_raise:{type:'2-3'},
+  norwegian:{type:'none',label:'HR-targeted'},
+  norwegian_bike:{type:'none',label:'HR-targeted'},
+  side_plank:{type:'none',label:'Not RIR-governed'},
+  kb_clean_press:{type:'2-3'}, sa_pulldown:{type:'2-3'},
+  farmer:{type:'none',label:'Not RIR-governed'},
+  kb_swings:{type:'none',label:'HR/power-targeted'},
+  kb_swings_emom:{type:'none',label:'Power-targeted'},
+  incline_db:{type:'1-2'}, cable_row:{type:'1-2'},
+  lat_pulldown:{type:'1-2'}, cable_lateral:{type:'1-2'},
+  hammer_curl:{type:'1-2'}, back_ext:{type:'2-3'},
+  // Rhomboid-only new ids
+  db_reverse_fly:{type:'1-2'}, pallof_press:{type:'none',label:'Not RIR-governed'},
+  dead_bug:{type:'none',label:'Not RIR-governed'}, bird_dog:{type:'none',label:'Not RIR-governed'},
+  pull_ups:{type:'1-2'}, cable_curl:{type:'1-2'}, leg_curl:{type:'1-2'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -124,14 +130,26 @@ const NORWEGIAN_STAGES=[
   {week:6,workMin:4,intensity:'85–90%',restSec:180},
   {week:8,workMin:4,intensity:'85–95%',restSec:180,note:'Target ✓'},
 ];
+// Separate Assault-Bike Norwegian progression — used by BOTH programs.
+const NORWEGIAN_BIKE_STAGES=[
+  {week:1,workMin:1,intensity:'75–80%',restSec:180},
+  {week:2,workMin:2,intensity:'80–85%',restSec:180},
+  {week:3,workMin:2.5,intensity:'80–85%',restSec:180},
+  {week:4,workMin:3,intensity:'85–90%',restSec:180,note:'Deload volume'},
+  {week:5,workMin:3.5,intensity:'85–90%',restSec:180},
+  {week:6,workMin:4,intensity:'85–90%',restSec:180},
+  {week:7,workMin:4,intensity:'85–92%',restSec:180},
+  {week:8,workMin:4,intensity:'85–95%',restSec:180,note:'Target ✓'},
+];
 function fmtWorkMin(m){
   if(m===Math.floor(m)) return `${m} min`;
   const mins=Math.floor(m),secs=Math.round((m-mins)*60);
   return mins>0?`${mins}m ${secs}s`:`${secs}s`;
 }
 
-// ── SESSIONS ──────────────────────────────────────────────────────────────────
-const SESSIONS=[
+// ── PROGRAMS ──────────────────────────────────────────────────────────────────
+// Ganbaru Method sessions (existing, with superset-group fixes)
+const GANBARU_SESSIONS=[
   {
     slot:0,kind:'strength',title:'Strength',subtitle:'Full Body Power & Strength',
     warmup:{duration:'~5 min',items:[
@@ -143,120 +161,65 @@ const SESSIONS=[
       'Scapular push-ups — 10 reps',
       'Single leg glute bridge (right side) — 2 × 10, 1-sec pause at top',
     ]},
-    cooldown:{duration:'~4 min',items:[
-      'Hip flexor stretch kneeling — 45 sec per side',
-      'Lat stretch against rack — 30 sec per side',
-      'Chest doorframe stretch — 30 sec',
-      'Forward fold — 30 sec',
-    ]},
+    cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Lat stretch against rack — 30 sec per side','Chest doorframe stretch — 30 sec','Forward fold — 30 sec']},
     exercises:[
       {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
       {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
       {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
       {id:'bench_press',name:'Barbell Bench Press',scheme:'4 × 2–5',sets:4,track:'weight',rest:'Chest doorframe · 30s'},
-      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3–4 × 15–60 sec',sets:3,track:'time',rest:'Forward fold · 30s',superset:true},
-      {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s',superset:true},
+      {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load; milestone 65–70kg × 3×12–15 on lat pulldown equivalent'},
+      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3–4 × 12–20',sets:3,track:'reps',rest:'Forward fold · 30s',ssGroup:'s1'},
+      {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s',ssGroup:'s1'},
     ],
   },
   {slot:1,kind:'rest',title:'Rest',subtitle:'Recovery — Rest 1',special:'rest'},
   {
     slot:2,kind:'hypertrophy',title:'Hypertrophy A',subtitle:'Upper + Mobility Lower',
-    warmup:{duration:'~3.5 min',items:[
-      'Deep goblet squat with hip opening — 5 slow reps',
-      'KB Halo — 5 slow reps each direction, light bell',
-      'Arm circles — 10 reps each direction',
-      'Hip internal rotation — 10 reps per side',
-      'Thoracic rotation in quadruped — 5 reps per side',
-    ]},
-    cooldown:{duration:'~4 min',items:[
-      'Shoulder cross-body stretch — 30 sec per side',
-      'Thoracic rotation in quadruped — 30 sec per side',
-      'Pigeon pose — 60 sec per side',
-      'Wrist circles — 30 sec',
-    ]},
+    warmup:{duration:'~3.5 min',items:['Deep goblet squat with hip opening — 5 slow reps','KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Hip internal rotation — 10 reps per side','Thoracic rotation in quadruped — 5 reps per side']},
+    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Pigeon pose — 60 sec per side','Wrist circles — 30 sec']},
     exercises:[
       {id:'tgu',name:'Turkish Get-Up',scheme:'progression',track:'tgu',rest:'Wrist circles · 30s'},
       {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
-      {id:'db_press',name:'Single Arm DB Shoulder Press',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',superset:true},
-      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',superset:true},
+      {id:'db_press',name:'Single Arm DB Shoulder Press',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'a1'},
+      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'a1'},
       {id:'low_incline_db',name:'Low Incline DB Press',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
-      {id:'cable_fly',name:'Cable Fly',scheme:'3 × 10–15',sets:3,track:'weight',superset:true},
-      {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight',superset:true},
-      {id:'hip_switch',name:'90/90 Hip Switch',scheme:'2 × 1–2 min',sets:2,track:'time',superset:true},
-      {id:'couch_stretch',name:'Couch Stretch',scheme:'2 × 60 sec/side',sets:2,track:'time',rest:'Kneeling hip flexor · 30s/side',superset:true},
+      {id:'cable_fly',name:'Cable Fly',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'a2'},
+      {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight',ssGroup:'a2'},
+      {id:'hip_switch',name:'90/90 Hip Switch',scheme:'2 × 1–2 min',sets:2,track:'time',ssGroup:'a3'},
+      {id:'couch_stretch',name:'Couch Stretch',scheme:'2 × 60 sec/side',sets:2,track:'time',rest:'Kneeling hip flexor · 30s/side',ssGroup:'a3'},
     ],
   },
   {
     slot:3,kind:'power',title:'Power & Speed',subtitle:'Plyos + Sprints + Lower',
-    warmup:{duration:'~6 min',items:[
-      'Bent-knee soleus stretch — 60 sec total (30s/side)',
-      'Bent-knee calf raises — 2 × 10, 1-sec pause at top',
-      'Ankle circles — 10 reps per side',
-      'Ankle band — 10 reps per side',
-      'Leg swings — 10 front-to-back and 10 lateral, each leg',
-      'Hip internal rotation — 10 reps per side',
-      'Glute bridge — 10 reps',
-      'A-skips — 2 × 20m',
-      '2 × 30m strides at 60% effort',
-    ]},
-    cooldown:{duration:'~5 min',items:[
-      'Bent-knee soleus stretch — 45 sec per side',
-      'Straight-leg calf stretch — 30 sec per side',
-      'Hip flexor stretch kneeling — 45 sec per side',
-      'Hamstring floor stretch — 45 sec per side',
-      'Glute figure-4 stretch — 45 sec per side',
-      'Ankle circles — 30 sec each foot',
-    ]},
+    warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 60 sec total (30s/side)','Bent-knee calf raises — 2 × 10, 1-sec pause at top','Ankle circles — 10 reps per side','Ankle band — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
+    cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
     exercises:[
       {id:'broad_jump',name:'Broad Jump',scheme:'3–4 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
       {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
-      {id:'rdl',name:'Romanian Deadlift',scheme:'2–3 × 3–7',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
-      {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'rdl',name:'Barbell Deadlift',scheme:'3–4 × 5',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
       {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
-      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'reps',rest:'Ankle circles · 30s',note:'1-sec pause at top'},
-      {id:'tib_raise_ps',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s'},
+      {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'leg_curl',name:'Leg Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side',note:'Machine'},
+      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'p1'},
+      {id:'tib_raise_ps',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'p1'},
     ],
   },
   {
     slot:4,kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
-    warmup:{duration:'~3.5 min',items:[
-      'Bent-knee soleus stretch — 60 sec total (30s/side)',
-      'Bent-knee calf raises — 2 × 10, 1-sec pause at top',
-      'Ankle circles — 30 sec each foot',
-      'Leg swings — 10 front-to-back and 10 lateral, each leg',
-    ]},
-    cooldown:{duration:'~2.5 min',items:[
-      'Bent-knee soleus stretch — 45 sec per side',
-      'Straight-leg calf stretch — 30 sec per side',
-      'Ankle circles — 30 sec each foot',
-    ]},
+    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 60 sec total (30s/side)','Bent-knee calf raises — 2 × 10, 1-sec pause at top','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
+    cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
     walkNotes:['Nose breathing only throughout','Start slow 5 min, build to brisk, hold, wind down last 5 min','Target: working but able to hold a full conversation','Distance: 5 km building to 6 km over weeks'],
     exercises:[
-      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',note:'1-sec pause at top'},
+      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'2 × 15',sets:2,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top'},
       {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s'},
     ],
   },
   {
     slot:5,kind:'mixed',title:'Broccoli',subtitle:'Mixed Session',
-    warmup:{duration:'~6 min',items:[
-      'Bent-knee soleus stretch — 60 sec total (30s/side)',
-      'Bent-knee calf raises — 2 × 10, 1-sec pause at top',
-      'Ankle circles — 10 reps per side',
-      'KB Halo — 5 slow reps each direction, light bell',
-      'Deep goblet squat with hip opening — 5 slow reps',
-      'Leg swings — 10 front-to-back and 10 lateral, each leg',
-      'High knees × 20, butt kicks × 20',
-      '2 × 30m strides at 60% effort',
-    ]},
-    cooldown:{duration:'~4 min',items:[
-      'Bent-knee soleus stretch — 45 sec per side',
-      'Straight-leg calf stretch — 30 sec per side',
-      'Ankle circles — 30 sec each foot',
-      'Hip flexor stretch kneeling — 45 sec per side',
-      'Glute figure-4 stretch — 45 sec per side',
-    ]},
+    warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 60 sec total (30s/side)','Bent-knee calf raises — 2 × 10, 1-sec pause at top','KB Halo — 5 slow reps each direction, light bell','Deep goblet squat with hip opening — 5 slow reps','Leg swings — 10 front-to-back and 10 lateral, each leg','Thoracic rotation in quadruped — 5 reps per side','Cat-cow — 8 slow reps','Arm circles — 10 reps each direction','2–3 min easy cycling on assault bike, building effort gradually']},
+    cooldown:{duration:'~4 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot','Hip flexor stretch kneeling — 45 sec per side','Glute figure-4 stretch — 45 sec per side']},
     exercises:[
-      {id:'norwegian',name:'Norwegian 4 × 4',scheme:'progression',track:'norwegian'},
+      {id:'norwegian_bike',name:'Norwegian 4 × 4 — Assault Bike',scheme:'progression',track:'norwegian_bike'},
       {id:'side_plank',name:'Side Plank with Reach',scheme:'3–5 × 8/side',sets:3,track:'reps',rest:'Kneeling hip flexor · 30s/side'},
       {id:'kb_clean_press',name:'KB Clean and Press',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Wrist circles + shoulder cross-body · 30s each'},
       {id:'sa_pulldown',name:'Single Arm Lat Pulldown',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
@@ -266,66 +229,136 @@ const SESSIONS=[
   {slot:6,kind:'rest',title:'Rest',subtitle:'Recovery — Rest 2',special:'rest'},
   {
     slot:7,kind:'hypertrophy',title:'Hypertrophy B',subtitle:'Upper + Conditioning',
-    warmup:{duration:'~3.5 min',items:[
-      'KB Halo — 5 slow reps each direction, light bell',
-      'Arm circles — 10 reps each direction',
-      'Band pull-apart — 10 reps',
-      'Scapular push-ups — 10 reps',
-      'Hip hinge with dowel — 10 reps',
-    ]},
-    cooldown:{duration:'~4 min',items:[
-      'Chest doorframe stretch — 30 sec',
-      'Shoulder cross-body stretch — 30 sec per side',
-      'Seated forward fold — 45 sec',
-      'Forearm flexor stretch — 30 sec per side',
-    ]},
+    warmup:{duration:'~3.5 min',items:['KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Band pull-apart — 10 reps','Scapular push-ups — 10 reps','Hip hinge with dowel — 10 reps']},
+    cooldown:{duration:'~4 min',items:['Chest doorframe stretch — 30 sec','Shoulder cross-body stretch — 30 sec per side','Seated forward fold — 45 sec','Forearm flexor stretch — 30 sec per side']},
     exercises:[
       {id:'kb_swings',name:'KB Swings — EMOM',scheme:'progression',track:'kb_swings'},
-      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Chest doorframe · 30s',superset:true},
-      {id:'incline_db',name:'Incline DB Press',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Chest doorframe · 30s',superset:true},
-      {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',superset:true},
-      {id:'cable_lateral',name:'Cable Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',superset:true},
+      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Chest doorframe · 30s',ssGroup:'b1'},
+      {id:'incline_db',name:'Incline DB Press',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Chest doorframe · 30s',ssGroup:'b1'},
+      {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'b2'},
+      {id:'cable_lateral',name:'Cable Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'b2'},
       {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Forearm flexor · 30s/side'},
       {id:'back_ext',name:'Back Extensions',scheme:'3 × 12',sets:3,track:'weight',rest:'Seated forward fold · 30s'},
     ],
   },
 ];
 
-const THEMES={
-  strength:   {label:'Strength',     bg:'bg-blue-50',   text:'text-blue-900',   border:'border-blue-100',   stripe:'bg-blue-900'},
-  hypertrophy:{label:'Hypertrophy',  bg:'bg-amber-50',  text:'text-amber-800',  border:'border-amber-200',  stripe:'bg-amber-600'},
-  power:      {label:'Power & Speed',bg:'bg-red-50',    text:'text-red-800',    border:'border-red-200',    stripe:'bg-red-600'},
-  zone2:      {label:'Zone 2',       bg:'bg-teal-50',   text:'text-teal-800',   border:'border-teal-200',   stripe:'bg-teal-600'},
-  mixed:      {label:'Mixed',        bg:'bg-purple-50', text:'text-purple-800', border:'border-purple-200', stripe:'bg-purple-600'},
-  rest:       {label:'Rest',         bg:'bg-stone-100', text:'text-stone-600',  border:'border-stone-200',  stripe:'bg-stone-400'},
+// Rhomboid Modified sessions (5 sessions, no fixed rest days)
+const RHOMBOID_SESSIONS=[
+  {
+    slot:0,kind:'strength',title:'Lower A + Swings',subtitle:'Squat + Swings',
+    warmup:{duration:'~4 min',items:['Bent-knee calf raises — 2 × 10, 1-sec pause','Deep goblet squat with hip opening — 5 slow reps','Hip internal rotation — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Single leg glute bridge (right side only) — 2 × 10, 1-sec pause']},
+    cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Forward fold — 30 sec','Ankle circles — 30 sec each foot']},
+    exercises:[
+      {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
+      {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
+      {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
+      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3 × 12–20',sets:3,track:'reps',rest:'Forward fold · 30s',ssGroup:'r1'},
+      {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s',ssGroup:'r1'},
+    ],
+  },
+  {
+    slot:1,kind:'hypertrophy',title:'Upper Pull A',subtitle:'Horizontal + Vertical Pull',
+    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
+    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
+    exercises:[
+      {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
+      {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
+      {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
+      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'db_reverse_fly',name:'DB Reverse Fly 45°',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+      {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight',ssGroup:'r2'},
+      {id:'pallof_press',name:'Pallof Press',scheme:'3 × 10/side',sets:3,track:'weight',ssGroup:'r2'},
+      {id:'hip_switch',name:'90/90 Hip Switch',scheme:'2 × 1 min',sets:2,track:'time'},
+    ],
+  },
+  {
+    slot:2,kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
+    warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
+    cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
+    exercises:[
+      {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
+      {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
+      {id:'rdl',name:'Barbell Deadlift',scheme:'3–4 × 5',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
+      {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
+      {id:'leg_curl',name:'Leg Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side',note:'Machine'},
+      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
+      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
+      {id:'dead_bug',name:'Dead Bug',scheme:'3 × 8/side',sets:3,track:'reps',note:'3-sec pause',ssGroup:'r2'},
+      {id:'bird_dog',name:'Bird Dog',scheme:'3 × 8/side',sets:3,track:'reps',ssGroup:'r2'},
+    ],
+  },
+  {
+    slot:3,kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
+    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
+    cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
+    walkNotes:['Nose breathing only throughout','45 min walk, 5 km building to 6 km','If breathing through mouth, slow down'],
+    exercises:[
+      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'2 × 15',sets:2,track:'weight',rest:'Ankle circles · 30s'},
+      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s'},
+    ],
+  },
+  {
+    slot:4,kind:'mixed',title:'Upper Pull B + Broccoli',subtitle:'Pull + Norwegian 4×4',
+    warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 30 sec per side','KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Thoracic rotation in quadruped — 5 reps per side','Cat-cow — 8 slow reps','Scapular push-ups — 10 reps','Easy cycling on assault bike — 2–3 min, building effort']},
+    cooldown:{duration:'~4 min',items:['Bent-knee soleus stretch — 45 sec per side','Shoulder cross-body stretch — 30 sec per side','Lat stretch against rack — 30 sec per side','Seated forward fold — 45 sec','Ankle circles — 30 sec each foot']},
+    exercises:[
+      {id:'norwegian_bike',name:'Norwegian 4×4 — Assault Bike',scheme:'progression',track:'norwegian_bike'},
+      {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load'},
+      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'side_plank',name:'Side Plank with Reach',scheme:'3–5 × 8/side',sets:3,track:'reps',rest:'Kneeling hip flexor · 30s/side',ssGroup:'r1'},
+      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+    ],
+  },
+];
+
+const PROGRAMS={
+  ganbaru:{ id:'ganbaru', name:'Ganbaru Method', sessions:GANBARU_SESSIONS, cycleLength:8, hasFixedRest:true },
+  rhomboid:{ id:'rhomboid', name:'Rhomboid Modified', sessions:RHOMBOID_SESSIONS, cycleLength:5, hasFixedRest:false },
 };
 
-const CYCLE_LENGTH=8;
-const CYCLE=[0,1,2,3,4,5,6,7].map((slot,i)=>({day:i+1,slot}));
-function cycleEntry(day){return CYCLE[((day-1)%CYCLE_LENGTH+CYCLE_LENGTH)%CYCLE_LENGTH];}
-function nextCycleDay(day){return(day%CYCLE_LENGTH)+1;}
+const THEMES={
+  strength:{label:'Strength',bg:'bg-blue-50',text:'text-blue-900',border:'border-blue-100',stripe:'bg-blue-900'},
+  hypertrophy:{label:'Hypertrophy',bg:'bg-amber-50',text:'text-amber-800',border:'border-amber-200',stripe:'bg-amber-600'},
+  power:{label:'Power & Speed',bg:'bg-red-50',text:'text-red-800',border:'border-red-200',stripe:'bg-red-600'},
+  zone2:{label:'Zone 2',bg:'bg-teal-50',text:'text-teal-800',border:'border-teal-200',stripe:'bg-teal-600'},
+  mixed:{label:'Mixed',bg:'bg-purple-50',text:'text-purple-800',border:'border-purple-200',stripe:'bg-purple-600'},
+  rest:{label:'Rest',bg:'bg-stone-100',text:'text-stone-600',border:'border-stone-200',stripe:'bg-stone-400'},
+};
+
+function buildCycle(program){ return program.sessions.map((s,i)=>({day:i+1,slot:i})); }
+function cycleEntry(program,day){const len=program.cycleLength;const safe=((day-1)%len+len)%len;return {day:safe+1,slot:safe};}
+function nextCycleDay(program,day){return(day%program.cycleLength)+1;}
 const todayISO=()=>new Date().toISOString().slice(0,10);
 
-const DATA_KEY='ganburu-v3';
-const DEFAULT_DATA={cycleDay:1,progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0},sessions:[],walks:[],cycleEvents:[]};
-
-// Exercise slot migration map: exId -> new slot
-// When importing old data, exercises found in wrong slots get migrated
-const EX_SLOT_MAP={
-  lat_pulldown:7, // moved from slot 0 to slot 7
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DATA_KEY='ganburu-v4';
+const DEFAULT_DATA={
+  activeProgram:'ganbaru',
+  cycleDays:{ganbaru:1,rhomboid:1},
+  progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0,norwegianBikeStageIndex:0,kbEmomWeight:16},
+  sessions:[], walks:[], cycleEvents:[],
 };
 
-function migrateImportedData(parsed){
-  // For each session, move exercises that have changed slots into the correct session
-  // We do this by checking if a session's slot doesn't match where an exercise now lives
-  const sessions=(parsed.sessions||[]).map(session=>{
-    const exercises={...session.exercises};
-    // No structural change needed per session — history lookup is global
-    return {...session,exercises};
-  });
-  // Build a global exercise history pool from all sessions
-  // so getLastSets can find lat_pulldown history regardless of which slot it was logged in
-  return {...parsed,sessions};
+// One-time migration from v3 (single program) to v4 (multi program)
+function migrateV3toV4(){
+  try{
+    const old=storage.get('ganburu-v3');
+    if(!old?.value) return null;
+    const p=JSON.parse(old.value);
+    const sessions=(p.sessions||[]).map(s=>({...s,program:'ganbaru'}));
+    const walks=(p.walks||[]).map(w=>({...w,program:'ganbaru'}));
+    const cycleEvents=(p.cycleEvents||[]).map(e=>({...e,program:'ganbaru'}));
+    return {
+      activeProgram:'ganbaru',
+      cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1},
+      progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
+      sessions,walks,cycleEvents,
+    };
+  }catch{ return null; }
 }
 
 function loadData(){
@@ -335,25 +368,30 @@ function loadData(){
       const p=JSON.parse(res.value);
       return {
         ...DEFAULT_DATA,...p,
-        cycleDay:p.cycleDay??1,
+        activeProgram:p.activeProgram??'ganbaru',
+        cycleDays:{...DEFAULT_DATA.cycleDays,...(p.cycleDays||{})},
         progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
         cycleEvents:Array.isArray(p.cycleEvents)?p.cycleEvents:[],
       };
     }
+    // No v4 — try migrating v3
+    const migrated=migrateV3toV4();
+    if(migrated){ saveDataRaw(migrated); return migrated; }
   }catch{}
   return DEFAULT_DATA;
 }
-function saveData(data){try{storage.set(DATA_KEY,JSON.stringify(data));}catch{}}
+function saveDataRaw(data){try{storage.set(DATA_KEY,JSON.stringify(data));}catch{}}
+function saveData(data){saveDataRaw(data);}
 
-const draftKey=(kind,slot,esa)=>`ganburu-draft-${kind}-s${slot}${esa?`-edit-${esa}`:''}`;
-function loadDraft(kind,slot,esa){try{const r=storage.get(draftKey(kind,slot,esa));return r?.value?JSON.parse(r.value):null;}catch{return null;}}
-function saveDraft(kind,slot,esa,draft){try{storage.set(draftKey(kind,slot,esa),JSON.stringify(draft));}catch{}}
-function clearDraft(kind,slot,esa){try{storage.delete(draftKey(kind,slot,esa));}catch{}}
+const draftKey=(program,kind,slot,esa)=>`ganburu-draft-${program}-${kind}-s${slot}${esa?`-edit-${esa}`:''}`;
+function loadDraft(program,kind,slot,esa){try{const r=storage.get(draftKey(program,kind,slot,esa));return r?.value?JSON.parse(r.value):null;}catch{return null;}}
+function saveDraft(program,kind,slot,esa,draft){try{storage.set(draftKey(program,kind,slot,esa),JSON.stringify(draft));}catch{}}
+function clearDraft(program,kind,slot,esa){try{storage.delete(draftKey(program,kind,slot,esa));}catch{}}
 
-// Global history lookup — searches ALL sessions regardless of slot
-// This ensures exercises that moved days (e.g. lat_pulldown) still show history
+// GLOBAL history lookup by exercise id — searches ALL sessions from ALL programs.
+// This is what makes cross-matched exercises share weight/rep history.
 function getLastSets(sessions,exId,numSets,field){
   for(let i=sessions.length-1;i>=0;i--){
     const ex=sessions[i].exercises?.[exId];
@@ -371,19 +409,22 @@ function buildFreshExercise(ex,data){
   if(ex.track==='farmer') return {sets:Array.from({length:ex.sets},()=>({value:'',unit:'m',done:false}))};
   if(ex.track==='sprint') return {intervalsText:'',duration:'',avgHR:'',maxHR:'',done:false,completedReps:0,stageIndex:data.progressions.sprintStageIndex??0};
   if(ex.track==='norwegian') return {done:false,completedReps:0,stageIndex:data.progressions.norwegianStageIndex??0,avgHR:'',maxHR:'',notes:''};
+  if(ex.track==='norwegian_bike') return {done:false,completedReps:0,stageIndex:data.progressions.norwegianBikeStageIndex??0,avgHR:'',maxHR:'',notes:''};
   if(ex.track==='tgu') return {stageIndex:data.progressions.tguStageIndex,done:false};
   if(ex.track==='kb_swings'){const s=KB_SWING_STAGES[data.progressions.kbStageIndex]??KB_SWING_STAGES[0];return{weight:s.weight,rounds:s.minutes,completed:0,swingsPerRound:s.swingsPerMin,stageIndex:data.progressions.kbStageIndex,done:false};}
+  if(ex.track==='kb_emom'){return{weight:data.progressions.kbEmomWeight??16,rounds:10,completed:0,swingsPerRound:10,done:false};}
   return {};
 }
 
-function calcProgressionAdvances(slotIndex,exercises,progressions){
+function calcProgressionAdvances(session,exercises,progressions){
   const advances={};
-  SESSIONS[slotIndex]?.exercises?.forEach(ex=>{
+  session.exercises?.forEach(ex=>{
     const logged=exercises[ex.id]; if(!logged) return;
     if(ex.track==='tgu'&&logged.done&&logged.stageIndex===progressions.tguStageIndex&&progressions.tguStageIndex<TGU_STAGES.length-1) advances.tguStageIndex=progressions.tguStageIndex+1;
     if(ex.track==='kb_swings'&&logged.done&&(logged.completed||0)>=(logged.rounds||0)&&logged.stageIndex===progressions.kbStageIndex&&progressions.kbStageIndex<KB_SWING_STAGES.length-1) advances.kbStageIndex=progressions.kbStageIndex+1;
     if(ex.track==='sprint'&&logged.done&&logged.stageIndex===progressions.sprintStageIndex&&progressions.sprintStageIndex<SPRINT_STAGES.length-1) advances.sprintStageIndex=progressions.sprintStageIndex+1;
     if(ex.track==='norwegian'&&logged.done&&logged.stageIndex===progressions.norwegianStageIndex&&progressions.norwegianStageIndex<NORWEGIAN_STAGES.length-1) advances.norwegianStageIndex=progressions.norwegianStageIndex+1;
+    if(ex.track==='norwegian_bike'&&logged.done&&logged.stageIndex===progressions.norwegianBikeStageIndex&&progressions.norwegianBikeStageIndex<NORWEGIAN_BIKE_STAGES.length-1) advances.norwegianBikeStageIndex=progressions.norwegianBikeStageIndex+1;
   });
   return advances;
 }
@@ -425,15 +466,15 @@ function RestTimerDock(){
             <div style={{padding:'20px',display:'flex',alignItems:'center',gap:16}}>
               <div style={{width:56,height:56,borderRadius:'50%',background:'#10b981',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:24,color:'white'}}>✓</div>
               <div style={{flex:1}}><div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.2em',color:'#a7f3d0',marginBottom:2}}>Rest complete</div><div className="serif" style={{fontSize:24,color:'white'}}>Back to work</div></div>
-              <button onClick={cancel} style={{width:40,height:40,borderRadius:'50%',background:'rgba(0,0,0,0.2)',border:'none',color:'white',cursor:'pointer',fontSize:18}}>✕</button>
+              <button onClick={cancel} style={{width:40,height:40,borderRadius:'50%',background:'rgba(0,0,0,0.2)',border:'none',color:'white',fontSize:18}}>✕</button>
             </div>
           ):(
             <div style={{padding:'16px 20px 20px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.2em',color:'#78716c'}}>Rest</div>
                 <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>addTime(30)} style={{fontSize:12,color:'#d6d3d1',background:'rgba(255,255,255,0.1)',border:'none',borderRadius:999,padding:'4px 12px',cursor:'pointer'}}>+30s</button>
-                  <button onClick={cancel} style={{width:28,height:28,borderRadius:'50%',background:'rgba(255,255,255,0.1)',border:'none',color:'#a8a29e',cursor:'pointer',fontSize:16}}>✕</button>
+                  <button onClick={()=>addTime(30)} style={{fontSize:12,color:'#d6d3d1',background:'rgba(255,255,255,0.1)',border:'none',borderRadius:999,padding:'4px 12px'}}>+30s</button>
+                  <button onClick={cancel} style={{width:28,height:28,borderRadius:'50%',background:'rgba(255,255,255,0.1)',border:'none',color:'#a8a29e',fontSize:16}}>✕</button>
                 </div>
               </div>
               <div className="num" style={{fontFamily:'Fraunces,Georgia,serif',fontSize:'5.5rem',textAlign:'center',lineHeight:1,color:urgent?'#fca5a5':'white'}}>{disp}</div>
@@ -455,13 +496,6 @@ const I={
   skip:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>,
   coffee:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
   cal:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-  dumbbell:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M3 9.5h3m12 0h3M3 14.5h3m12 0h3"/><rect x="5" y="8" width="2" height="8" rx="1"/><rect x="17" y="8" width="2" height="8" rx="1"/></svg>,
-  moon:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
-  zap:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
-  walk:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1"/><path d="M9 20l1-5 2 2 1-5"/><path d="M6 9l1-1 4 1 2 3h3"/></svg>,
-  flame:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-7 7 7 7 0 01-7-7c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>,
-  wind:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>,
-  timer:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
   minus:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   plus:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   x:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
@@ -470,6 +504,7 @@ const I={
   warn:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
   download:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
   upload:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+  zap:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
 };
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -505,7 +540,6 @@ function RestTimerButtons({theme}){
   );
 }
 
-// ── RECOVERY INPUT ────────────────────────────────────────────────────────────
 function RecoveryInput({value,onChange}){
   const low=typeof value==='number'&&value<50;
   return(
@@ -536,7 +570,6 @@ function RecoveryInput({value,onChange}){
   );
 }
 
-// ── MOBILITY SECTION ──────────────────────────────────────────────────────────
 function parseSecs(str){const m=str.match(/~?([\d.]+)\s*min/);return m?Math.round(parseFloat(m[1])*60):0;}
 function MobilitySection({kind,data,done,onToggle,theme,defaultExpanded,autoStart}){
   const [expanded,setExpanded]=useState(defaultExpanded);
@@ -561,7 +594,7 @@ function MobilitySection({kind,data,done,onToggle,theme,defaultExpanded,autoStar
     <div className={`${theme.bg} border ${theme.border} rounded-2xl mb-4 overflow-hidden`}>
       {isStarted&&<div className="h-0.5 bg-white/60"><div className={`h-full ${isDone?'bg-emerald-500':theme.stripe}`} style={{width:`${pct}%`,transition:'width 0.2s linear'}}/></div>}
       <div className="flex items-center gap-3 px-4 py-3.5">
-        <button onClick={onToggle} className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${done?'bg-emerald-600 text-white':`bg-white border ${theme.border} ${theme.text}`}`}>{done?<I.check/>:kind==='warmup'?<I.flame/>:<I.wind/>}</button>
+        <button onClick={onToggle} className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${done?'bg-emerald-600 text-white':`bg-white border ${theme.border} ${theme.text}`}`}>{done?<I.check/>:(kind==='warmup'?'🔥':'🌬')}</button>
         <button onClick={()=>setExpanded(e=>!e)} className="flex-1 flex items-center justify-between text-left min-w-0">
           <div><div className={`text-xs uppercase tracking-wider ${theme.text}`}>{label}</div><div className="serif text-base text-stone-900">{data.duration}</div></div>
           <span className={`${theme.text} inline-block transition-transform ${expanded?'rotate-180':''}`}><I.chevDown/></span>
@@ -577,7 +610,6 @@ function MobilitySection({kind,data,done,onToggle,theme,defaultExpanded,autoStar
   );
 }
 
-// ── SET GRID ──────────────────────────────────────────────────────────────────
 function SetGrid({value,setValue,tracksReps,tracksWeight,lastWeights}){
   return(
     <div className="space-y-2">
@@ -679,19 +711,24 @@ function SprintTrack({value,setValue}){
     </div>
   );
 }
-function NorwegianTrack({value,setValue}){
+function NorwegianTrackBase({value,setValue,stages,label,recovery}){
   const timer=useRestTimer();
-  const stage=NORWEGIAN_STAGES[Math.min(value?.stageIndex??0,NORWEGIAN_STAGES.length-1)];
+  const stage=stages[Math.min(value?.stageIndex??0,stages.length-1)];
   const workLabel=fmtWorkMin(stage.workMin),workSec=Math.round(stage.workMin*60);
-  const completed=value.completedReps??0,total=4,allDone=completed>=total;
+  const gated=typeof recovery==='number'&&recovery<70;
+  const total=gated?3:4;
+  const completed=Math.min(value.completedReps??0,total),allDone=completed>=total;
   const log=()=>{if(completed>=total)return;const next=completed+1;if(next>=total){setValue({completedReps:next,done:true});try{navigator.vibrate?.([100,50,100,50,100]);}catch{}playChime();}else{setValue({completedReps:next});timer.start(stage.restSec);}};
   return(
     <div className="space-y-3">
       <div className="bg-stone-50 border border-stone-200 rounded-xl px-4 py-3">
-        <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Wk {stage.week} · Stage {(value?.stageIndex??0)+1}/{NORWEGIAN_STAGES.length}</div>
-        <div className="serif text-xl text-stone-900">4 × {workLabel} @ {stage.intensity}</div>
+        <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Wk {stage.week} · Stage {(value?.stageIndex??0)+1}/{stages.length}</div>
+        <div className="serif text-xl text-stone-900">{total} × {workLabel} @ {stage.intensity}</div>
+        {label&&<div className="text-xs text-stone-500 mt-0.5">{label}</div>}
         {stage.note&&<div className="text-xs text-amber-700 mt-1">{stage.note}</div>}
       </div>
+      {recovery==null&&<div className="text-xs text-stone-400 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2">Log WHOOP recovery above — below 70% this drops to 3 intervals automatically.</div>}
+      {gated&&<div className="flex items-start gap-2 bg-amber-50 border border-amber-300 rounded-xl px-3 py-2"><span className="text-amber-700 mt-0.5"><I.warn/></span><div className="text-xs text-amber-900">Recovery below 70% — dropped to 3 intervals per the Broccoli recovery gate.</div></div>}
       <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
         <div className="flex items-baseline justify-between mb-3"><div className="text-[10px] uppercase tracking-widest text-purple-700">Intervals</div><div className="serif text-2xl num">{completed}<span className="text-stone-400 text-base">/{total}</span></div></div>
         <div className="flex gap-1.5 mb-3">{Array.from({length:total},(_,i)=><div key={i} className={`flex-1 h-2.5 rounded-full ${i<completed?'bg-purple-600':'bg-purple-200'}`}/>)}</div>
@@ -710,6 +747,9 @@ function NorwegianTrack({value,setValue}){
     </div>
   );
 }
+function NorwegianTrack({value,setValue,recovery}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_STAGES} label="3 min walk between each" recovery={recovery}/>;}
+function NorwegianBikeTrack({value,setValue,recovery}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_BIKE_STAGES} label="3 min easy pedaling between each · Assault Bike" recovery={recovery}/>;}
+
 function TGUInline({value,setValue}){
   const stage=TGU_STAGES[value.stageIndex];
   return(
@@ -747,7 +787,25 @@ function KBInline({value,setValue}){
     </div>
   );
 }
-function EMOMTimer({totalRounds,completed,onRoundComplete}){
+// EMOM KB Swings 10×10 (Rhomboid) — reps fixed at 10/round, weight editable, own weight state
+function KBEmomInline({value,setValue}){
+  return(
+    <div className="space-y-3">
+      <div className="bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-center">
+        <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">10 rounds × 10 reps · EMOM</div>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={()=>setValue(v=>({...v,weight:Math.max(4,(v.weight??16)-2)}))} className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center"><I.minus/></button>
+          <div className="serif text-3xl text-stone-900 num">{value.weight}<span className="text-stone-400 text-lg">kg</span></div>
+          <button onClick={()=>setValue(v=>({...v,weight:(v.weight??16)+2}))} className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center"><I.plus/></button>
+        </div>
+        <div className="text-[11px] text-stone-500 mt-1.5">When all 10 rounds feel controlled with 20+ sec rest, bump to 20kg</div>
+      </div>
+      <EMOMTimer totalRounds={10} completed={value.completed||0} onRoundComplete={n=>setValue(v=>({...v,completed:n}))} repsPerRound={10}/>
+      <button onClick={()=>setValue({done:!value.done})} className={`w-full py-2.5 rounded-xl text-sm ${value.done?'bg-emerald-50 border border-emerald-200 text-emerald-700':'bg-stone-100 text-stone-600'}`}>{value.done?'✓ Completed':'Mark complete'}</button>
+    </div>
+  );
+}
+function EMOMTimer({totalRounds,completed,onRoundComplete,repsPerRound}){
   const [ui,setUi]=useState({phase:'idle',sec:0,round:1,done:0,paused:false});
   const M=useRef({phase:'idle',phaseStart:0,done:0,lastTing:-1,iid:null,pausedElapsed:null});
   const onRoundRef=useRef(onRoundComplete);onRoundRef.current=onRoundComplete;
@@ -767,7 +825,7 @@ function EMOMTimer({totalRounds,completed,onRoundComplete}){
   useEffect(()=>()=>clearTimer(),[]);
   const{phase,sec,round,done,paused}=ui;
   const dots=Array.from({length:totalRounds},(_,i)=>i<done);
-  if(phase==='idle')return<div className="bg-blue-900 rounded-2xl p-6 text-center"><div className="text-xs uppercase tracking-widest text-stone-400 mb-4">EMOM · {totalRounds} rounds</div><button onClick={start} className="w-full bg-amber-500 text-blue-900 rounded-xl py-4 serif text-xl font-medium">Start EMOM</button></div>;
+  if(phase==='idle')return<div className="bg-blue-900 rounded-2xl p-6 text-center"><div className="text-xs uppercase tracking-widest text-stone-400 mb-4">EMOM · {totalRounds} rounds{repsPerRound?` × ${repsPerRound}`:''}</div><button onClick={start} className="w-full bg-amber-500 text-blue-900 rounded-xl py-4 serif text-xl font-medium">Start EMOM</button></div>;
   if(phase==='done')return<div className="bg-blue-900 rounded-2xl p-8 text-center"><div className="serif text-6xl text-emerald-400 mb-3">✓</div><div className="serif text-2xl text-stone-50 mb-4">{totalRounds} rounds done</div><button onClick={reset} className="text-sm text-stone-400 border border-stone-600 rounded-full px-4 py-2">Reset</button></div>;
   const isActive=phase==='active',isPre=phase==='pre',isBetween=phase==='between';
   const secColor=isActive&&sec<=3?'text-red-400':isPre||isBetween?'text-amber-300':'text-stone-50';
@@ -777,9 +835,9 @@ function EMOMTimer({totalRounds,completed,onRoundComplete}){
       <div className="px-6 pt-5 pb-6">
         <div className="flex items-center justify-between mb-1">
           <div className="text-[11px] uppercase tracking-wider text-stone-400">{isPre?'Get ready':isBetween?`Round ${round-1} done`:`Round ${round} of ${totalRounds}`}</div>
-          <div className="flex gap-1">{dots.map((d,i)=><div key={i} className={`w-2 h-2 rounded-full ${d?'bg-emerald-400':'bg-blue-800'}`}/>)}</div>
+          <div className="flex gap-1 flex-wrap justify-end max-w-[50%]">{dots.map((d,i)=><div key={i} className={`w-2 h-2 rounded-full ${d?'bg-emerald-400':'bg-blue-800'}`}/>)}</div>
         </div>
-        <div className="text-center py-4"><div className={`serif num leading-none ${secColor}`} style={{fontSize:'6rem'}}>{sec}</div><div className="text-stone-400 text-sm uppercase tracking-wider mt-2">{isPre?'seconds':isBetween?'next round in':'sec remaining'}</div>{isActive&&<div className="text-stone-300 text-base uppercase tracking-widest mt-3 serif">Swing</div>}</div>
+        <div className="text-center py-4"><div className={`serif num leading-none ${secColor}`} style={{fontSize:'6rem'}}>{sec}</div><div className="text-stone-400 text-sm uppercase tracking-wider mt-2">{isPre?'seconds':isBetween?'next round in':'sec remaining'}</div>{isActive&&<div className="text-stone-300 text-base uppercase tracking-widest mt-3 serif">{repsPerRound?`${repsPerRound} Swings`:'Swing'}</div>}</div>
         <div className="flex gap-2">
           {paused?<button onClick={resume} className="flex-1 bg-amber-500 text-blue-900 rounded-xl py-3.5 text-base font-medium">Resume</button>:<button onClick={pause} className="flex-1 bg-blue-800 text-stone-300 rounded-xl py-3.5 text-base">Pause</button>}
           <button onClick={reset} className="bg-blue-800 text-stone-400 rounded-xl py-3.5 px-5 text-base">Reset</button>
@@ -805,33 +863,42 @@ function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery})
       {exercise.rest&&<div className={`text-xs ${theme.text} opacity-80 mb-1 italic`}>Rest · {exercise.rest}</div>}
       {exercise.note&&<div className="text-xs text-stone-400 mb-1">{exercise.note}</div>}
       <div className="mt-3">
-        {exercise.track==='weight'    &&<WeightTrack value={value} setValue={setValue} lastWeights={lastWeights}/>}
-        {exercise.track==='reps'      &&<RepsTrack value={value} setValue={setValue}/>}
-        {exercise.track==='time'      &&<TimeTrack value={value} setValue={setValue}/>}
-        {exercise.track==='farmer'    &&<FarmerTrack value={value} setValue={setValue}/>}
-        {exercise.track==='sprint'    &&<SprintTrack value={value} setValue={setValue}/>}
-        {exercise.track==='norwegian' &&<NorwegianTrack value={value} setValue={setValue}/>}
-        {exercise.track==='tgu'       &&<TGUInline value={value} setValue={setValue}/>}
-        {exercise.track==='kb_swings' &&<KBInline value={value} setValue={setValue}/>}
+        {exercise.track==='weight'        &&<WeightTrack value={value} setValue={setValue} lastWeights={lastWeights}/>}
+        {exercise.track==='reps'          &&<RepsTrack value={value} setValue={setValue}/>}
+        {exercise.track==='time'          &&<TimeTrack value={value} setValue={setValue}/>}
+        {exercise.track==='farmer'        &&<FarmerTrack value={value} setValue={setValue}/>}
+        {exercise.track==='sprint'        &&<SprintTrack value={value} setValue={setValue}/>}
+        {exercise.track==='norwegian'     &&<NorwegianTrack value={value} setValue={setValue} recovery={recovery}/>}
+        {exercise.track==='norwegian_bike'&&<NorwegianBikeTrack value={value} setValue={setValue} recovery={recovery}/>}
+        {exercise.track==='tgu'           &&<TGUInline value={value} setValue={setValue}/>}
+        {exercise.track==='kb_swings'     &&<KBInline value={value} setValue={setValue}/>}
+        {exercise.track==='kb_emom'       &&<KBEmomInline value={value} setValue={setValue}/>}
       </div>
       {showRest&&<RestTimerButtons theme={theme}/>}
     </div>
   );
 }
 
+// Superset grouping now uses ssGroup key — consecutive exercises sharing the same
+// non-empty ssGroup form one superset block. This fixes the "4-in-a-group" bug.
 function ExerciseList({exercises,state,setEx,data,theme,recovery}){
   const items=[];let i=0;
   while(i<exercises.length){
     const ex=exercises[i];
-    if(ex.superset){
-      const group=[];
-      while(i<exercises.length&&exercises[i].superset){group.push(exercises[i]);i++;}
-      items.push(
-        <div key={`ss-${i}`} className="rounded-2xl overflow-hidden border border-amber-200">
-          <div className="bg-amber-50 px-5 py-2.5 flex items-center gap-2 border-b border-amber-200"><span className="text-amber-700"><I.zap/></span><span className="text-xs uppercase tracking-wider text-amber-700 font-medium">Superset</span></div>
-          {group.map((sex,si)=><div key={sex.id} className={si>0?'border-t border-amber-100':''}><ExerciseCard exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} flat recovery={recovery}/></div>)}
-        </div>
-      );
+    if(ex.ssGroup){
+      const g=ex.ssGroup;const group=[];
+      while(i<exercises.length&&exercises[i].ssGroup===g){group.push(exercises[i]);i++;}
+      if(group.length===1){
+        const sex=group[0];
+        items.push(<ExerciseCard key={sex.id} exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} recovery={recovery}/>);
+      }else{
+        items.push(
+          <div key={`ss-${g}`} className="rounded-2xl overflow-hidden border border-amber-200">
+            <div className="bg-amber-50 px-5 py-2.5 flex items-center gap-2 border-b border-amber-200"><span className="text-amber-700"><I.zap/></span><span className="text-xs uppercase tracking-wider text-amber-700 font-medium">Superset</span></div>
+            {group.map((sex,si)=><div key={sex.id} className={si>0?'border-t border-amber-100':''}><ExerciseCard exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} flat recovery={recovery}/></div>)}
+          </div>
+        );
+      }
     }else{
       items.push(<ExerciseCard key={ex.id} exercise={ex} value={state.exercises[ex.id]} setValue={p=>setEx(ex.id,p)} lastWeights={ex.track==='weight'?getLastSets(data.sessions,ex.id,ex.sets,'weight'):null} theme={theme} recovery={recovery}/>);
       i++;
@@ -856,53 +923,60 @@ function SessionMeta({session,setSession,theme}){
 }
 
 // ── DAY VIEW ──────────────────────────────────────────────────────────────────
-function DayView({slot,cycleDay,editingSavedAt,data,update,setView}){
+function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
+  const prog=PROGRAMS[program];
   const existing=editingSavedAt?data.sessions.find(s=>s.savedAt===editingSavedAt):null;
   const isEditing=!!existing;
-  const resolvedSlot=isEditing?(existing.slot??slot??0):(slot??cycleEntry(data.cycleDay).slot);
-  const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??data.cycleDay):(cycleDay??data.cycleDay);
-  const session=SESSIONS[resolvedSlot],theme=THEMES[session.kind];
+  const exProgram=isEditing?(existing.program??program):program;
+  const exProg=PROGRAMS[exProgram];
+  const resolvedSlot=isEditing?(existing.slot??slot??0):(slot??cycleEntry(prog,data.cycleDays[program]).slot);
+  const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
+  const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
   const [hadDraft,setHadDraft]=useState(false);
   const [workoutStarted,setWorkoutStarted]=useState(false);
   const [saving,setSaving]=useState(false);
 
   const buildInitial=useCallback(()=>{
     if(existing){
-      const m={slot:resolvedSlot,cycleDay:resolvedCycleDay,date:existing.date,warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,rpe:existing.rpe??null,notes:existing.notes??'',recovery:existing.recovery??null,exercises:{}};
+      const m={program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:existing.date,warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,rpe:existing.rpe??null,notes:existing.notes??'',recovery:existing.recovery??null,exercises:{}};
       session.exercises.forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
       return m;
     }
-    const s={slot:resolvedSlot,cycleDay:resolvedCycleDay,date:todayISO(),warmupDone:false,cooldownDone:false,exercises:{},rpe:null,notes:'',recovery:null};
+    const s={program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:todayISO(),warmupDone:false,cooldownDone:false,exercises:{},rpe:null,notes:'',recovery:null};
     session.exercises.forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
     return s;
   },[]);
 
   const [state,setState]=useState(()=>{
     if(!isEditing){
-      const draft=loadDraft('session',resolvedSlot,null);
+      const draft=loadDraft(program,'session',resolvedSlot,null);
       if(draft?.exercises){
         const ok=!(data.sessions||[]).some(s=>s.savedAt&&draft.savedAt&&s.savedAt===draft.savedAt);
-        if(ok){setHadDraft(true);return draft;}else clearDraft('session',resolvedSlot,null);
+        if(ok){setHadDraft(true);return draft;}else clearDraft(program,'session',resolvedSlot,null);
       }
     }
     return buildInitial();
   });
 
-  useEffect(()=>{if(!isEditing)saveDraft('session',resolvedSlot,null,state);},[state]);
+  useEffect(()=>{if(!isEditing)saveDraft(program,'session',resolvedSlot,null,state);},[state]);
   const setEx=(exId,patch)=>setState(s=>({...s,exercises:{...s.exercises,[exId]:typeof patch==='function'?patch(s.exercises[exId]):{...s.exercises[exId],...patch}}}));
   const low=typeof state.recovery==='number'&&state.recovery<50;
 
   const save=()=>{
     if(saving)return;setSaving(true);
-    const advances=calcProgressionAdvances(resolvedSlot,state.exercises,data.progressions);
+    const advances=calcProgressionAdvances(session,state.exercises,data.progressions);
+    // Rhomboid EMOM weight persists to progression state
+    let progPatch={...advances};
+    const emomEx=session.exercises.find(e=>e.track==='kb_emom');
+    if(emomEx){const logged=state.exercises[emomEx.id];if(logged?.weight) progPatch.kbEmomWeight=logged.weight;}
     if(isEditing){
-      const nd={...data,progressions:{...data.progressions,...advances},sessions:data.sessions.map(s=>s.savedAt===editingSavedAt?{...state,savedAt:editingSavedAt}:s)};
-      saveData(nd);update(()=>nd);clearDraft('session',resolvedSlot,editingSavedAt);setSaving(false);
+      const nd={...data,progressions:{...data.progressions,...progPatch},sessions:data.sessions.map(s=>s.savedAt===editingSavedAt?{...state,savedAt:editingSavedAt}:s)};
+      saveData(nd);update(()=>nd);clearDraft(exProgram,'session',resolvedSlot,editingSavedAt);setSaving(false);
       setView({name:'history-detail',savedAt:editingSavedAt});
     }else{
       const savedAt=new Date().toISOString();
-      clearDraft('session',resolvedSlot,null);
-      const nd={...data,cycleDay:nextCycleDay(data.cycleDay),progressions:{...data.progressions,...advances},sessions:[...(data.sessions||[]),{...state,savedAt}]};
+      clearDraft(program,'session',resolvedSlot,null);
+      const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCycleDay(prog,data.cycleDays[program])},progressions:{...data.progressions,...progPatch},sessions:[...(data.sessions||[]),{...state,savedAt}]};
       saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});
     }
   };
@@ -912,7 +986,7 @@ function DayView({slot,cycleDay,editingSavedAt,data,update,setView}){
       <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
       <header className="mb-4">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="text-xs uppercase tracking-widest text-stone-500">Day {resolvedCycleDay} of {CYCLE_LENGTH}</span>
+          <span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span>
           <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
           {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
         </div>
@@ -922,7 +996,7 @@ function DayView({slot,cycleDay,editingSavedAt,data,update,setView}){
       {hadDraft&&!isEditing&&(
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
           <div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div>
-          <button onClick={()=>{clearDraft('session',resolvedSlot,null);setState(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button>
+          <button onClick={()=>{clearDraft(program,'session',resolvedSlot,null);setState(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button>
         </div>
       )}
       <div className={`${theme.bg} border ${theme.border} rounded-2xl px-4 py-3 mb-4 flex items-center justify-between`}>
@@ -945,12 +1019,15 @@ function DayView({slot,cycleDay,editingSavedAt,data,update,setView}){
 }
 
 // ── WALK VIEW ─────────────────────────────────────────────────────────────────
-function WalkView({slot,cycleDay,editingSavedAt,data,update,setView}){
+function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
+  const prog=PROGRAMS[program];
   const existing=editingSavedAt?data.walks.find(w=>w.savedAt===editingSavedAt):null;
   const isEditing=!!existing;
-  const resolvedSlot=isEditing?(existing.slot??slot??4):(slot??4);
-  const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??data.cycleDay):(cycleDay??data.cycleDay);
-  const session=SESSIONS[resolvedSlot],theme=THEMES[session.kind];
+  const exProgram=isEditing?(existing.program??program):program;
+  const exProg=PROGRAMS[exProgram];
+  const resolvedSlot=isEditing?(existing.slot??slot??0):slot;
+  const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
+  const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
   const [hadDraft,setHadDraft]=useState(false);
   const [workoutStarted,setWorkoutStarted]=useState(false);
   const [saving,setSaving]=useState(false);
@@ -959,39 +1036,39 @@ function WalkView({slot,cycleDay,editingSavedAt,data,update,setView}){
     const exercises={};
     (session.exercises||[]).forEach(ex=>{exercises[ex.id]=buildFreshExercise(ex,data);});
     if(existing){
-      const m={slot:resolvedSlot,cycleDay:resolvedCycleDay,date:existing.date,distance:existing.distance??'',duration:existing.duration??'',notes:existing.notes??'',warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,recovery:existing.recovery??null,exercises};
+      const m={program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:existing.date,distance:existing.distance??'',duration:existing.duration??'',notes:existing.notes??'',warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,recovery:existing.recovery??null,exercises};
       (session.exercises||[]).forEach(ex=>{const le=existing.exercises?.[ex.id];if(le)m.exercises[ex.id]=le;});
       return m;
     }
-    return{slot:resolvedSlot,cycleDay:resolvedCycleDay,date:todayISO(),distance:'',duration:'',notes:'',warmupDone:false,cooldownDone:false,recovery:null,exercises};
+    return{program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:todayISO(),distance:'',duration:'',notes:'',warmupDone:false,cooldownDone:false,recovery:null,exercises};
   },[]);
 
   const [walk,setWalk]=useState(()=>{
     if(!isEditing){
-      const draft=loadDraft('walk',resolvedSlot,null);
-      if(draft){const ok=!(data.walks||[]).some(w=>w.savedAt&&draft.savedAt&&w.savedAt===draft.savedAt);if(ok){setHadDraft(true);return draft;}else clearDraft('walk',resolvedSlot,null);}
+      const draft=loadDraft(program,'walk',resolvedSlot,null);
+      if(draft){const ok=!(data.walks||[]).some(w=>w.savedAt&&draft.savedAt&&w.savedAt===draft.savedAt);if(ok){setHadDraft(true);return draft;}else clearDraft(program,'walk',resolvedSlot,null);}
     }
     return buildInitial();
   });
 
-  useEffect(()=>{if(!isEditing)saveDraft('walk',resolvedSlot,null,walk);},[walk]);
+  useEffect(()=>{if(!isEditing)saveDraft(program,'walk',resolvedSlot,null,walk);},[walk]);
   const setWalkEx=(exId,patch)=>setWalk(w=>({...w,exercises:{...w.exercises,[exId]:typeof patch==='function'?patch(w.exercises[exId]):{...w.exercises[exId],...patch}}}));
   const last=[...data.walks].reverse().find(w=>w.savedAt!==editingSavedAt);
 
   const save=()=>{
     if(saving)return;setSaving(true);
-    if(isEditing){const nd={...data,walks:data.walks.map(w=>w.savedAt===editingSavedAt?{...walk,savedAt:editingSavedAt}:w)};saveData(nd);update(()=>nd);clearDraft('walk',resolvedSlot,editingSavedAt);setSaving(false);setView({name:'history-detail',savedAt:editingSavedAt});}
-    else{const savedAt=new Date().toISOString();clearDraft('walk',resolvedSlot,null);const nd={...data,cycleDay:nextCycleDay(data.cycleDay),walks:[...(data.walks||[]),{...walk,savedAt}]};saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});}
+    if(isEditing){const nd={...data,walks:data.walks.map(w=>w.savedAt===editingSavedAt?{...walk,savedAt:editingSavedAt}:w)};saveData(nd);update(()=>nd);clearDraft(exProgram,'walk',resolvedSlot,editingSavedAt);setSaving(false);setView({name:'history-detail',savedAt:editingSavedAt});}
+    else{const savedAt=new Date().toISOString();clearDraft(program,'walk',resolvedSlot,null);const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCycleDay(prog,data.cycleDays[program])},walks:[...(data.walks||[]),{...walk,savedAt}]};saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});}
   };
 
   return(
     <div>
       <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
       <header className="mb-4">
-        <div className="flex items-center gap-2 mb-2"><span className="text-xs uppercase tracking-widest text-stone-500">Day {resolvedCycleDay} of {CYCLE_LENGTH}</span><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span></div>
+        <div className="flex items-center gap-2 mb-2"><span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span></div>
         <h1 className="serif text-4xl text-stone-900">Zone 2 Walk</h1>
       </header>
-      {hadDraft&&!isEditing&&<div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div><button onClick={()=>{clearDraft('walk',resolvedSlot,null);setWalk(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button></div>}
+      {hadDraft&&!isEditing&&<div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div><button onClick={()=>{clearDraft(program,'walk',resolvedSlot,null);setWalk(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button></div>}
       <div className={`${theme.bg} border ${theme.border} rounded-2xl px-4 py-3 mb-4 flex items-center justify-between`}><div className={`text-xs uppercase tracking-wider ${theme.text}`}>Logged on</div><input type="date" value={walk.date} onChange={e=>setWalk(w=>({...w,date:e.target.value}))} className="bg-transparent text-sm num focus:outline-none text-right text-stone-900"/></div>
       <RecoveryInput value={walk.recovery} onChange={v=>setWalk(w=>({...w,recovery:v}))}/>
       {!isEditing&&(workoutStarted?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">Walk started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>:<button onClick={()=>setWorkoutStarted(true)} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-blue-900"><I.play/></div><span className="serif text-xl">Start walk</span></div><div className="text-[10px] uppercase tracking-widest text-stone-400 mt-1.5">Warm-up starts automatically</div></button>)}
@@ -1040,30 +1117,43 @@ function ProgressionView({title,subtitle,stages,stageKey,setView,data,update,ren
 }
 function TGUView(p){return<ProgressionView title="Turkish Get-Up" subtitle="From 1,1,3 @ 24kg to 5×1 @ 32kg." stages={TGU_STAGES} stageKey="tguStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">{s.label}</div>{s.note&&<div className="text-xs text-amber-300">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">{s.label}</div>{s.note&&<div className="text-xs text-stone-500">{s.note}</div>}</div>}/>;}
 function KBView(p){return<ProgressionView title="KB Swings" subtitle="Builds to 30/min × 20 min @ 16kg." stages={KB_SWING_STAGES} stageKey="kbStageIndex" {...p} renderHero={s=><><div className="flex items-baseline gap-4 mb-1"><div className="serif text-4xl num">{s.swingsPerMin}<span className="text-stone-300 text-lg">/min</span></div><div className="serif text-2xl num text-stone-300">× {s.minutes}<span className="text-stone-400 text-sm"> min</span></div></div><div className="text-stone-300 text-sm num">{s.weight}kg · {s.total} total</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="flex items-baseline gap-2"><div className="serif text-base text-stone-900">{s.label}</div><div className="text-xs text-stone-500 num">{s.total} total</div></div><div className="text-xs text-stone-500 num">{s.swingsPerMin}/min × {s.minutes} min · {s.weight}kg</div></div>}/>;}
-function SprintsView(p){return<ProgressionView title="Sprints" subtitle="8-week build to 8 × 20s @ 95%." stages={SPRINT_STAGES} stageKey="sprintStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">{s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · {s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-[10px] text-amber-700 mt-0.5">{s.note}</div>}</div>}/>;}
-function NorwegianView(p){return<ProgressionView title="Norwegian 4×4" subtitle="8-stage build from 4 × 1min to 4 × 4min." stages={NORWEGIAN_STAGES} stageKey="norwegianStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
+function SprintsView(p){return<ProgressionView title="Sprints" subtitle="Shared across both programs · 8-week build to 8 × 20s @ 95%." stages={SPRINT_STAGES} stageKey="sprintStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">{s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · {s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-[10px] text-amber-700 mt-0.5">{s.note}</div>}</div>}/>;}
+function NorwegianBikeView(p){return<ProgressionView title="Norwegian 4×4 (Bike)" subtitle="Shared across both programs · Assault Bike intervals · gated to 3 intervals below 70% recovery." stages={NORWEGIAN_BIKE_STAGES} stageKey="norwegianBikeStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
 function HistoryView({data,update,setView}){
-  const all=[
+  const [filter,setFilter]=useState('all');
+  const progOf=x=>x.program??'ganbaru';
+  const sessionsFor=p=>PROGRAMS[p]?.sessions||[];
+  let all=[
     ...(data.sessions||[]).map(s=>({...s,_kind:'session'})),
-    ...(data.walks||[]).map(w=>({...w,_kind:'walk',slot:w.slot??4})),
+    ...(data.walks||[]).map(w=>({...w,_kind:'walk'})),
     ...(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type)).map(e=>({...e,_kind:'event'})),
   ].sort((a,b)=>{const ad=a.date||'',bd=b.date||'';return ad!==bd?bd.localeCompare(ad):(b.savedAt||'').localeCompare(a.savedAt||'');});
+  if(filter!=='all') all=all.filter(x=>progOf(x)===filter);
   return(
     <div>
       <TopBar onBack={()=>setView({name:'home'})}/>
-      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Log</div><h1 className="serif text-4xl text-stone-900">History</h1></header>
+      <header className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Log</div><h1 className="serif text-4xl text-stone-900">History</h1></header>
+      <div className="flex gap-1.5 mb-5 bg-stone-100 rounded-xl p-1">
+        {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Rhomboid']].map(([k,l])=>(
+          <button key={k} onClick={()=>setFilter(k)} className={`flex-1 py-2 text-xs rounded-lg ${filter===k?'bg-white text-stone-900 shadow-sm font-medium':'text-stone-500'}`}>{l}</button>
+        ))}
+      </div>
       {all.length===0?<div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500 text-sm">Nothing logged yet.</div>:<div className="space-y-3">{all.map((s,i)=>{
-        if(s._kind==='event')return(
-          <div key={i} className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white border border-amber-200 flex items-center justify-center flex-shrink-0 text-amber-700"><I.skip/></div>
-            <div className="flex-1 min-w-0"><div className="text-sm text-stone-800">Skipped{s.slot!=null?`: ${SESSIONS[s.slot]?.title}`:''}</div><div className="text-[10px] uppercase tracking-wider text-stone-500 mt-0.5 num">{s.cycleDay?`Day ${s.cycleDay} · `:''}{s.date}</div></div>
-            <button onClick={()=>update(d=>({...d,cycleEvents:(d.cycleEvents||[]).filter(e=>e.savedAt!==s.savedAt)}))} className="text-stone-400 px-2 py-1"><I.x/></button>
-          </div>
-        );
-        const si=s.slot!=null?SESSIONS[s.slot]:null,t=si?THEMES[si.kind]:THEMES.rest;
-        const title=s._kind==='walk'?'Zone 2 Walk':(si?.title||'Session');
+        const p=progOf(s);const pName=PROGRAMS[p]?.name||'';
+        if(s._kind==='event'){
+          const sess=s.slot!=null?sessionsFor(p)[s.slot]:null;
+          return(
+            <div key={i} className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-white border border-amber-200 flex items-center justify-center flex-shrink-0 text-amber-700"><I.skip/></div>
+              <div className="flex-1 min-w-0"><div className="text-sm text-stone-800">Skipped{sess?`: ${sess.title}`:''}</div><div className="text-[10px] uppercase tracking-wider text-stone-500 mt-0.5 num">{pName} · {s.cycleDay?`Day ${s.cycleDay} · `:''}{s.date}</div></div>
+              <button onClick={()=>update(d=>({...d,cycleEvents:(d.cycleEvents||[]).filter(e=>e.savedAt!==s.savedAt)}))} className="text-stone-400 px-2 py-1"><I.x/></button>
+            </div>
+          );
+        }
+        const sess=s.slot!=null?sessionsFor(p)[s.slot]:null;const t=sess?THEMES[sess.kind]:THEMES.rest;
+        const title=s._kind==='walk'?'Zone 2 Walk':(sess?.title||'Session');
         const lowRec=typeof s.recovery==='number'&&s.recovery<50;
         return(
           <button key={i} onClick={()=>setView({name:'history-detail',savedAt:s.savedAt})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-4 relative overflow-hidden">
@@ -1072,7 +1162,7 @@ function HistoryView({data,update,setView}){
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
                 <div className="serif text-lg text-stone-900 truncate">{title}</div>
                 <span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-2 py-0.5 rounded-full flex-shrink-0`}>{t.label}</span>
-                {s.cycleDay&&<span className="text-[10px] uppercase tracking-wider text-stone-500 num flex-shrink-0">Day {s.cycleDay}</span>}
+                <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':'text-blue-700 bg-blue-50 border border-blue-100'}`}>{p==='rhomboid'?'Rhomboid':'Ganbaru'}</span>
                 {lowRec&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full flex-shrink-0">Low recovery</span>}
               </div>
               <div className="text-xs text-stone-500 num flex-shrink-0">{s.date}</div>
@@ -1089,13 +1179,15 @@ function HistoryView({data,update,setView}){
 function HistoryDetailView({savedAt,data,setView}){
   const session=data.sessions.find(s=>s.savedAt===savedAt),walk=data.walks.find(w=>w.savedAt===savedAt),item=session||walk;
   if(!item)return<div><TopBar onBack={()=>setView({name:'history'})}/><div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500">Not found.</div></div>;
-  const isWalk=!!walk,template=item.slot!=null?SESSIONS[item.slot]:null,theme=template?THEMES[template.kind]:THEMES.rest;
+  const isWalk=!!walk;const p=item.program??'ganbaru';
+  const template=item.slot!=null?PROGRAMS[p]?.sessions[item.slot]:null,theme=template?THEMES[template.kind]:THEMES.rest;
   const lowRec=typeof item.recovery==='number'&&item.recovery<50;
   return(
     <div>
       <TopBar onBack={()=>setView({name:'history'})} right={<button onClick={()=>setView({name:isWalk?'walk':'day',editingSavedAt:item.savedAt})} className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">Edit</button>}/>
       <header className="mb-4">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':'text-blue-700 bg-blue-50 border border-blue-100'}`}>{PROGRAMS[p]?.name}</span>
           {item.cycleDay&&<span className="text-xs uppercase tracking-widest text-stone-500">Day {item.cycleDay}</span>}
           <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
           {item.recovery!=null&&<span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${lowRec?'text-amber-700 bg-amber-50 border border-amber-200':'text-stone-500 bg-stone-100 border border-stone-200'}`}>WHOOP {item.recovery}%{lowRec?' · +1 RIR':''}</span>}
@@ -1112,10 +1204,13 @@ function HistoryDetailView({savedAt,data,setView}){
           {ex.track==='weight'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{(s.weight??logged.weight)?`${s.weight??logged.weight}kg`:'–'} × {s.reps||'–'}</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
           {ex.track==='reps'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{s.reps||'–'} reps</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
           {ex.track==='time'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{s.seconds||'–'} sec</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
+          {ex.track==='farmer'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{s.value||'–'} {s.unit||'m'}</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
           {ex.track==='sprint'&&<div className="text-sm text-stone-700 num">{logged.completedReps} of {SPRINT_STAGES[logged.stageIndex]?.reps||'–'} sprints</div>}
-          {ex.track==='norwegian'&&<div className="text-sm text-stone-700 num">{logged.completedReps} of 4 intervals</div>}
+          {ex.track==='norwegian'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged</div>}
+          {ex.track==='norwegian_bike'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged · bike</div>}
           {ex.track==='tgu'&&<div className="text-sm text-stone-700 num">{TGU_STAGES[logged.stageIndex]?.label} {logged.done&&'✓'}</div>}
           {ex.track==='kb_swings'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/{logged.rounds} rounds {logged.done&&'✓'}</div>}
+          {ex.track==='kb_emom'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/10 rounds × 10 {logged.done&&'✓'}</div>}
         </div>
       );})}</div>}
       {(item.rpe||item.notes)&&<div className={`${theme.bg} border ${theme.border} rounded-2xl p-5 space-y-4`}>{item.rpe&&<div><div className={`text-xs uppercase tracking-wider ${theme.text} mb-1`}>RPE</div><div className="serif text-2xl num text-stone-900">{item.rpe}/10</div></div>}{item.notes&&<div><div className={`text-xs uppercase tracking-wider ${theme.text} mb-1`}>Notes</div><div className="text-sm text-stone-700 whitespace-pre-wrap">{item.notes}</div></div>}</div>}
@@ -1124,10 +1219,12 @@ function HistoryDetailView({savedAt,data,setView}){
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
-function SettingsView({data,update,setView}){
+function SettingsView({program,data,update,setView}){
+  const prog=PROGRAMS[program];
+  const cycle=buildCycle(prog);
   const [copyStatus,setCopyStatus]=useState(null),[importOpen,setImportOpen]=useState(false),[importText,setImportText]=useState(''),[importStatus,setImportStatus]=useState(null),[importError,setImportError]=useState('');
   const exportJSON=()=>{
-    const exportable={exportVersion:2,exportedAt:new Date().toISOString(),cycleDay:data.cycleDay,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
+    const exportable={exportVersion:4,exportedAt:new Date().toISOString(),activeProgram:data.activeProgram,cycleDays:data.cycleDays,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
     const text=JSON.stringify(exportable,null,2);
     if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>{setCopyStatus('copied');setTimeout(()=>setCopyStatus(null),3000);},()=>dl(text));else dl(text);
   };
@@ -1137,20 +1234,21 @@ function SettingsView({data,update,setView}){
     try{
       const p=JSON.parse(importText);
       if(!Array.isArray(p.sessions)&&!Array.isArray(p.walks))throw new Error('No sessions or walks');
-      // Apply migration: exercise history is slot-agnostic so no structural changes needed
-      // getLastSets searches all sessions globally, so lat_pulldown history from slot 0 is found when used in slot 7
-      const migrated=migrateImportedData(p);
-      update(d=>({...d,cycleDay:migrated.cycleDay??d.cycleDay??1,progressions:{...d.progressions,...(migrated.progressions||{})},sessions:Array.isArray(migrated.sessions)?migrated.sessions:d.sessions,walks:Array.isArray(migrated.walks)?migrated.walks:d.walks,cycleEvents:Array.isArray(migrated.cycleEvents)?migrated.cycleEvents:(d.cycleEvents||[])}));
+      // v3 (single-program) imports: tag everything as ganbaru
+      const tag=arr=>Array.isArray(arr)?arr.map(x=>({...x,program:x.program??'ganbaru'})):arr;
+      const cycleDays=p.cycleDays?p.cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1};
+      update(d=>({...d,activeProgram:p.activeProgram??d.activeProgram,cycleDays:{...d.cycleDays,...cycleDays},progressions:{...d.progressions,...(p.progressions||{})},sessions:tag(p.sessions)||d.sessions,walks:tag(p.walks)||d.walks,cycleEvents:tag(p.cycleEvents)||(d.cycleEvents||[])}));
       setImportStatus('success');setImportText('');setTimeout(()=>{setImportStatus(null);setImportOpen(false);},2000);
     }catch(e){setImportStatus('error');setImportError(e.message||'Could not parse');}
   };
   return(
     <div>
       <TopBar onBack={()=>setView({name:'home'})}/>
-      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Settings</div><h1 className="serif text-4xl text-stone-900">Cycle position</h1></header>
+      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Settings · {prog.name}</div><h1 className="serif text-4xl text-stone-900">Cycle position</h1></header>
+      <p className="text-stone-500 text-sm mb-4">Set which day of {prog.name} comes next.</p>
       <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden mb-8">
-        {CYCLE.map((c,i)=>{const s=SESSIONS[c.slot],t=THEMES[s.kind],isCurrent=c.day===data.cycleDay;return(
-          <button key={c.day} onClick={()=>update(d=>({...d,cycleDay:c.day}))} className={`w-full flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':''}`}>
+        {cycle.map((c,i)=>{const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===data.cycleDays[program];return(
+          <button key={c.day} onClick={()=>update(d=>({...d,cycleDays:{...d.cycleDays,[program]:c.day}}))} className={`w-full flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':''}`}>
             <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${isCurrent?'border-blue-900 bg-blue-900':'border-stone-300'}`}>{isCurrent&&<div className="w-2 h-2 rounded-full bg-white"/>}</div>
             <div className="flex-1 min-w-0"><div className="flex items-center gap-2"><div className="serif text-base text-stone-900">Day {c.day} · {s.title}</div><span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-1.5 py-0.5 rounded-full`}>{t.label}</span></div></div>
           </button>
@@ -1158,7 +1256,7 @@ function SettingsView({data,update,setView}){
       </div>
       <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-2">Backup & restore</h2>
       <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
-        <div className="flex items-baseline justify-between mb-3"><div className="text-xs uppercase tracking-wider text-stone-500">Data</div><div className="text-xs text-stone-700 num">{data.sessions?.length||0} sessions · {data.walks?.length||0} walks</div></div>
+        <div className="flex items-baseline justify-between mb-3"><div className="text-xs uppercase tracking-wider text-stone-500">All data</div><div className="text-xs text-stone-700 num">{data.sessions?.length||0} sessions · {data.walks?.length||0} walks</div></div>
         <button onClick={exportJSON} className="w-full flex items-center justify-center gap-2 bg-blue-900 text-stone-50 rounded-xl py-3"><I.download/><span className="text-sm">Export backup</span></button>
         {copyStatus==='copied'&&<div className="text-xs text-emerald-700 mt-2 text-center">✓ Copied to clipboard.</div>}
         {copyStatus==='downloaded'&&<div className="text-xs text-emerald-700 mt-2 text-center">✓ Downloaded.</div>}
@@ -1167,8 +1265,8 @@ function SettingsView({data,update,setView}){
         <button onClick={()=>setImportOpen(o=>!o)} className="w-full flex items-center justify-between text-left"><div className="flex items-center gap-2"><I.upload/><span className="text-sm text-stone-900">Restore from backup</span></div><span className={`text-stone-400 inline-block transition-transform ${importOpen?'rotate-180':''}`}><I.chevDown/></span></button>
         {importOpen&&<div className="mt-3 space-y-2">
           <div className="text-xs text-stone-500">Paste JSON. This <span className="text-red-700">replaces all data</span>.</div>
-          <div className="text-xs text-stone-400 bg-stone-50 rounded-xl px-3 py-2">Exercise history follows exercises across day changes (e.g. Lat Pulldown moved from Day 1 to Day 8).</div>
-          <textarea value={importText} onChange={e=>setImportText(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none min-h-[80px]" placeholder='{"exportVersion":2,...}'/>
+          <div className="text-xs text-stone-400 bg-stone-50 rounded-xl px-3 py-2">Shared exercises keep one history across both programs. Older single-program backups import as Ganbaru.</div>
+          <textarea value={importText} onChange={e=>setImportText(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none min-h-[80px]" placeholder='{"exportVersion":4,...}'/>
           <button onClick={doImport} disabled={!importText.trim()} className="w-full bg-red-600 text-white rounded-xl py-3 text-sm disabled:opacity-40">Replace all data</button>
           {importStatus==='success'&&<div className="text-xs text-emerald-700 text-center">✓ Restored.</div>}
           {importStatus==='error'&&<div className="text-xs text-red-700 text-center">Failed: {importError}</div>}
@@ -1181,32 +1279,45 @@ function SettingsView({data,update,setView}){
 // ── HOME ──────────────────────────────────────────────────────────────────────
 function HomeView({data,update,setView}){
   const [skipOpen,setSkipOpen]=useState(false);
-  const cycleDay=data.cycleDay??1,entry=cycleEntry(cycleDay),session=SESSIONS[entry.slot];
+  const program=data.activeProgram??'ganbaru';
+  const prog=PROGRAMS[program];
+  const cycle=buildCycle(prog);
+  const cycleDay=data.cycleDays[program]??1,entry=cycleEntry(prog,cycleDay),session=prog.sessions[entry.slot];
   const isRest=session.special==='rest',theme=THEMES[session.kind];
-  const advanceCycle=(type,opts={})=>update(d=>{const ev=Array.isArray(d.cycleEvents)?d.cycleEvents:[];return{...d,cycleDay:nextCycleDay(d.cycleDay),cycleEvents:[...ev,{type,cycleDay:d.cycleDay,slot:entry.slot,date:todayISO(),savedAt:new Date().toISOString(),...opts}]};});
-  const logRest=()=>update(d=>{const ev=Array.isArray(d.cycleEvents)?d.cycleEvents:[];return{...d,cycleEvents:[...ev,{type:'rest_off_cycle',date:todayISO(),savedAt:new Date().toISOString()}]};});
+  const setProgram=pid=>update(d=>({...d,activeProgram:pid}));
+  const advanceCycle=(type,opts={})=>update(d=>{const ev=Array.isArray(d.cycleEvents)?d.cycleEvents:[];return{...d,cycleDays:{...d.cycleDays,[program]:nextCycleDay(prog,d.cycleDays[program])},cycleEvents:[...ev,{type,program,cycleDay:d.cycleDays[program],slot:entry.slot,date:todayISO(),savedAt:new Date().toISOString(),...opts}]};});
+  const logRest=()=>update(d=>{const ev=Array.isArray(d.cycleEvents)?d.cycleEvents:[];return{...d,cycleEvents:[...ev,{type:'rest_off_cycle',program,date:todayISO(),savedAt:new Date().toISOString()}]};});
   const handleStart=()=>session.special==='walk'?setView({name:'walk',slot:entry.slot,cycleDay}):setView({name:'day',slot:entry.slot,cycleDay});
-  const allLogs=[...(data.sessions||[]).map(s=>({...s,_w:false})),...(data.walks||[]).map(w=>({...w,_w:true}))].sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
+  const allLogs=[...(data.sessions||[]).filter(s=>(s.program??'ganbaru')===program).map(s=>({...s,_w:false})),...(data.walks||[]).filter(w=>(w.program??'ganbaru')===program).map(w=>({...w,_w:true}))].sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
   const last=allLogs[0]||null;
-  const lastTheme=last?(last._w?THEMES.zone2:(SESSIONS[last.slot]?THEMES[SESSIONS[last.slot].kind]:THEMES.rest)):null;
-  const prog=data.progressions;
+  const lastTheme=last?(last._w?THEMES.zone2:(prog.sessions[last.slot]?THEMES[prog.sessions[last.slot].kind]:THEMES.rest)):null;
+  const p=data.progressions;
+  const isRhom=program==='rhomboid';
+
   return(
     <div>
-      <header className="mb-8 flex items-start justify-between gap-3">
-        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V11.1</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
+      <header className="mb-5 flex items-start justify-between gap-3">
+        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V12</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
         <button onClick={()=>setView({name:'settings'})} className="w-10 h-10 rounded-full bg-white border border-stone-200 flex items-center justify-center"><I.settings/></button>
       </header>
 
+      {/* Program selector */}
+      <div className="flex gap-1.5 mb-6 bg-stone-100 rounded-2xl p-1">
+        {Object.values(PROGRAMS).map(pr=>(
+          <button key={pr.id} onClick={()=>setProgram(pr.id)} className={`flex-1 py-2.5 text-sm rounded-xl transition-colors ${program===pr.id?(pr.id==='rhomboid'?'bg-purple-700 text-white shadow-sm':'bg-blue-900 text-white shadow-sm'):'text-stone-600'}`}>{pr.name}</button>
+        ))}
+      </div>
+
       {isRest?(
         <div className="bg-blue-900 text-stone-50 rounded-2xl p-6 mb-3">
-          <div className="text-xs uppercase tracking-widest text-stone-300 mb-4">Day {cycleDay} of {CYCLE_LENGTH}</div>
+          <div className="text-xs uppercase tracking-widest text-stone-300 mb-4">Day {cycleDay} of {prog.cycleLength}</div>
           <div className="serif text-3xl mb-1">{session.title}</div>
           <div className="text-stone-300 text-sm mb-5">{session.subtitle}</div>
           <button onClick={()=>advanceCycle('rest')} className="w-full bg-amber-500 text-blue-900 rounded-xl py-4 flex items-center justify-center gap-2"><I.check/><span className="serif text-lg font-medium">Mark rest day taken</span></button>
         </div>
       ):(
-        <button onClick={handleStart} className="w-full text-left bg-blue-900 text-stone-50 rounded-2xl p-6 mb-3">
-          <div className="flex items-center justify-between mb-4"><span className="text-xs uppercase tracking-widest text-stone-300">Day {cycleDay} of {CYCLE_LENGTH}</span></div>
+        <button onClick={handleStart} className={`w-full text-left rounded-2xl p-6 mb-3 text-stone-50 ${isRhom?'bg-purple-800':'bg-blue-900'}`}>
+          <div className="flex items-center justify-between mb-4"><span className="text-xs uppercase tracking-widest text-stone-300">Day {cycleDay} of {prog.cycleLength}</span></div>
           <div className="serif text-3xl mb-1">{session.title}</div>
           <div className="text-stone-300 text-sm">{session.subtitle}</div>
           <div className="mt-4 text-xs uppercase tracking-wider text-amber-300/90">Tap to open →</div>
@@ -1221,33 +1332,32 @@ function HomeView({data,update,setView}){
       {last&&lastTheme&&(
         <div className={`${lastTheme.bg} border ${lastTheme.border} rounded-2xl px-4 py-3.5 mb-8 flex items-center gap-4 relative overflow-hidden`}>
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${lastTheme.stripe}`}/>
-          <div className="flex-1 min-w-0"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5">Last logged</div><div className={`serif text-lg ${lastTheme.text}`}>{last._w?'Zone 2 Walk':(SESSIONS[last.slot]?.title||'Session')}</div></div>
+          <div className="flex-1 min-w-0"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5">Last logged · {prog.name}</div><div className={`serif text-lg ${lastTheme.text}`}>{last._w?'Zone 2 Walk':(prog.sessions[last.slot]?.title||'Session')}</div></div>
           <div className="flex-shrink-0 text-right"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5 num">{last.date}</div>{last.rpe&&<div className={`serif text-xl num ${lastTheme.text}`}>RPE {last.rpe}</div>}</div>
         </div>
       )}
 
       <section className="mb-8">
-        <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">The 8-day cycle</h2><span className="text-xs text-stone-500">Tap to open</span></div>
+        <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">{isRhom?'The 5-day cycle':'The 8-day cycle'}</h2><span className="text-xs text-stone-500">Tap to open</span></div>
         <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-          {CYCLE.map((c,i)=>{
-            const s=SESSIONS[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
+          {cycle.map((c,i)=>{
+            const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
             const circle=isDone?<div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white"><I.check/></div>:<div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium num flex-shrink-0 ${isCurrent?'bg-blue-900 text-stone-50':`${t.bg} ${t.text}`}`}>{c.day}</div>;
             const inner=<>{circle}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><div className={`serif text-lg ${isDone?'text-stone-500':'text-stone-900'}`}>{s.title}</div>{isCurrent&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">Next ←</span>}{isDone&&<span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">Done ✓</span>}</div><div className={`text-xs truncate ${isDone?'text-stone-400':'text-stone-500'}`}>{s.subtitle}</div></div></>;
             const base=`flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':isDone?'bg-stone-50/60':''}`;
             return isRestDay?<div key={c.day} className={base}>{inner}</div>:<button key={c.day} onClick={()=>{if(s.special==='walk')setView({name:'walk',slot:c.slot,cycleDay:c.day});else setView({name:'day',slot:c.slot,cycleDay:c.day});}} className={`w-full ${base}`}>{inner}</button>;
           })}
         </div>
+        {isRhom&&<p className="text-[10px] text-stone-400 text-center mt-2 uppercase tracking-wider">Rest days as needed — use "Take rest day"</p>}
       </section>
 
       <section className="mb-8">
         <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-3">Progressions</h2>
         <div className="grid grid-cols-2 gap-3 mb-3">
-          <button onClick={()=>setView({name:'tgu'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">TGU</div><div className="serif text-2xl text-stone-900 num">{prog.tguStageIndex+1}<span className="text-stone-400">/{TGU_STAGES.length}</span></div><div className="text-xs text-stone-500 mt-1 truncate">{TGU_STAGES[prog.tguStageIndex].scheme} · {TGU_STAGES[prog.tguStageIndex].weight}kg</div></button>
-          <button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[prog.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[prog.kbStageIndex].minutes} min · {KB_SWING_STAGES[prog.kbStageIndex].weight}kg</div></button>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[prog.sprintStageIndex].reps}×{SPRINT_STAGES[prog.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[prog.sprintStageIndex].week}</div></button>
-          <button onClick={()=>setView({name:'norwegian'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_STAGES[prog.norwegianStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_STAGES[prog.norwegianStageIndex].week}</div></button>
+          {!isRhom&&<button onClick={()=>setView({name:'tgu'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">TGU</div><div className="serif text-2xl text-stone-900 num">{p.tguStageIndex+1}<span className="text-stone-400">/{TGU_STAGES.length}</span></div><div className="text-xs text-stone-500 mt-1 truncate">{TGU_STAGES[p.tguStageIndex].scheme} · {TGU_STAGES[p.tguStageIndex].weight}kg</div></button>}
+          {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
+          <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[p.sprintStageIndex].week} · shared</div></button>
+          <button onClick={()=>setView({name:'norwegian_bike'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Bike)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week} · shared</div></button>
         </div>
       </section>
 
@@ -1259,9 +1369,9 @@ function HomeView({data,update,setView}){
       {skipOpen&&(
         <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={()=>setSkipOpen(false)}>
           <div style={{background:'#fafaf9',borderRadius:16,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
-            <div className="text-center mb-3"><div className="text-[10px] uppercase tracking-widest text-stone-500">Day {cycleDay}</div><div className="serif text-xl text-stone-900 mt-1">{session.title}</div></div>
+            <div className="text-center mb-3"><div className="text-[10px] uppercase tracking-widest text-stone-500">Day {cycleDay} · {prog.name}</div><div className="serif text-xl text-stone-900 mt-1">{session.title}</div></div>
             <div className="space-y-2.5">
-              <button onClick={()=>{advanceCycle('skipped');setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700"><I.skip/></div><div><div className="serif text-base text-stone-900">Skip entirely</div><div className="text-xs text-stone-500 mt-0.5">Advance to Day {nextCycleDay(cycleDay)}</div></div></button>
+              <button onClick={()=>{advanceCycle('skipped');setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700"><I.skip/></div><div><div className="serif text-base text-stone-900">Skip entirely</div><div className="text-xs text-stone-500 mt-0.5">Advance to Day {nextCycleDay(prog,cycleDay)}</div></div></button>
               <button onClick={()=>setSkipOpen(false)} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700"><I.cal/></div><div><div className="serif text-base text-stone-900">Come back to it</div><div className="text-xs text-stone-500 mt-0.5">Cycle stays</div></div></button>
               {!isRest&&<button onClick={()=>{logRest();setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600"><I.coffee/></div><div><div className="serif text-base text-stone-900">Take a rest day</div><div className="text-xs text-stone-500 mt-0.5">Logs a rest — cycle stays</div></div></button>}
               <button onClick={()=>setSkipOpen(false)} className="w-full py-3 text-stone-500 text-sm">Cancel</button>
@@ -1278,21 +1388,22 @@ function App(){
   const [data,setData]=useState(()=>loadData());
   const [view,setView]=useState({name:'home'});
   const update=useCallback(patch=>setData(prev=>{const next=typeof patch==='function'?patch(prev):{...prev,...patch};saveData(next);return next;}),[]);
-  const shared={data,update,setView};
+  const program=data.activeProgram??'ganbaru';
+  const shared={data,update,setView,program};
   return(
     <RestTimerProvider>
       <div style={{minHeight:'100vh',background:'#fafaf9',paddingTop:'env(safe-area-inset-top)'}}>
         <div style={{maxWidth:576,margin:'0 auto',padding:'24px 20px',paddingBottom:'calc(env(safe-area-inset-bottom) + 8rem)'}}>
           {view.name==='home'           &&<HomeView {...shared}/>}
-          {view.name==='day'            &&<DayView slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
-          {view.name==='walk'           &&<WalkView slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
+          {view.name==='day'            &&<DayView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
+          {view.name==='walk'           &&<WalkView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
           {view.name==='tgu'            &&<TGUView {...shared}/>}
           {view.name==='kb'             &&<KBView {...shared}/>}
           {view.name==='sprints'        &&<SprintsView {...shared}/>}
-          {view.name==='norwegian'      &&<NorwegianView {...shared}/>}
+          {view.name==='norwegian_bike' &&<NorwegianBikeView {...shared}/>}
           {view.name==='history'        &&<HistoryView {...shared}/>}
           {view.name==='history-detail' &&<HistoryDetailView savedAt={view.savedAt} {...shared}/>}
-          {view.name==='settings'       &&<SettingsView {...shared}/>}
+          {view.name==='settings'       &&<SettingsView program={program} {...shared}/>}
         </div>
         <RestTimerDock/>
       </div>
