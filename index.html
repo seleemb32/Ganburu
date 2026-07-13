@@ -952,7 +952,13 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       const draft=loadDraft(program,'session',resolvedSlot,null);
       if(draft?.exercises){
         const ok=!(data.sessions||[]).some(s=>s.savedAt&&draft.savedAt&&s.savedAt===draft.savedAt);
-        if(ok){setHadDraft(true);return draft;}else clearDraft(program,'session',resolvedSlot,null);
+        if(ok){
+          // Reconcile against the current template — if exercises were added/swapped
+          // since this draft was saved, backfill fresh entries instead of crashing.
+          const patched={...draft,exercises:{...draft.exercises}};
+          session.exercises.forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
+          setHadDraft(true);return patched;
+        }else clearDraft(program,'session',resolvedSlot,null);
       }
     }
     return buildInitial();
@@ -1046,7 +1052,14 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const [walk,setWalk]=useState(()=>{
     if(!isEditing){
       const draft=loadDraft(program,'walk',resolvedSlot,null);
-      if(draft){const ok=!(data.walks||[]).some(w=>w.savedAt&&draft.savedAt&&w.savedAt===draft.savedAt);if(ok){setHadDraft(true);return draft;}else clearDraft(program,'walk',resolvedSlot,null);}
+      if(draft){
+        const ok=!(data.walks||[]).some(w=>w.savedAt&&draft.savedAt&&w.savedAt===draft.savedAt);
+        if(ok){
+          const patched={...draft,exercises:{...(draft.exercises||{})}};
+          (session.exercises||[]).forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
+          setHadDraft(true);return patched;
+        }else clearDraft(program,'walk',resolvedSlot,null);
+      }
     }
     return buildInitial();
   });
