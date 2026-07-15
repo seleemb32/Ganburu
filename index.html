@@ -67,6 +67,19 @@ const RIR_MAP = {
   db_reverse_fly:{type:'1-2'}, pallof_press:{type:'none',label:'Not RIR-governed'},
   dead_bug:{type:'none',label:'Not RIR-governed'}, bird_dog:{type:'none',label:'Not RIR-governed'},
   pull_ups:{type:'1-2'}, cable_curl:{type:'1-2'}, leg_curl:{type:'1-2'},
+  // Gait Corrective — activation/motor-control drills, not RIR-governed
+  gc_prone_squeeze:{type:'none',label:'Activation'}, gc_clamshell:{type:'none',label:'Activation'},
+  gc_sl_bridge:{type:'none',label:'Activation'}, gc_short_foot:{type:'none',label:'Activation'},
+  gc_sl_balance:{type:'none',label:'Activation'}, gc_lateral_walk:{type:'none',label:'Activation'},
+  gc_banded_squat:{type:'none',label:'Activation'}, gc_stepup:{type:'none',label:'Activation'},
+  gc_bss:{type:'none',label:'Activation'}, gc_askip:{type:'none',label:'Drill'},
+  gc_sl_rdl:{type:'none',label:'Activation'}, gc_wall_drive:{type:'none',label:'Drill'},
+  gc_wicket:{type:'none',label:'Drill'},
+  // New shared-pool exercises (Rhomboid update) — generic ids so Ganbaru can
+  // cross-match history automatically if these movements are ever added there
+  walking_lunges:{type:'2-3'}, cable_tricep_pushdown:{type:'1-2'},
+  db_kickback:{type:'1-2'}, wrist_curl:{type:'1-2'}, reverse_wrist_curl:{type:'1-2'},
+  cable_crunch:{type:'2-3'}, side_plank_hold:{type:'none',label:'Not RIR-governed'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -252,10 +265,10 @@ const RHOMBOID_SESSIONS=[
     exercises:[
       {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
       {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
-      {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
       {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
-      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3 × 12–20',sets:3,track:'reps',rest:'Forward fold · 30s',ssGroup:'r1'},
-      {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s',ssGroup:'r1'},
+      {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
+      {id:'walking_lunges',name:'Walking Lunges',scheme:'3 × 10/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s'},
     ],
   },
   {
@@ -269,13 +282,29 @@ const RHOMBOID_SESSIONS=[
       {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
       {id:'db_reverse_fly',name:'DB Reverse Fly 45°',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
       {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
-      {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight',ssGroup:'r2'},
-      {id:'pallof_press',name:'Pallof Press',scheme:'3 × 10/side',sets:3,track:'weight',ssGroup:'r2'},
+      {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight'},
+      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
       {id:'hip_switch',name:'90/90 Hip Switch',scheme:'2 × 1 min',sets:2,track:'time'},
+      // Core Block finisher
+      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3 × 15–20',sets:3,track:'reps',rest:'Forward fold · 30s'},
+      {id:'cable_crunch',name:'Cable Crunch',scheme:'3 × 15',sets:3,track:'reps'},
+      {id:'dead_bug',name:'Dead Bug',scheme:'3 × 8/side',sets:3,track:'reps',note:'3-sec pause'},
+      {id:'side_plank_hold',name:'Side Plank',scheme:'3 × 20–30 sec/side',sets:3,track:'time'},
+      {id:'pallof_press',name:'Pallof Press',scheme:'3 × 10/side',sets:3,track:'weight'},
     ],
   },
   {
-    slot:2,kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
+    slot:2,kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
+    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
+    cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
+    walkNotes:['Nose breathing only throughout','45 min walk, 5 km building to 6 km','If breathing through mouth, slow down'],
+    exercises:[
+      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'2 × 15',sets:2,track:'weight',rest:'Ankle circles · 30s'},
+      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s'},
+    ],
+  },
+  {
+    slot:3,kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
     warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
     cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
     exercises:[
@@ -286,18 +315,6 @@ const RHOMBOID_SESSIONS=[
       {id:'leg_curl',name:'Leg Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side',note:'Machine'},
       {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
       {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
-      {id:'dead_bug',name:'Dead Bug',scheme:'3 × 8/side',sets:3,track:'reps',note:'3-sec pause',ssGroup:'r2'},
-      {id:'bird_dog',name:'Bird Dog',scheme:'3 × 8/side',sets:3,track:'reps',ssGroup:'r2'},
-    ],
-  },
-  {
-    slot:3,kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
-    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
-    cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
-    walkNotes:['Nose breathing only throughout','45 min walk, 5 km building to 6 km','If breathing through mouth, slow down'],
-    exercises:[
-      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'2 × 15',sets:2,track:'weight',rest:'Ankle circles · 30s'},
-      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s'},
     ],
   },
   {
@@ -308,17 +325,60 @@ const RHOMBOID_SESSIONS=[
       {id:'norwegian_bike',name:'Norwegian 4×4 — Assault Bike',scheme:'progression',track:'norwegian_bike'},
       {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load'},
       {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
-      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'db_kickback',name:'DB Kickback',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
       {id:'side_plank',name:'Side Plank with Reach',scheme:'3–5 × 8/side',sets:3,track:'reps',rest:'Kneeling hip flexor · 30s/side',ssGroup:'r1'},
       {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
 ];
 
+// ── GAIT CORRECTIVE (phase-based, NOT a rolling cycle) ───────────────────────
+// Runs alongside Ganbaru/Rhomboid without touching either. Phase 1 is daily and
+// never stops. Phases 2/3 are 3×/week, user-scheduled, manually advanced —
+// there is no cycleLength/cycleDay concept here at all.
+const GAIT_PHASE1_EXERCISES=[
+  {id:'gc_prone_squeeze',name:'Prone Glute Squeeze (R)',scheme:'2 × 10, 3-sec hold',sets:2,track:'reps',note:'Hand under right glute — feel glute fire before hamstring'},
+  {id:'gc_clamshell',name:'Side-Lying Clamshell (R)',scheme:'2 × 15, 2-sec hold',sets:2,track:'reps',note:'Lying on left side. Band above knees if available. Small controlled movement — right knee opens toward ceiling'},
+  {id:'gc_sl_bridge',name:'Single-Leg Glute Bridge (R)',scheme:'2 × 10, 2-sec hold',sets:2,track:'reps',note:'Squeeze right glute before lifting — if hamstring fires first, work only the top quarter'},
+  {id:'gc_short_foot',name:'Short Foot Exercise (R)',scheme:'2 × 10, 5-sec hold',sets:2,track:'reps',note:'Barefoot. Draw ball of foot toward heel without curling toes'},
+  {id:'gc_sl_balance',name:'Single-Leg Balance (R)',scheme:'2 × 30 sec',sets:2,track:'time',note:'Barefoot, eyes closed'},
+];
+const GAIT_PHASE2_EXERCISES=[
+  {id:'gc_lateral_walk',name:'Banded Lateral Walk',scheme:'2 × 15 steps/direction',sets:2,track:'reps',note:'Band above knees, slight hip hinge. Knees track over toes — do not let them cave'},
+  {id:'gc_banded_squat',name:'Banded Squat with Knee Out',scheme:'2 × 12',sets:2,track:'reps',note:'Band above knees, squat to parallel. Actively push knees outward throughout — feel right glute especially'},
+  {id:'gc_stepup',name:'Step-up — Right Leg Leading',scheme:'2 × 10/side',sets:2,track:'reps',note:'20cm box or step. Drive through right heel, squeeze right glute at top before stepping down'},
+  {id:'gc_bss',name:'Bulgarian Split Squat (Right Forward)',scheme:'2 × 8',sets:2,track:'reps',note:'Bodyweight, rear foot elevated. Right knee tracks over second toe, drive through right heel at top'},
+];
+const GAIT_PHASE3_EXERCISES=[
+  {id:'gc_askip',name:'A-Skips with Glute Focus',scheme:'3 × 20m',sets:3,track:'farmer',note:'Drive knee up, then feel right glute contract as right leg drives back and down'},
+  {id:'gc_sl_rdl',name:'Single-Leg RDL (R)',scheme:'2 × 10',sets:2,track:'reps',note:'Bodyweight. Feel right glute and hamstring load at bottom, drive right hip forward squeezing right glute to return'},
+  {id:'gc_wall_drive',name:'Wall Drive Holds',scheme:'2 × 10, 3-sec hold',sets:2,track:'reps',note:'Drive right knee to 90°, hold 3 sec, then extend right hip behind and squeeze right glute hard at full extension'},
+  {id:'gc_wicket',name:'Wicket Runs',scheme:'3 × 20m',sets:3,track:'farmer',note:'Obstacles 1m apart. High knees, right glute activation at push-off, right knee not caving on landing'},
+];
+// Keyed by phase number (1/2/3), not an array — this program has no cycle slots.
+const GAIT_SESSIONS={
+  1:{phase:1,kind:'corrective',title:'Phase 1 — Establish the Connection',subtitle:'Daily · ~10 min · continues even after Phase 2/3 begin',exercises:GAIT_PHASE1_EXERCISES},
+  2:{phase:2,kind:'corrective',title:'Phase 2 — Load the Pattern',subtitle:'3× per week · training days · min. 1 rest day between',exercises:GAIT_PHASE2_EXERCISES},
+  3:{phase:3,kind:'corrective',title:'Phase 3 — Transfer to Running Mechanics',subtitle:'3× per week · replaces Phase 2 on sprint days, done right before sprints',exercises:GAIT_PHASE3_EXERCISES},
+};
+
 const PROGRAMS={
   ganbaru:{ id:'ganbaru', name:'Ganbaru Method', sessions:GANBARU_SESSIONS, cycleLength:8, hasFixedRest:true },
   rhomboid:{ id:'rhomboid', name:'Rhomboid Modified', sessions:RHOMBOID_SESSIONS, cycleLength:5, hasFixedRest:false },
+  gait:{ id:'gait', name:'Gait Corrective', sessions:GAIT_SESSIONS, isPhaseProgram:true },
 };
+
+// Resolves the session template for a logged/edited item regardless of whether
+// it came from a cycle-based program (by slot) or the phase-based Gait program.
+function templateFor(programId,item){
+  const prog=PROGRAMS[programId];
+  if(!prog) return null;
+  if(prog.isPhaseProgram) return item?.phase!=null?prog.sessions[item.phase]:null;
+  return item?.slot!=null?prog.sessions[item.slot]:null;
+}
 
 const THEMES={
   strength:{label:'Strength',bg:'bg-blue-50',text:'text-blue-900',border:'border-blue-100',stripe:'bg-blue-900'},
@@ -326,6 +386,7 @@ const THEMES={
   power:{label:'Power & Speed',bg:'bg-red-50',text:'text-red-800',border:'border-red-200',stripe:'bg-red-600'},
   zone2:{label:'Zone 2',bg:'bg-teal-50',text:'text-teal-800',border:'border-teal-200',stripe:'bg-teal-600'},
   mixed:{label:'Mixed',bg:'bg-purple-50',text:'text-purple-800',border:'border-purple-200',stripe:'bg-purple-600'},
+  corrective:{label:'Corrective',bg:'bg-emerald-50',text:'text-emerald-800',border:'border-emerald-200',stripe:'bg-emerald-600'},
   rest:{label:'Rest',bg:'bg-stone-100',text:'text-stone-600',border:'border-stone-200',stripe:'bg-stone-400'},
 };
 
@@ -340,6 +401,7 @@ const DEFAULT_DATA={
   activeProgram:'ganbaru',
   cycleDays:{ganbaru:1,rhomboid:1},
   progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0,norwegianBikeStageIndex:0,kbEmomWeight:16},
+  gaitPhase:1,
   sessions:[], walks:[], cycleEvents:[],
 };
 
@@ -356,6 +418,7 @@ function migrateV3toV4(){
       activeProgram:'ganbaru',
       cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1},
       progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
+      gaitPhase:1,
       sessions,walks,cycleEvents,
     };
   }catch{ return null; }
@@ -371,6 +434,7 @@ function loadData(){
         activeProgram:p.activeProgram??'ganbaru',
         cycleDays:{...DEFAULT_DATA.cycleDays,...(p.cycleDays||{})},
         progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
+        gaitPhase:Math.max(1,Math.min(3,p.gaitPhase??1)),
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
         cycleEvents:Array.isArray(p.cycleEvents)?p.cycleEvents:[],
@@ -1101,7 +1165,92 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   );
 }
 
-// ── PROGRESSION VIEWS ─────────────────────────────────────────────────────────
+// ── GAIT CORRECTIVE SESSION VIEW ─────────────────────────────────────────────
+// Deliberately separate from DayView — this program has no cycleDay/slot to
+// advance, just a phase number the user sets manually from Home. Existing
+// programs and their save/draft logic are untouched by this component.
+function GaitSessionView({phase,editingSavedAt,data,update,setView}){
+  const existing=editingSavedAt?data.sessions.find(s=>s.savedAt===editingSavedAt):null;
+  const isEditing=!!existing;
+  const resolvedPhase=isEditing?(existing.phase??phase??1):(phase??1);
+  const session=GAIT_SESSIONS[resolvedPhase];
+  const theme=THEMES[session.kind];
+  const [hadDraft,setHadDraft]=useState(false);
+  const [saving,setSaving]=useState(false);
+
+  const buildInitial=useCallback(()=>{
+    if(existing){
+      const m={program:'gait',phase:resolvedPhase,date:existing.date,rpe:existing.rpe??null,notes:existing.notes??'',exercises:{}};
+      session.exercises.forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
+      return m;
+    }
+    const s={program:'gait',phase:resolvedPhase,date:todayISO(),exercises:{},rpe:null,notes:''};
+    session.exercises.forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
+    return s;
+  },[]);
+
+  const [state,setState]=useState(()=>{
+    if(!isEditing){
+      const draft=loadDraft('gait','session',resolvedPhase,null);
+      if(draft?.exercises){
+        const ok=!(data.sessions||[]).some(s=>s.savedAt&&draft.savedAt&&s.savedAt===draft.savedAt);
+        if(ok){
+          const patched={...draft,exercises:{...draft.exercises}};
+          session.exercises.forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
+          setHadDraft(true);return patched;
+        }else clearDraft('gait','session',resolvedPhase,null);
+      }
+    }
+    return buildInitial();
+  });
+
+  useEffect(()=>{if(!isEditing)saveDraft('gait','session',resolvedPhase,null,state);},[state]);
+  const setEx=(exId,patch)=>setState(s=>({...s,exercises:{...s.exercises,[exId]:typeof patch==='function'?patch(s.exercises[exId]):{...s.exercises[exId],...patch}}}));
+
+  const save=()=>{
+    if(saving)return;setSaving(true);
+    if(isEditing){
+      const nd={...data,sessions:data.sessions.map(s=>s.savedAt===editingSavedAt?{...state,savedAt:editingSavedAt}:s)};
+      saveData(nd);update(()=>nd);clearDraft('gait','session',resolvedPhase,editingSavedAt);setSaving(false);
+      setView({name:'history-detail',savedAt:editingSavedAt});
+    }else{
+      const savedAt=new Date().toISOString();
+      clearDraft('gait','session',resolvedPhase,null);
+      const nd={...data,sessions:[...(data.sessions||[]),{...state,savedAt}]};
+      saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});
+    }
+  };
+
+  return(
+    <div>
+      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
+      <header className="mb-4">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="text-xs uppercase tracking-widest text-stone-500">Gait Corrective · Phase {resolvedPhase} of 3</span>
+          <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
+          {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
+        </div>
+        <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
+        <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
+      </header>
+      {hadDraft&&!isEditing&&(
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
+          <div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div>
+          <button onClick={()=>{clearDraft('gait','session',resolvedPhase,null);setState(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button>
+        </div>
+      )}
+      <div className={`${theme.bg} border ${theme.border} rounded-2xl px-4 py-3 mb-4 flex items-center justify-between`}>
+        <div className={`text-xs uppercase tracking-wider ${theme.text}`}>Logged on</div>
+        <input type="date" value={state.date} onChange={e=>setState(s=>({...s,date:e.target.value}))} className="bg-transparent text-sm num focus:outline-none text-right text-stone-900"/>
+      </div>
+      <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={null}/>
+      <SessionMeta session={state} setSession={setState} theme={theme}/>
+      <button onClick={save} disabled={saving} className="w-full bg-emerald-700 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':'Save session'}</button>
+    </div>
+  );
+}
+
+
 function ProgressionView({title,subtitle,stages,stageKey,setView,data,update,renderRow,renderHero}){
   const idx=data.progressions[stageKey]??0;
   const setStage=n=>update(d=>({...d,progressions:{...d.progressions,[stageKey]:Math.max(0,Math.min(stages.length-1,n))}}));
@@ -1137,35 +1286,36 @@ function NorwegianBikeView(p){return<ProgressionView title="Norwegian 4×4 (Bike
 function HistoryView({data,update,setView}){
   const [filter,setFilter]=useState('all');
   const progOf=x=>x.program??'ganbaru';
-  const sessionsFor=p=>PROGRAMS[p]?.sessions||[];
   let all=[
     ...(data.sessions||[]).map(s=>({...s,_kind:'session'})),
     ...(data.walks||[]).map(w=>({...w,_kind:'walk'})),
     ...(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type)).map(e=>({...e,_kind:'event'})),
   ].sort((a,b)=>{const ad=a.date||'',bd=b.date||'';return ad!==bd?bd.localeCompare(ad):(b.savedAt||'').localeCompare(a.savedAt||'');});
   if(filter!=='all') all=all.filter(x=>progOf(x)===filter);
+  const badgeClass=p=>p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
+  const badgeLabel=p=>p==='rhomboid'?'Rhomboid':p==='gait'?'Gait Corrective':'Ganbaru';
   return(
     <div>
       <TopBar onBack={()=>setView({name:'home'})}/>
       <header className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Log</div><h1 className="serif text-4xl text-stone-900">History</h1></header>
       <div className="flex gap-1.5 mb-5 bg-stone-100 rounded-xl p-1">
-        {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Rhomboid']].map(([k,l])=>(
+        {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Rhomboid'],['gait','Gait']].map(([k,l])=>(
           <button key={k} onClick={()=>setFilter(k)} className={`flex-1 py-2 text-xs rounded-lg ${filter===k?'bg-white text-stone-900 shadow-sm font-medium':'text-stone-500'}`}>{l}</button>
         ))}
       </div>
       {all.length===0?<div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500 text-sm">Nothing logged yet.</div>:<div className="space-y-3">{all.map((s,i)=>{
-        const p=progOf(s);const pName=PROGRAMS[p]?.name||'';
+        const p=progOf(s);
         if(s._kind==='event'){
-          const sess=s.slot!=null?sessionsFor(p)[s.slot]:null;
+          const sess=templateFor(p,s);
           return(
             <div key={i} className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-white border border-amber-200 flex items-center justify-center flex-shrink-0 text-amber-700"><I.skip/></div>
-              <div className="flex-1 min-w-0"><div className="text-sm text-stone-800">Skipped{sess?`: ${sess.title}`:''}</div><div className="text-[10px] uppercase tracking-wider text-stone-500 mt-0.5 num">{pName} · {s.cycleDay?`Day ${s.cycleDay} · `:''}{s.date}</div></div>
+              <div className="flex-1 min-w-0"><div className="text-sm text-stone-800">Skipped{sess?`: ${sess.title}`:''}</div><div className="text-[10px] uppercase tracking-wider text-stone-500 mt-0.5 num">{badgeLabel(p)} · {s.cycleDay?`Day ${s.cycleDay} · `:''}{s.date}</div></div>
               <button onClick={()=>update(d=>({...d,cycleEvents:(d.cycleEvents||[]).filter(e=>e.savedAt!==s.savedAt)}))} className="text-stone-400 px-2 py-1"><I.x/></button>
             </div>
           );
         }
-        const sess=s.slot!=null?sessionsFor(p)[s.slot]:null;const t=sess?THEMES[sess.kind]:THEMES.rest;
+        const sess=templateFor(p,s);const t=sess?THEMES[sess.kind]:THEMES.rest;
         const title=s._kind==='walk'?'Zone 2 Walk':(sess?.title||'Session');
         const lowRec=typeof s.recovery==='number'&&s.recovery<50;
         return(
@@ -1175,7 +1325,8 @@ function HistoryView({data,update,setView}){
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
                 <div className="serif text-lg text-stone-900 truncate">{title}</div>
                 <span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-2 py-0.5 rounded-full flex-shrink-0`}>{t.label}</span>
-                <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':'text-blue-700 bg-blue-50 border border-blue-100'}`}>{p==='rhomboid'?'Rhomboid':'Ganbaru'}</span>
+                <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${badgeClass(p)}`}>{badgeLabel(p)}</span>
+                {p==='gait'&&s.phase&&<span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 text-stone-500 bg-stone-100 border border-stone-200 num">Phase {s.phase}</span>}
                 {lowRec&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full flex-shrink-0">Low recovery</span>}
               </div>
               <div className="text-xs text-stone-500 num flex-shrink-0">{s.date}</div>
@@ -1192,16 +1343,19 @@ function HistoryView({data,update,setView}){
 function HistoryDetailView({savedAt,data,setView}){
   const session=data.sessions.find(s=>s.savedAt===savedAt),walk=data.walks.find(w=>w.savedAt===savedAt),item=session||walk;
   if(!item)return<div><TopBar onBack={()=>setView({name:'history'})}/><div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500">Not found.</div></div>;
-  const isWalk=!!walk;const p=item.program??'ganbaru';
-  const template=item.slot!=null?PROGRAMS[p]?.sessions[item.slot]:null,theme=template?THEMES[template.kind]:THEMES.rest;
+  const isWalk=!!walk;const p=item.program??'ganbaru';const isGaitItem=p==='gait';
+  const template=templateFor(p,item),theme=template?THEMES[template.kind]:THEMES.rest;
   const lowRec=typeof item.recovery==='number'&&item.recovery<50;
+  const badgeClass=p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
+  const editTarget=isWalk?'walk':(isGaitItem?'gait-session':'day');
   return(
     <div>
-      <TopBar onBack={()=>setView({name:'history'})} right={<button onClick={()=>setView({name:isWalk?'walk':'day',editingSavedAt:item.savedAt})} className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">Edit</button>}/>
+      <TopBar onBack={()=>setView({name:'history'})} right={<button onClick={()=>setView({name:editTarget,phase:isGaitItem?item.phase:undefined,editingSavedAt:item.savedAt})} className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">Edit</button>}/>
       <header className="mb-4">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':'text-blue-700 bg-blue-50 border border-blue-100'}`}>{PROGRAMS[p]?.name}</span>
+          <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${badgeClass}`}>{PROGRAMS[p]?.name}</span>
           {item.cycleDay&&<span className="text-xs uppercase tracking-widest text-stone-500">Day {item.cycleDay}</span>}
+          {isGaitItem&&item.phase&&<span className="text-xs uppercase tracking-widest text-stone-500 num">Phase {item.phase} of 3</span>}
           <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
           {item.recovery!=null&&<span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${lowRec?'text-amber-700 bg-amber-50 border border-amber-200':'text-stone-500 bg-stone-100 border border-stone-200'}`}>WHOOP {item.recovery}%{lowRec?' · +1 RIR':''}</span>}
         </div>
@@ -1234,7 +1388,8 @@ function HistoryDetailView({savedAt,data,setView}){
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
 function SettingsView({program,data,update,setView}){
   const prog=PROGRAMS[program];
-  const cycle=buildCycle(prog);
+  const isGait=!!prog.isPhaseProgram;
+  const cycle=isGait?[]:buildCycle(prog);
   const [copyStatus,setCopyStatus]=useState(null),[importOpen,setImportOpen]=useState(false),[importText,setImportText]=useState(''),[importStatus,setImportStatus]=useState(null),[importError,setImportError]=useState('');
   const exportJSON=()=>{
     const exportable={exportVersion:4,exportedAt:new Date().toISOString(),activeProgram:data.activeProgram,cycleDays:data.cycleDays,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
@@ -1257,16 +1412,24 @@ function SettingsView({program,data,update,setView}){
   return(
     <div>
       <TopBar onBack={()=>setView({name:'home'})}/>
-      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Settings · {prog.name}</div><h1 className="serif text-4xl text-stone-900">Cycle position</h1></header>
-      <p className="text-stone-500 text-sm mb-4">Set which day of {prog.name} comes next.</p>
-      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden mb-8">
-        {cycle.map((c,i)=>{const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===data.cycleDays[program];return(
-          <button key={c.day} onClick={()=>update(d=>({...d,cycleDays:{...d.cycleDays,[program]:c.day}}))} className={`w-full flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':''}`}>
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${isCurrent?'border-blue-900 bg-blue-900':'border-stone-300'}`}>{isCurrent&&<div className="w-2 h-2 rounded-full bg-white"/>}</div>
-            <div className="flex-1 min-w-0"><div className="flex items-center gap-2"><div className="serif text-base text-stone-900">Day {c.day} · {s.title}</div><span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-1.5 py-0.5 rounded-full`}>{t.label}</span></div></div>
-          </button>
-        );})}
-      </div>
+      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Settings · {prog.name}</div><h1 className="serif text-4xl text-stone-900">{isGait?'Phase control':'Cycle position'}</h1></header>
+      {isGait?(
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-8">
+          <p className="text-stone-600 text-sm">Gait Corrective doesn't run on a rolling cycle — Phase 1 is daily and Phases 2/3 advance manually when you're ready. Set your current phase from the Home screen.</p>
+        </div>
+      ):(
+        <>
+          <p className="text-stone-500 text-sm mb-4">Set which day of {prog.name} comes next.</p>
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden mb-8">
+            {cycle.map((c,i)=>{const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===data.cycleDays[program];return(
+              <button key={c.day} onClick={()=>update(d=>({...d,cycleDays:{...d.cycleDays,[program]:c.day}}))} className={`w-full flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':''}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${isCurrent?'border-blue-900 bg-blue-900':'border-stone-300'}`}>{isCurrent&&<div className="w-2 h-2 rounded-full bg-white"/>}</div>
+                <div className="flex-1 min-w-0"><div className="flex items-center gap-2"><div className="serif text-base text-stone-900">Day {c.day} · {s.title}</div><span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-1.5 py-0.5 rounded-full`}>{t.label}</span></div></div>
+              </button>
+            );})}
+          </div>
+        </>
+      )}
       <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-2">Backup & restore</h2>
       <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
         <div className="flex items-baseline justify-between mb-3"><div className="text-xs uppercase tracking-wider text-stone-500">All data</div><div className="text-xs text-stone-700 num">{data.sessions?.length||0} sessions · {data.walks?.length||0} walks</div></div>
@@ -1294,92 +1457,161 @@ function HomeView({data,update,setView}){
   const [skipOpen,setSkipOpen]=useState(false);
   const program=data.activeProgram??'ganbaru';
   const prog=PROGRAMS[program];
-  const cycle=buildCycle(prog);
-  const cycleDay=data.cycleDays[program]??1,entry=cycleEntry(prog,cycleDay),session=prog.sessions[entry.slot];
-  const isRest=session.special==='rest',theme=THEMES[session.kind];
+  const isGait=!!prog.isPhaseProgram;
   const setProgram=pid=>update(d=>({...d,activeProgram:pid}));
+
+  // ── Cycle-based programs (Ganbaru / Rhomboid) — unchanged from before ──────
+  const cycle=isGait?[]:buildCycle(prog);
+  const cycleDay=isGait?null:(data.cycleDays[program]??1);
+  const entry=isGait?null:cycleEntry(prog,cycleDay);
+  const session=isGait?null:prog.sessions[entry.slot];
+  const isRest=!isGait&&session.special==='rest';
+  const theme=isGait?null:THEMES[session.kind];
   const advanceCycle=(type,opts={})=>update(d=>{const ev=Array.isArray(d.cycleEvents)?d.cycleEvents:[];return{...d,cycleDays:{...d.cycleDays,[program]:nextCycleDay(prog,d.cycleDays[program])},cycleEvents:[...ev,{type,program,cycleDay:d.cycleDays[program],slot:entry.slot,date:todayISO(),savedAt:new Date().toISOString(),...opts}]};});
   const logRest=()=>update(d=>{const ev=Array.isArray(d.cycleEvents)?d.cycleEvents:[];return{...d,cycleEvents:[...ev,{type:'rest_off_cycle',program,date:todayISO(),savedAt:new Date().toISOString()}]};});
   const handleStart=()=>session.special==='walk'?setView({name:'walk',slot:entry.slot,cycleDay}):setView({name:'day',slot:entry.slot,cycleDay});
+  const isRhom=program==='rhomboid';
+
+  // ── Gait Corrective (phase-based) — separate, simple derivations ───────────
+  const gaitPhase=data.gaitPhase??1;
+  const gaitSession=isGait?GAIT_SESSIONS[gaitPhase]:null;
+  const setGaitPhase=n=>update(d=>({...d,gaitPhase:Math.max(1,Math.min(3,n))}));
+  const todayStr=todayISO();
+  const gaitLogs=(data.sessions||[]).filter(s=>s.program==='gait');
+  const phase1Today=gaitLogs.find(s=>s.phase===1&&s.date===todayStr);
+  const startOfWeek=d=>{const dt=new Date(d+'T00:00:00');dt.setDate(dt.getDate()-dt.getDay());return dt.toISOString().slice(0,10);};
+  const weekStart=startOfWeek(todayStr);
+  const bonusThisWeek=gaitPhase>1?gaitLogs.filter(s=>s.phase===gaitPhase&&s.date>=weekStart).length:0;
+
+  // ── Shared: last logged (works for either kind of program) ─────────────────
   const allLogs=[...(data.sessions||[]).filter(s=>(s.program??'ganbaru')===program).map(s=>({...s,_w:false})),...(data.walks||[]).filter(w=>(w.program??'ganbaru')===program).map(w=>({...w,_w:true}))].sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
   const last=allLogs[0]||null;
-  const lastTheme=last?(last._w?THEMES.zone2:(prog.sessions[last.slot]?THEMES[prog.sessions[last.slot].kind]:THEMES.rest)):null;
+  const lastTemplate=last?(last._w?{kind:'zone2'}:templateFor(program,last)):null;
+  const lastTheme=last?(lastTemplate?THEMES[lastTemplate.kind]:THEMES.rest):null;
+  const lastTitle=last?(last._w?'Zone 2 Walk':(lastTemplate?.title||'Session')):null;
   const p=data.progressions;
-  const isRhom=program==='rhomboid';
 
   return(
     <div>
       <header className="mb-5 flex items-start justify-between gap-3">
-        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V12</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
+        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V13</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
         <button onClick={()=>setView({name:'settings'})} className="w-10 h-10 rounded-full bg-white border border-stone-200 flex items-center justify-center"><I.settings/></button>
       </header>
 
       {/* Program selector */}
       <div className="flex gap-1.5 mb-6 bg-stone-100 rounded-2xl p-1">
         {Object.values(PROGRAMS).map(pr=>(
-          <button key={pr.id} onClick={()=>setProgram(pr.id)} className={`flex-1 py-2.5 text-sm rounded-xl transition-colors ${program===pr.id?(pr.id==='rhomboid'?'bg-purple-700 text-white shadow-sm':'bg-blue-900 text-white shadow-sm'):'text-stone-600'}`}>{pr.name}</button>
+          <button key={pr.id} onClick={()=>setProgram(pr.id)} className={`flex-1 py-2.5 text-sm rounded-xl transition-colors ${program===pr.id?(pr.id==='rhomboid'?'bg-purple-700 text-white shadow-sm':pr.id==='gait'?'bg-emerald-700 text-white shadow-sm':'bg-blue-900 text-white shadow-sm'):'text-stone-600'}`}>{pr.name}</button>
         ))}
       </div>
 
-      {isRest?(
-        <div className="bg-blue-900 text-stone-50 rounded-2xl p-6 mb-3">
-          <div className="text-xs uppercase tracking-widest text-stone-300 mb-4">Day {cycleDay} of {prog.cycleLength}</div>
-          <div className="serif text-3xl mb-1">{session.title}</div>
-          <div className="text-stone-300 text-sm mb-5">{session.subtitle}</div>
-          <button onClick={()=>advanceCycle('rest')} className="w-full bg-amber-500 text-blue-900 rounded-xl py-4 flex items-center justify-center gap-2"><I.check/><span className="serif text-lg font-medium">Mark rest day taken</span></button>
-        </div>
-      ):(
-        <button onClick={handleStart} className={`w-full text-left rounded-2xl p-6 mb-3 text-stone-50 ${isRhom?'bg-purple-800':'bg-blue-900'}`}>
-          <div className="flex items-center justify-between mb-4"><span className="text-xs uppercase tracking-widest text-stone-300">Day {cycleDay} of {prog.cycleLength}</span></div>
-          <div className="serif text-3xl mb-1">{session.title}</div>
-          <div className="text-stone-300 text-sm">{session.subtitle}</div>
-          <div className="mt-4 text-xs uppercase tracking-wider text-amber-300/90">Tap to open →</div>
-        </button>
-      )}
+      {isGait?(
+        <>
+          <div className="bg-emerald-900 text-stone-50 rounded-2xl p-6 mb-3">
+            <div className="text-xs uppercase tracking-widest text-emerald-200 mb-2">Phase {gaitPhase} of 3</div>
+            <div className="serif text-3xl mb-1">{gaitSession.title}</div>
+            <div className="text-emerald-200 text-sm mb-5">{gaitSession.subtitle}</div>
+            <div className="flex gap-2">
+              <button onClick={()=>setGaitPhase(gaitPhase-1)} disabled={gaitPhase===1} className="flex-1 py-2.5 rounded-xl bg-emerald-800 text-emerald-100 text-sm disabled:opacity-30">← Regress phase</button>
+              <button onClick={()=>setGaitPhase(gaitPhase+1)} disabled={gaitPhase===3} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-emerald-950 text-sm font-medium disabled:opacity-30">Advance phase →</button>
+            </div>
+          </div>
 
-      <div className="flex gap-2 mb-8">
-        <button onClick={()=>setSkipOpen(true)} className="flex-1 text-sm text-stone-700 bg-white border border-stone-200 rounded-xl py-3 flex items-center justify-center gap-1.5"><I.skip/> Skip session</button>
-        {!isRest&&<button onClick={logRest} className="flex-1 text-sm text-stone-700 bg-white border border-stone-200 rounded-xl py-3 flex items-center justify-center gap-1.5"><I.coffee/> Take rest day</button>}
-      </div>
+          <button onClick={()=>setView({name:'gait-session',phase:1})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-5 mb-3 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600"/>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs uppercase tracking-wider text-emerald-700 mb-1">Phase 1 · Daily</div>
+                <div className="serif text-xl text-stone-900">Establish the Connection</div>
+                <div className="text-stone-500 text-sm mt-0.5">~10 min · right-side glute activation</div>
+              </div>
+              {phase1Today?<span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full flex-shrink-0">Done today ✓</span>:<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full flex-shrink-0">Log today</span>}
+            </div>
+          </button>
+
+          {gaitPhase>=2&&(
+            <button onClick={()=>setView({name:'gait-session',phase:gaitPhase})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-5 mb-3 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-lime-600"/>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs uppercase tracking-wider text-lime-700 mb-1">Phase {gaitPhase} · 3× per week</div>
+                  <div className="serif text-xl text-stone-900">{gaitPhase===2?'Load the Pattern':'Transfer to Running Mechanics'}</div>
+                  <div className="text-stone-500 text-sm mt-0.5">{gaitPhase===3?'Do immediately before sprint sessions':'Minimum one rest day between sessions'}</div>
+                </div>
+                <span className="text-[10px] text-stone-600 bg-stone-100 border border-stone-200 px-2 py-1 rounded-full flex-shrink-0 num">{bonusThisWeek}/3 this wk</span>
+              </div>
+            </button>
+          )}
+
+          <p className="text-[10px] text-stone-400 text-center mt-1 mb-8 uppercase tracking-wider">Phase 1 always runs daily, even on rest days from other programs · advance phases yourself when ready</p>
+        </>
+      ):(
+        <>
+          {isRest?(
+            <div className="bg-blue-900 text-stone-50 rounded-2xl p-6 mb-3">
+              <div className="text-xs uppercase tracking-widest text-stone-300 mb-4">Day {cycleDay} of {prog.cycleLength}</div>
+              <div className="serif text-3xl mb-1">{session.title}</div>
+              <div className="text-stone-300 text-sm mb-5">{session.subtitle}</div>
+              <button onClick={()=>advanceCycle('rest')} className="w-full bg-amber-500 text-blue-900 rounded-xl py-4 flex items-center justify-center gap-2"><I.check/><span className="serif text-lg font-medium">Mark rest day taken</span></button>
+            </div>
+          ):(
+            <button onClick={handleStart} className={`w-full text-left rounded-2xl p-6 mb-3 text-stone-50 ${isRhom?'bg-purple-800':'bg-blue-900'}`}>
+              <div className="flex items-center justify-between mb-4"><span className="text-xs uppercase tracking-widest text-stone-300">Day {cycleDay} of {prog.cycleLength}</span></div>
+              <div className="serif text-3xl mb-1">{session.title}</div>
+              <div className="text-stone-300 text-sm">{session.subtitle}</div>
+              <div className="mt-4 text-xs uppercase tracking-wider text-amber-300/90">Tap to open →</div>
+            </button>
+          )}
+
+          <div className="flex gap-2 mb-8">
+            <button onClick={()=>setSkipOpen(true)} className="flex-1 text-sm text-stone-700 bg-white border border-stone-200 rounded-xl py-3 flex items-center justify-center gap-1.5"><I.skip/> Skip session</button>
+            {!isRest&&<button onClick={logRest} className="flex-1 text-sm text-stone-700 bg-white border border-stone-200 rounded-xl py-3 flex items-center justify-center gap-1.5"><I.coffee/> Take rest day</button>}
+          </div>
+        </>
+      )}
 
       {last&&lastTheme&&(
         <div className={`${lastTheme.bg} border ${lastTheme.border} rounded-2xl px-4 py-3.5 mb-8 flex items-center gap-4 relative overflow-hidden`}>
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${lastTheme.stripe}`}/>
-          <div className="flex-1 min-w-0"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5">Last logged · {prog.name}</div><div className={`serif text-lg ${lastTheme.text}`}>{last._w?'Zone 2 Walk':(prog.sessions[last.slot]?.title||'Session')}</div></div>
+          <div className="flex-1 min-w-0"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5">Last logged · {prog.name}</div><div className={`serif text-lg ${lastTheme.text}`}>{lastTitle}</div></div>
           <div className="flex-shrink-0 text-right"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5 num">{last.date}</div>{last.rpe&&<div className={`serif text-xl num ${lastTheme.text}`}>RPE {last.rpe}</div>}</div>
         </div>
       )}
 
-      <section className="mb-8">
-        <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">{isRhom?'The 5-day cycle':'The 8-day cycle'}</h2><span className="text-xs text-stone-500">Tap to open</span></div>
-        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-          {cycle.map((c,i)=>{
-            const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
-            const circle=isDone?<div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white"><I.check/></div>:<div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium num flex-shrink-0 ${isCurrent?'bg-blue-900 text-stone-50':`${t.bg} ${t.text}`}`}>{c.day}</div>;
-            const inner=<>{circle}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><div className={`serif text-lg ${isDone?'text-stone-500':'text-stone-900'}`}>{s.title}</div>{isCurrent&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">Next ←</span>}{isDone&&<span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">Done ✓</span>}</div><div className={`text-xs truncate ${isDone?'text-stone-400':'text-stone-500'}`}>{s.subtitle}</div></div></>;
-            const base=`flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':isDone?'bg-stone-50/60':''}`;
-            return isRestDay?<div key={c.day} className={base}>{inner}</div>:<button key={c.day} onClick={()=>{if(s.special==='walk')setView({name:'walk',slot:c.slot,cycleDay:c.day});else setView({name:'day',slot:c.slot,cycleDay:c.day});}} className={`w-full ${base}`}>{inner}</button>;
-          })}
-        </div>
-        {isRhom&&<p className="text-[10px] text-stone-400 text-center mt-2 uppercase tracking-wider">Rest days as needed — use "Take rest day"</p>}
-      </section>
+      {!isGait&&(
+        <section className="mb-8">
+          <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">{isRhom?'The 5-day cycle':'The 8-day cycle'}</h2><span className="text-xs text-stone-500">Tap to open</span></div>
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            {cycle.map((c,i)=>{
+              const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
+              const circle=isDone?<div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white"><I.check/></div>:<div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium num flex-shrink-0 ${isCurrent?'bg-blue-900 text-stone-50':`${t.bg} ${t.text}`}`}>{c.day}</div>;
+              const inner=<>{circle}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><div className={`serif text-lg ${isDone?'text-stone-500':'text-stone-900'}`}>{s.title}</div>{isCurrent&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">Next ←</span>}{isDone&&<span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">Done ✓</span>}</div><div className={`text-xs truncate ${isDone?'text-stone-400':'text-stone-500'}`}>{s.subtitle}</div></div></>;
+              const base=`flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':isDone?'bg-stone-50/60':''}`;
+              return isRestDay?<div key={c.day} className={base}>{inner}</div>:<button key={c.day} onClick={()=>{if(s.special==='walk')setView({name:'walk',slot:c.slot,cycleDay:c.day});else setView({name:'day',slot:c.slot,cycleDay:c.day});}} className={`w-full ${base}`}>{inner}</button>;
+            })}
+          </div>
+          {isRhom&&<p className="text-[10px] text-stone-400 text-center mt-2 uppercase tracking-wider">Rest days as needed — use "Take rest day"</p>}
+        </section>
+      )}
 
-      <section className="mb-8">
-        <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-3">Progressions</h2>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          {!isRhom&&<button onClick={()=>setView({name:'tgu'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">TGU</div><div className="serif text-2xl text-stone-900 num">{p.tguStageIndex+1}<span className="text-stone-400">/{TGU_STAGES.length}</span></div><div className="text-xs text-stone-500 mt-1 truncate">{TGU_STAGES[p.tguStageIndex].scheme} · {TGU_STAGES[p.tguStageIndex].weight}kg</div></button>}
-          {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
-          <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[p.sprintStageIndex].week} · shared</div></button>
-          <button onClick={()=>setView({name:'norwegian_bike'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Bike)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week} · shared</div></button>
-        </div>
-      </section>
+      {!isGait&&(
+        <section className="mb-8">
+          <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-3">Progressions</h2>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            {!isRhom&&<button onClick={()=>setView({name:'tgu'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">TGU</div><div className="serif text-2xl text-stone-900 num">{p.tguStageIndex+1}<span className="text-stone-400">/{TGU_STAGES.length}</span></div><div className="text-xs text-stone-500 mt-1 truncate">{TGU_STAGES[p.tguStageIndex].scheme} · {TGU_STAGES[p.tguStageIndex].weight}kg</div></button>}
+            {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
+            <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[p.sprintStageIndex].week} · shared</div></button>
+            <button onClick={()=>setView({name:'norwegian_bike'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Bike)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week} · shared</div></button>
+          </div>
+        </section>
+      )}
 
       <button onClick={()=>setView({name:'history'})} className="w-full bg-white border border-stone-200 rounded-2xl px-5 py-4 flex items-center justify-between mb-8">
         <div className="flex items-center gap-3"><I.cal/><span className="text-stone-900">History</span></div>
         <span className="text-xs text-stone-500 num">{(data.sessions?.length||0)+(data.walks?.length||0)}</span>
       </button>
 
-      {skipOpen&&(
+      {!isGait&&skipOpen&&(
         <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={()=>setSkipOpen(false)}>
           <div style={{background:'#fafaf9',borderRadius:16,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
             <div className="text-center mb-3"><div className="text-[10px] uppercase tracking-widest text-stone-500">Day {cycleDay} · {prog.name}</div><div className="serif text-xl text-stone-900 mt-1">{session.title}</div></div>
@@ -1410,6 +1642,7 @@ function App(){
           {view.name==='home'           &&<HomeView {...shared}/>}
           {view.name==='day'            &&<DayView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
           {view.name==='walk'           &&<WalkView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
+          {view.name==='gait-session'   &&<GaitSessionView phase={view.phase} editingSavedAt={view.editingSavedAt} {...shared}/>}
           {view.name==='tgu'            &&<TGUView {...shared}/>}
           {view.name==='kb'             &&<KBView {...shared}/>}
           {view.name==='sprints'        &&<SprintsView {...shared}/>}
