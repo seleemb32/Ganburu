@@ -50,7 +50,7 @@ const RIR_MAP = {
   couch_stretch:{type:'none',label:'Not RIR-governed'},
   broad_jump:{type:'none',label:'Max intent'},
   sprints:{type:'none',label:'Max intent'},
-  rdl:{type:'2-3'}, bss:{type:'2-3'},
+  rdl:{type:'2-3'}, bss:{type:'2-3'}, rdl_hyp:{type:'1-2'},
   hip_thrust:{type:'2-3'}, bk_calf_raise:{type:'2-3'},
   tib_raise_ps:{type:'2-3'}, tib_raise:{type:'2-3'},
   norwegian:{type:'none',label:'HR-targeted'},
@@ -80,6 +80,8 @@ const RIR_MAP = {
   walking_lunges:{type:'2-3'}, cable_tricep_pushdown:{type:'1-2'},
   db_kickback:{type:'1-2'}, wrist_curl:{type:'1-2'}, reverse_wrist_curl:{type:'1-2'},
   cable_crunch:{type:'2-3'}, side_plank_hold:{type:'none',label:'Not RIR-governed'},
+  gc_hip_bump_wall:{type:'none',label:'Activation'}, gc_towel_scrunch:{type:'none',label:'Activation'},
+  gc_dog_leash:{type:'none',label:'Drill'}, gc_suitcase_lunge:{type:'none',label:'Activation'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -263,7 +265,7 @@ const RHOMBOID_SESSIONS=[
     warmup:{duration:'~4 min',items:['Bent-knee calf raises — 2 × 10, 1-sec pause','Deep goblet squat with hip opening — 5 slow reps','Hip internal rotation — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Single leg glute bridge (right side only) — 2 × 10, 1-sec pause']},
     cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Forward fold — 30 sec','Ankle circles — 30 sec each foot']},
     exercises:[
-      {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
+      {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
       {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
       {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
       {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
@@ -308,9 +310,9 @@ const RHOMBOID_SESSIONS=[
     warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
     cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
     exercises:[
-      {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
+      {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
       {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
-      {id:'rdl',name:'Barbell Deadlift',scheme:'3–4 × 5',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
+      {id:'rdl_hyp',name:'Barbell Deadlift',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
       {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
       {id:'leg_curl',name:'Leg Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side',note:'Machine'},
       {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
@@ -343,14 +345,17 @@ const GAIT_PHASE1_EXERCISES=[
   {id:'gc_prone_squeeze',name:'Prone Glute Squeeze (R)',scheme:'2 × 10, 3-sec hold',sets:2,track:'reps',note:'Hand under right glute — feel glute fire before hamstring'},
   {id:'gc_clamshell',name:'Side-Lying Clamshell (R)',scheme:'2 × 15, 2-sec hold',sets:2,track:'reps',note:'Lying on left side. Band above knees if available. Small controlled movement — right knee opens toward ceiling'},
   {id:'gc_sl_bridge',name:'Single-Leg Glute Bridge (R)',scheme:'2 × 10, 2-sec hold',sets:2,track:'reps',note:'Squeeze right glute before lifting — if hamstring fires first, work only the top quarter'},
+  {id:'gc_hip_bump_wall',name:'Hip Bump Against Wall (R)',scheme:'2 × 15',sets:2,track:'reps',note:'Stand sideways against wall on right leg, let hips drop, slide inner hip back up the wall using right glute medius'},
   {id:'gc_short_foot',name:'Short Foot Exercise (R)',scheme:'2 × 10, 5-sec hold',sets:2,track:'reps',note:'Barefoot. Draw ball of foot toward heel without curling toes'},
+  {id:'gc_towel_scrunch',name:'Towel Scrunch (R)',scheme:'2 × 10, 3-sec hold',sets:2,track:'reps',note:'Barefoot. Scrunch towel toward you with toes only — no curling the whole foot'},
   {id:'gc_sl_balance',name:'Single-Leg Balance (R)',scheme:'2 × 30 sec',sets:2,track:'time',note:'Barefoot, eyes closed'},
 ];
 const GAIT_PHASE2_EXERCISES=[
   {id:'gc_lateral_walk',name:'Banded Lateral Walk',scheme:'2 × 15 steps/direction',sets:2,track:'reps',note:'Band above knees, slight hip hinge. Knees track over toes — do not let them cave'},
   {id:'gc_banded_squat',name:'Banded Squat with Knee Out',scheme:'2 × 12',sets:2,track:'reps',note:'Band above knees, squat to parallel. Actively push knees outward throughout — feel right glute especially'},
   {id:'gc_stepup',name:'Step-up — Right Leg Leading',scheme:'2 × 10/side',sets:2,track:'reps',note:'20cm box or step. Drive through right heel, squeeze right glute at top before stepping down'},
-  {id:'gc_bss',name:'Bulgarian Split Squat (Right Forward)',scheme:'2 × 8',sets:2,track:'reps',note:'Bodyweight, rear foot elevated. Right knee tracks over second toe, drive through right heel at top'},
+  {id:'gc_dog_leash',name:'Dog Leash Drill',scheme:'2 × 30m',sets:2,track:'farmer',note:'Light kettlebell or dumbbell held between legs. Walk slowly without letting the weight swing — swinging means glute medius is failing. Goal is quieter weight over time'},
+  {id:'gc_suitcase_lunge',name:'Suitcase Lunge (Right Forward)',scheme:'2 × 10',sets:2,track:'reps',note:'Dumbbell held in left hand, bodyweight to start. Body wants to tip toward the weight — resist it with right glute medius. Right knee tracks over second toe'},
 ];
 const GAIT_PHASE3_EXERCISES=[
   {id:'gc_askip',name:'A-Skips with Glute Focus',scheme:'3 × 20m',sets:3,track:'farmer',note:'Drive knee up, then feel right glute contract as right leg drives back and down'},
