@@ -79,9 +79,11 @@ const RIR_MAP = {
   // cross-match history automatically if these movements are ever added there
   walking_lunges:{type:'2-3'}, cable_tricep_pushdown:{type:'1-2'},
   db_kickback:{type:'1-2'}, wrist_curl:{type:'1-2'}, reverse_wrist_curl:{type:'1-2'},
-  cable_crunch:{type:'2-3'}, side_plank_hold:{type:'none',label:'Not RIR-governed'},
+  cable_crunch:{type:'1-2'}, side_plank_hold:{type:'none',label:'Not RIR-governed'},
   gc_hip_bump_wall:{type:'none',label:'Activation'}, gc_towel_scrunch:{type:'none',label:'Activation'},
   gc_dog_leash:{type:'none',label:'Drill'}, gc_suitcase_lunge:{type:'none',label:'Activation'},
+  cable_kickback:{type:'1-2'}, single_arm_cable_pushdown:{type:'1-2'},
+  incline_db_curl:{type:'1-2'}, hollow_body_hold:{type:'none',label:'Not RIR-governed'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -261,16 +263,17 @@ const GANBARU_SESSIONS=[
 // Rhomboid Modified sessions (5 sessions, no fixed rest days)
 const RHOMBOID_SESSIONS=[
   {
-    slot:0,kind:'strength',title:'Lower A + Swings',subtitle:'Squat + Swings',
-    warmup:{duration:'~4 min',items:['Bent-knee calf raises — 2 × 10, 1-sec pause','Deep goblet squat with hip opening — 5 slow reps','Hip internal rotation — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Single leg glute bridge (right side only) — 2 × 10, 1-sec pause']},
-    cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Forward fold — 30 sec','Ankle circles — 30 sec each foot']},
+    slot:0,kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
+    warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
+    cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
     exercises:[
-      {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
-      {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
-      {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
-      {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
-      {id:'walking_lunges',name:'Walking Lunges',scheme:'3 × 10/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
-      {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s'},
+      {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
+      {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
+      {id:'rdl_hyp',name:'Barbell Deadlift',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
+      {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
+      {id:'cable_kickback',name:'Cable Kickback (Unilateral)',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
+      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
+      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
     ],
   },
   {
@@ -291,7 +294,7 @@ const RHOMBOID_SESSIONS=[
       {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3 × 15–20',sets:3,track:'reps',rest:'Forward fold · 30s'},
       {id:'cable_crunch',name:'Cable Crunch',scheme:'3 × 15',sets:3,track:'reps'},
       {id:'dead_bug',name:'Dead Bug',scheme:'3 × 8/side',sets:3,track:'reps',note:'3-sec pause'},
-      {id:'side_plank_hold',name:'Side Plank',scheme:'3 × 20–30 sec/side',sets:3,track:'time'},
+      {id:'hollow_body_hold',name:'Hollow Body Hold',scheme:'3 × 20–30 sec',sets:3,track:'time'},
       {id:'pallof_press',name:'Pallof Press',scheme:'3 × 10/side',sets:3,track:'weight'},
     ],
   },
@@ -306,17 +309,15 @@ const RHOMBOID_SESSIONS=[
     ],
   },
   {
-    slot:3,kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
-    warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
-    cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
+    slot:3,kind:'strength',title:'Lower A + Swings',subtitle:'Squat + Swings',
+    warmup:{duration:'~4 min',items:['Bent-knee calf raises — 2 × 10, 1-sec pause','Deep goblet squat with hip opening — 5 slow reps','Hip internal rotation — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Single leg glute bridge (right side only) — 2 × 10, 1-sec pause']},
+    cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Forward fold — 30 sec','Ankle circles — 30 sec each foot']},
     exercises:[
-      {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
-      {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
-      {id:'rdl_hyp',name:'Barbell Deadlift',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
-      {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
-      {id:'leg_curl',name:'Leg Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side',note:'Machine'},
-      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
-      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
+      {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
+      {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
+      {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
+      {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
+      {id:'walking_lunges',name:'Walking Lunges',scheme:'3 × 10/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
   {
@@ -326,12 +327,12 @@ const RHOMBOID_SESSIONS=[
     exercises:[
       {id:'norwegian_bike',name:'Norwegian 4×4 — Assault Bike',scheme:'progression',track:'norwegian_bike'},
       {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load'},
-      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
-      {id:'db_kickback',name:'DB Kickback',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
-      {id:'side_plank',name:'Side Plank with Reach',scheme:'3–5 × 8/side',sets:3,track:'reps',rest:'Kneeling hip flexor · 30s/side',ssGroup:'r1'},
-      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
-      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
-      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'r2'},
+      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
+      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
       {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
@@ -451,8 +452,8 @@ function loadData(){
   }catch{}
   return DEFAULT_DATA;
 }
-function saveDataRaw(data){try{storage.set(DATA_KEY,JSON.stringify(data));}catch{}}
-function saveData(data){saveDataRaw(data);}
+function saveDataRaw(data){const r=storage.set(DATA_KEY,JSON.stringify(data));return !!r;}
+function saveData(data){return saveDataRaw(data);}
 
 const draftKey=(program,kind,slot,esa)=>`ganburu-draft-${program}-${kind}-s${slot}${esa?`-edit-${esa}`:''}`;
 function loadDraft(program,kind,slot,esa){try{const r=storage.get(draftKey(program,kind,slot,esa));return r?.value?JSON.parse(r.value):null;}catch{return null;}}
@@ -1001,9 +1002,14 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const resolvedSlot=isEditing?(existing.slot??slot??0):(slot??cycleEntry(prog,data.cycleDays[program]).slot);
   const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
   const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
+  // Logging a day other than the one the cycle is currently sitting on (e.g. tapped
+  // an earlier/later day from the cycle list to fill in a missed session) should
+  // NOT skip the cycle forward past whatever is actually still due.
+  const isCurrentDay=!isEditing&&exProgram===program&&resolvedCycleDay===(data.cycleDays[program]??1);
   const [hadDraft,setHadDraft]=useState(false);
   const [workoutStarted,setWorkoutStarted]=useState(false);
   const [saving,setSaving]=useState(false);
+  const [saveError,setSaveError]=useState(null);
 
   const buildInitial=useCallback(()=>{
     if(existing){
@@ -1038,7 +1044,7 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const low=typeof state.recovery==='number'&&state.recovery<50;
 
   const save=()=>{
-    if(saving)return;setSaving(true);
+    if(saving)return;setSaving(true);setSaveError(null);
     const advances=calcProgressionAdvances(session,state.exercises,data.progressions);
     // Rhomboid EMOM weight persists to progression state
     let progPatch={...advances};
@@ -1046,13 +1052,16 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
     if(emomEx){const logged=state.exercises[emomEx.id];if(logged?.weight) progPatch.kbEmomWeight=logged.weight;}
     if(isEditing){
       const nd={...data,progressions:{...data.progressions,...progPatch},sessions:data.sessions.map(s=>s.savedAt===editingSavedAt?{...state,savedAt:editingSavedAt}:s)};
-      saveData(nd);update(()=>nd);clearDraft(exProgram,'session',resolvedSlot,editingSavedAt);setSaving(false);
+      if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Nothing was overwritten; try again after freeing up space or exporting a backup from Settings.');return;}
+      update(()=>nd);clearDraft(exProgram,'session',resolvedSlot,editingSavedAt);setSaving(false);
       setView({name:'history-detail',savedAt:editingSavedAt});
     }else{
       const savedAt=new Date().toISOString();
+      const nextCD=isCurrentDay?nextCycleDay(prog,data.cycleDays[program]):data.cycleDays[program];
+      const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCD},progressions:{...data.progressions,...progPatch},sessions:[...(data.sessions||[]),{...state,savedAt}]};
+      if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Your entry is still kept as a draft here; try freeing up space or exporting a backup from Settings, then save again.');return;}
       clearDraft(program,'session',resolvedSlot,null);
-      const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCycleDay(prog,data.cycleDays[program])},progressions:{...data.progressions,...progPatch},sessions:[...(data.sessions||[]),{...state,savedAt}]};
-      saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});
+      update(()=>nd);setSaving(false);setView({name:'home'});
     }
   };
 
@@ -1064,6 +1073,7 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
           <span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span>
           <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
           {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
+          {!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}
         </div>
         <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
         <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
@@ -1088,7 +1098,8 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={state.recovery}/>
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={state.cooldownDone} onToggle={()=>setState(s=>({...s,cooldownDone:!s.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       <SessionMeta session={state} setSession={setState} theme={theme}/>
-      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':'Save & advance cycle'}</button>
+      {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
+      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':'Save entry (cycle stays)'}</button>
     </div>
   );
 }
@@ -1103,9 +1114,11 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const resolvedSlot=isEditing?(existing.slot??slot??0):slot;
   const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
   const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
+  const isCurrentDay=!isEditing&&exProgram===program&&resolvedCycleDay===(data.cycleDays[program]??1);
   const [hadDraft,setHadDraft]=useState(false);
   const [workoutStarted,setWorkoutStarted]=useState(false);
   const [saving,setSaving]=useState(false);
+  const [saveError,setSaveError]=useState(null);
 
   const buildInitial=useCallback(()=>{
     const exercises={};
@@ -1138,16 +1151,26 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const last=[...data.walks].reverse().find(w=>w.savedAt!==editingSavedAt);
 
   const save=()=>{
-    if(saving)return;setSaving(true);
-    if(isEditing){const nd={...data,walks:data.walks.map(w=>w.savedAt===editingSavedAt?{...walk,savedAt:editingSavedAt}:w)};saveData(nd);update(()=>nd);clearDraft(exProgram,'walk',resolvedSlot,editingSavedAt);setSaving(false);setView({name:'history-detail',savedAt:editingSavedAt});}
-    else{const savedAt=new Date().toISOString();clearDraft(program,'walk',resolvedSlot,null);const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCycleDay(prog,data.cycleDays[program])},walks:[...(data.walks||[]),{...walk,savedAt}]};saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});}
+    if(saving)return;setSaving(true);setSaveError(null);
+    if(isEditing){
+      const nd={...data,walks:data.walks.map(w=>w.savedAt===editingSavedAt?{...walk,savedAt:editingSavedAt}:w)};
+      if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Nothing was overwritten; try again after freeing up space or exporting a backup from Settings.');return;}
+      update(()=>nd);clearDraft(exProgram,'walk',resolvedSlot,editingSavedAt);setSaving(false);setView({name:'history-detail',savedAt:editingSavedAt});
+    }else{
+      const savedAt=new Date().toISOString();
+      const nextCD=isCurrentDay?nextCycleDay(prog,data.cycleDays[program]):data.cycleDays[program];
+      const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCD},walks:[...(data.walks||[]),{...walk,savedAt}]};
+      if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Your entry is still kept as a draft here; try freeing up space or exporting a backup from Settings, then save again.');return;}
+      clearDraft(program,'walk',resolvedSlot,null);
+      update(()=>nd);setSaving(false);setView({name:'home'});
+    }
   };
 
   return(
     <div>
       <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
       <header className="mb-4">
-        <div className="flex items-center gap-2 mb-2"><span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span></div>
+        <div className="flex items-center gap-2 mb-2 flex-wrap"><span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>{!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}</div>
         <h1 className="serif text-4xl text-stone-900">Zone 2 Walk</h1>
       </header>
       {hadDraft&&!isEditing&&<div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div><button onClick={()=>{clearDraft(program,'walk',resolvedSlot,null);setWalk(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button></div>}
@@ -1165,7 +1188,8 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       {session.exercises&&session.exercises.length>0&&<div className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-3">After your walk</div><ExerciseList exercises={session.exercises} state={walk} setEx={setWalkEx} data={data} theme={theme} recovery={walk.recovery}/></div>}
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={walk.cooldownDone} onToggle={()=>setWalk(w=>({...w,cooldownDone:!w.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       {last&&<div className="mt-4 text-xs text-stone-500 text-center">Last walk: <span className="num text-stone-700">{last.distance}km / {last.duration}min</span> · {last.date}</div>}
-      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':'Save & advance cycle'}</button>
+      {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
+      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':'Save entry (cycle stays)'}</button>
     </div>
   );
 }
@@ -1182,6 +1206,7 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
   const theme=THEMES[session.kind];
   const [hadDraft,setHadDraft]=useState(false);
   const [saving,setSaving]=useState(false);
+  const [saveError,setSaveError]=useState(null);
 
   const buildInitial=useCallback(()=>{
     if(existing){
@@ -1213,16 +1238,18 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
   const setEx=(exId,patch)=>setState(s=>({...s,exercises:{...s.exercises,[exId]:typeof patch==='function'?patch(s.exercises[exId]):{...s.exercises[exId],...patch}}}));
 
   const save=()=>{
-    if(saving)return;setSaving(true);
+    if(saving)return;setSaving(true);setSaveError(null);
     if(isEditing){
       const nd={...data,sessions:data.sessions.map(s=>s.savedAt===editingSavedAt?{...state,savedAt:editingSavedAt}:s)};
-      saveData(nd);update(()=>nd);clearDraft('gait','session',resolvedPhase,editingSavedAt);setSaving(false);
+      if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Nothing was overwritten; try again after freeing up space or exporting a backup from Settings.');return;}
+      update(()=>nd);clearDraft('gait','session',resolvedPhase,editingSavedAt);setSaving(false);
       setView({name:'history-detail',savedAt:editingSavedAt});
     }else{
       const savedAt=new Date().toISOString();
-      clearDraft('gait','session',resolvedPhase,null);
       const nd={...data,sessions:[...(data.sessions||[]),{...state,savedAt}]};
-      saveData(nd);update(()=>nd);setSaving(false);setView({name:'home'});
+      if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Your entry is still kept as a draft here; try freeing up space or exporting a backup from Settings, then save again.');return;}
+      clearDraft('gait','session',resolvedPhase,null);
+      update(()=>nd);setSaving(false);setView({name:'home'});
     }
   };
 
@@ -1250,6 +1277,7 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
       </div>
       <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={null}/>
       <SessionMeta session={state} setSession={setState} theme={theme}/>
+      {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
       <button onClick={save} disabled={saving} className="w-full bg-emerald-700 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':'Save session'}</button>
     </div>
   );
