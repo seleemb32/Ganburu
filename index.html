@@ -84,6 +84,10 @@ const RIR_MAP = {
   gc_dog_leash:{type:'none',label:'Drill'}, gc_suitcase_lunge:{type:'none',label:'Activation'},
   cable_kickback:{type:'1-2'}, single_arm_cable_pushdown:{type:'1-2'},
   incline_db_curl:{type:'1-2'}, hollow_body_hold:{type:'none',label:'Not RIR-governed'},
+  straight_arm_pulldown:{type:'1-2'},
+  crunches:{type:'none',label:'Tabata'}, leg_raises:{type:'none',label:'Tabata'},
+  toe_touches:{type:'none',label:'Tabata'}, bicycle_crunches:{type:'none',label:'Tabata'},
+  scissor_kicks:{type:'none',label:'Tabata'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -272,6 +276,7 @@ const RHOMBOID_SESSIONS=[
       {id:'rdl_hyp',name:'Barbell Deadlift',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
       {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
       {id:'cable_kickback',name:'Cable Kickback (Unilateral)',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
+      {id:'straight_arm_pulldown',name:'Straight Arm Pulldown',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
       {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
     ],
@@ -287,15 +292,17 @@ const RHOMBOID_SESSIONS=[
       {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
       {id:'db_reverse_fly',name:'DB Reverse Fly 45°',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
       {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
-      {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight'},
       {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
-      {id:'hip_switch',name:'90/90 Hip Switch',scheme:'2 × 1 min',sets:2,track:'time'},
-      // Core Block finisher
-      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3 × 15–20',sets:3,track:'reps',rest:'Forward fold · 30s'},
-      {id:'cable_crunch',name:'Cable Crunch',scheme:'3 × 15',sets:3,track:'reps'},
-      {id:'dead_bug',name:'Dead Bug',scheme:'3 × 8/side',sets:3,track:'reps',note:'3-sec pause'},
+      // Core Block finisher — Tabata circuit: 20s work / 10s rest × 4 rounds each,
+      // cycled continuously through Crunches → Leg Raises → Toe Touches →
+      // Bicycle Crunches → Scissor Kicks. Logged here as 4 × 20s sets each so
+      // every movement still gets its own trackable history.
       {id:'hollow_body_hold',name:'Hollow Body Hold',scheme:'3 × 20–30 sec',sets:3,track:'time'},
-      {id:'pallof_press',name:'Pallof Press',scheme:'3 × 10/side',sets:3,track:'weight'},
+      {id:'crunches',name:'Crunches',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata: 20s work / 10s rest, cycling continuously through the 5-exercise circuit'},
+      {id:'leg_raises',name:'Leg Raises',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — straight into this after Crunches, 10s rest between'},
+      {id:'toe_touches',name:'Toe Touches',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — straight into this after Leg Raises, 10s rest between'},
+      {id:'bicycle_crunches',name:'Bicycle Crunches',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — straight into this after Toe Touches, 10s rest between'},
+      {id:'scissor_kicks',name:'Scissor Kicks',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — final movement, 10s rest between, then cycle back to Crunches for round 2'},
     ],
   },
   {
@@ -316,7 +323,8 @@ const RHOMBOID_SESSIONS=[
       {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
       {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
       {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
-      {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
+      {id:'hip_thrust',name:'Hip Thrust',scheme:'3 × 12',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side',ssGroup:'r1'},
+      {id:'back_ext',name:'Back Extensions',scheme:'3 × 12',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side',ssGroup:'r1'},
       {id:'walking_lunges',name:'Walking Lunges',scheme:'3 × 10/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
@@ -329,10 +337,10 @@ const RHOMBOID_SESSIONS=[
       {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load'},
       {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
       {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'r2'},
+      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'r1'},
       {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
-      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
-      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
+      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
       {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
