@@ -88,6 +88,7 @@ const RIR_MAP = {
   crunches:{type:'none',label:'Tabata'}, leg_raises:{type:'none',label:'Tabata'},
   toe_touches:{type:'none',label:'Tabata'}, bicycle_crunches:{type:'none',label:'Tabata'},
   scissor_kicks:{type:'none',label:'Tabata'},
+  cable_crunch2:{type:'2-3'}, chest_supported_row:{type:'1-2'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -172,7 +173,7 @@ function fmtWorkMin(m){
 // Ganbaru Method sessions (existing, with superset-group fixes)
 const GANBARU_SESSIONS=[
   {
-    slot:0,kind:'strength',title:'Strength',subtitle:'Full Body Power & Strength',
+    slot:0,key:'strength',kind:'strength',title:'Strength',subtitle:'Full Body Power & Strength',
     warmup:{duration:'~5 min',items:[
       'Bent-knee calf raises — 2 × 10, 1-sec pause at top',
       'Deep goblet squat with hip opening — 5 slow reps',
@@ -189,21 +190,21 @@ const GANBARU_SESSIONS=[
       {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
       {id:'bench_press',name:'Barbell Bench Press',scheme:'4 × 2–5',sets:4,track:'weight',rest:'Chest doorframe · 30s'},
       {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load; milestone 65–70kg × 3×12–15 on lat pulldown equivalent'},
-      {id:'hanging_knees',name:'Hanging Knee Raises',scheme:'3–4 × 12–20',sets:3,track:'reps',rest:'Forward fold · 30s',ssGroup:'s1'},
+      {id:'cable_crunch2',name:'Cable Crunch',scheme:'3–4 × 15–20',sets:3,track:'reps',rest:'Forward fold · 30s',ssGroup:'s1'},
       {id:'landmine_rotation',name:'Landmine Rotation',scheme:'3 × 8–10/side',sets:3,track:'weight',rest:'Forward fold · 30s',ssGroup:'s1'},
     ],
   },
-  {slot:1,kind:'rest',title:'Rest',subtitle:'Recovery — Rest 1',special:'rest'},
+  {slot:1,key:'rest1',kind:'rest',title:'Rest',subtitle:'Recovery — Rest 1',special:'rest'},
   {
-    slot:2,kind:'hypertrophy',title:'Hypertrophy A',subtitle:'Upper + Mobility Lower',
+    slot:2,key:'hyp_a',kind:'hypertrophy',title:'Hypertrophy A',subtitle:'Upper + Mobility Lower',
     warmup:{duration:'~3.5 min',items:['Deep goblet squat with hip opening — 5 slow reps','KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Hip internal rotation — 10 reps per side','Thoracic rotation in quadruped — 5 reps per side']},
     cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Pigeon pose — 60 sec per side','Wrist circles — 30 sec']},
     exercises:[
       {id:'tgu',name:'Turkish Get-Up',scheme:'progression',track:'tgu',rest:'Wrist circles · 30s'},
       {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
+      {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
       {id:'db_press',name:'Single Arm DB Shoulder Press',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'a1'},
       {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'a1'},
-      {id:'low_incline_db',name:'Low Incline DB Press',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
       {id:'cable_fly',name:'Cable Fly',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'a2'},
       {id:'cossack',name:'Cossack Squat',scheme:'3 × 5/side',sets:3,track:'weight',ssGroup:'a2'},
       {id:'hip_switch',name:'90/90 Hip Switch',scheme:'2 × 1–2 min',sets:2,track:'time',ssGroup:'a3'},
@@ -211,13 +212,13 @@ const GANBARU_SESSIONS=[
     ],
   },
   {
-    slot:3,kind:'power',title:'Power & Speed',subtitle:'Plyos + Sprints + Lower',
+    slot:3,key:'power_speed',kind:'power',title:'Power & Speed',subtitle:'Plyos + Sprints + Lower',
     warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 60 sec total (30s/side)','Bent-knee calf raises — 2 × 10, 1-sec pause at top','Ankle circles — 10 reps per side','Ankle band — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
     cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
     exercises:[
       {id:'broad_jump',name:'Broad Jump',scheme:'3–4 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
       {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
-      {id:'rdl',name:'Barbell Deadlift',scheme:'3–4 × 5',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
+      {id:'rdl',name:'Barbell Deadlift',scheme:'4 × 5',sets:4,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
       {id:'hip_thrust',name:'Hip Thrust',scheme:'2–3 × 10–15',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side'},
       {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
       {id:'leg_curl',name:'Leg Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side',note:'Machine'},
@@ -226,7 +227,7 @@ const GANBARU_SESSIONS=[
     ],
   },
   {
-    slot:4,kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
+    slot:4,key:'zone2',kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
     warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 60 sec total (30s/side)','Bent-knee calf raises — 2 × 10, 1-sec pause at top','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
     cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
     walkNotes:['Nose breathing only throughout','Start slow 5 min, build to brisk, hold, wind down last 5 min','Target: working but able to hold a full conversation','Distance: 5 km building to 6 km over weeks'],
@@ -236,7 +237,7 @@ const GANBARU_SESSIONS=[
     ],
   },
   {
-    slot:5,kind:'mixed',title:'Broccoli',subtitle:'Mixed Session',
+    slot:5,key:'broccoli',kind:'mixed',title:'Broccoli',subtitle:'Mixed Session',
     warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 60 sec total (30s/side)','Bent-knee calf raises — 2 × 10, 1-sec pause at top','KB Halo — 5 slow reps each direction, light bell','Deep goblet squat with hip opening — 5 slow reps','Leg swings — 10 front-to-back and 10 lateral, each leg','Thoracic rotation in quadruped — 5 reps per side','Cat-cow — 8 slow reps','Arm circles — 10 reps each direction','2–3 min easy cycling on assault bike, building effort gradually']},
     cooldown:{duration:'~4 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot','Hip flexor stretch kneeling — 45 sec per side','Glute figure-4 stretch — 45 sec per side']},
     exercises:[
@@ -247,9 +248,9 @@ const GANBARU_SESSIONS=[
       {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
-  {slot:6,kind:'rest',title:'Rest',subtitle:'Recovery — Rest 2',special:'rest'},
+  {slot:6,key:'rest2',kind:'rest',title:'Rest',subtitle:'Recovery — Rest 2',special:'rest'},
   {
-    slot:7,kind:'hypertrophy',title:'Hypertrophy B',subtitle:'Upper + Conditioning',
+    slot:7,key:'hyp_b',kind:'hypertrophy',title:'Hypertrophy B',subtitle:'Upper + Conditioning',
     warmup:{duration:'~3.5 min',items:['KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Band pull-apart — 10 reps','Scapular push-ups — 10 reps','Hip hinge with dowel — 10 reps']},
     cooldown:{duration:'~4 min',items:['Chest doorframe stretch — 30 sec','Shoulder cross-body stretch — 30 sec per side','Seated forward fold — 45 sec','Forearm flexor stretch — 30 sec per side']},
     exercises:[
@@ -267,7 +268,7 @@ const GANBARU_SESSIONS=[
 // Rhomboid Modified sessions (5 sessions, no fixed rest days)
 const RHOMBOID_SESSIONS=[
   {
-    slot:0,kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
+    slot:0,key:'lower_b_sprints',kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
     warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
     cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
     exercises:[
@@ -276,13 +277,12 @@ const RHOMBOID_SESSIONS=[
       {id:'rdl_hyp',name:'Barbell Deadlift',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
       {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
       {id:'cable_kickback',name:'Cable Kickback (Unilateral)',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
-      {id:'straight_arm_pulldown',name:'Straight Arm Pulldown',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
       {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
     ],
   },
   {
-    slot:1,kind:'hypertrophy',title:'Upper Pull A',subtitle:'Horizontal + Vertical Pull',
+    slot:1,key:'upper_a',kind:'hypertrophy',title:'Upper Pull A',subtitle:'Horizontal + Vertical Pull',
     warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
     cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
     exercises:[
@@ -306,7 +306,7 @@ const RHOMBOID_SESSIONS=[
     ],
   },
   {
-    slot:2,kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
+    slot:2,key:'zone2',kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
     warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
     cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
     walkNotes:['Nose breathing only throughout','45 min walk, 5 km building to 6 km','If breathing through mouth, slow down'],
@@ -316,7 +316,7 @@ const RHOMBOID_SESSIONS=[
     ],
   },
   {
-    slot:3,kind:'strength',title:'Lower A + Swings',subtitle:'Squat + Swings',
+    slot:3,key:'lower_a_swings',kind:'strength',title:'Lower A + Swings',subtitle:'Squat + Swings',
     warmup:{duration:'~4 min',items:['Bent-knee calf raises — 2 × 10, 1-sec pause','Deep goblet squat with hip opening — 5 slow reps','Hip internal rotation — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Single leg glute bridge (right side only) — 2 × 10, 1-sec pause']},
     cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Forward fold — 30 sec','Ankle circles — 30 sec each foot']},
     exercises:[
@@ -329,18 +329,18 @@ const RHOMBOID_SESSIONS=[
     ],
   },
   {
-    slot:4,kind:'mixed',title:'Upper Pull B + Broccoli',subtitle:'Pull + Norwegian 4×4',
-    warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 30 sec per side','KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Thoracic rotation in quadruped — 5 reps per side','Cat-cow — 8 slow reps','Scapular push-ups — 10 reps','Easy cycling on assault bike — 2–3 min, building effort']},
+    slot:4,key:'upper_b_broccoli',kind:'mixed',title:'Upper Pull B + Broccoli',subtitle:'Pull + Norwegian 4×4',
+    warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 30 sec per side','KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Thoracic rotation in quadruped — 5 reps per side','Cat-cow — 8 slow reps','Scapular push-ups — 10 reps','Easy rowing — 2–3 min, building effort']},
     cooldown:{duration:'~4 min',items:['Bent-knee soleus stretch — 45 sec per side','Shoulder cross-body stretch — 30 sec per side','Lat stretch against rack — 30 sec per side','Seated forward fold — 45 sec','Ankle circles — 30 sec each foot']},
     exercises:[
-      {id:'norwegian_bike',name:'Norwegian 4×4 — Assault Bike',scheme:'progression',track:'norwegian_bike'},
-      {id:'pull_ups',name:'Pull-Ups',scheme:'3 × 4–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Assisted → bodyweight → weighted. Target 3×8 BW before adding load'},
+      {id:'norwegian_bike',name:'Norwegian 4×4 — Rowing',scheme:'progression',track:'norwegian_bike',intervalLabel:'3 min easy rowing between each · Rower'},
+      {id:'straight_arm_pulldown',name:'Straight Arm Pulldown',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
       {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'r1'},
+      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'r2'},
       {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
-      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
-      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
+      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
       {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
     ],
   },
@@ -387,11 +387,26 @@ const PROGRAMS={
 
 // Resolves the session template for a logged/edited item regardless of whether
 // it came from a cycle-based program (by slot) or the phase-based Gait program.
+// Prefers the stable per-session `key` (item.sessionKey) when present, since a
+// raw array `slot` index silently points at the wrong session if the program's
+// session order is ever changed after the entry was logged. Falls back to slot
+// for older entries logged before sessionKey existed.
 function templateFor(programId,item){
   const prog=PROGRAMS[programId];
   if(!prog) return null;
   if(prog.isPhaseProgram) return item?.phase!=null?prog.sessions[item.phase]:null;
+  if(item?.sessionKey){
+    const byKey=prog.sessions.find(s=>s.key===item.sessionKey);
+    if(byKey) return byKey;
+  }
   return item?.slot!=null?prog.sessions[item.slot]:null;
+}
+// Resolves the current array slot for a stable session key — used so editing an
+// old history entry opens the correct session even if the program was reordered
+// since that entry was logged.
+function slotForKey(prog,key){
+  if(!key) return -1;
+  return prog.sessions.findIndex(s=>s.key===key);
 }
 
 const THEMES={
@@ -826,7 +841,7 @@ function NorwegianTrackBase({value,setValue,stages,label,recovery}){
   );
 }
 function NorwegianTrack({value,setValue,recovery}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_STAGES} label="3 min walk between each" recovery={recovery}/>;}
-function NorwegianBikeTrack({value,setValue,recovery}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_BIKE_STAGES} label="3 min easy pedaling between each · Assault Bike" recovery={recovery}/>;}
+function NorwegianBikeTrack({value,setValue,recovery,label}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_BIKE_STAGES} label={label??"3 min easy pedaling between each · Assault Bike"} recovery={recovery}/>;}
 
 function TGUInline({value,setValue}){
   const stage=TGU_STAGES[value.stageIndex];
@@ -947,7 +962,7 @@ function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery})
         {exercise.track==='farmer'        &&<FarmerTrack value={value} setValue={setValue}/>}
         {exercise.track==='sprint'        &&<SprintTrack value={value} setValue={setValue}/>}
         {exercise.track==='norwegian'     &&<NorwegianTrack value={value} setValue={setValue} recovery={recovery}/>}
-        {exercise.track==='norwegian_bike'&&<NorwegianBikeTrack value={value} setValue={setValue} recovery={recovery}/>}
+        {exercise.track==='norwegian_bike'&&<NorwegianBikeTrack value={value} setValue={setValue} recovery={recovery} label={exercise.intervalLabel}/>}
         {exercise.track==='tgu'           &&<TGUInline value={value} setValue={setValue}/>}
         {exercise.track==='kb_swings'     &&<KBInline value={value} setValue={setValue}/>}
         {exercise.track==='kb_emom'       &&<KBEmomInline value={value} setValue={setValue}/>}
@@ -1007,7 +1022,13 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const isEditing=!!existing;
   const exProgram=isEditing?(existing.program??program):program;
   const exProg=PROGRAMS[exProgram];
-  const resolvedSlot=isEditing?(existing.slot??slot??0):(slot??cycleEntry(prog,data.cycleDays[program]).slot);
+  // When editing, prefer the stable sessionKey to find the right slot — a raw
+  // slot number can point at the wrong session if the program was reordered
+  // since this entry was logged. Falls back to the stored slot for older
+  // entries saved before sessionKey existed.
+  const resolvedSlot=isEditing
+    ?(existing.sessionKey!=null&&slotForKey(exProg,existing.sessionKey)>=0?slotForKey(exProg,existing.sessionKey):(existing.slot??slot??0))
+    :(slot??cycleEntry(prog,data.cycleDays[program]).slot);
   const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
   const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
   // Logging a day other than the one the cycle is currently sitting on (e.g. tapped
@@ -1021,11 +1042,11 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   const buildInitial=useCallback(()=>{
     if(existing){
-      const m={program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:existing.date,warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,rpe:existing.rpe??null,notes:existing.notes??'',recovery:existing.recovery??null,exercises:{}};
+      const m={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:existing.date,warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,rpe:existing.rpe??null,notes:existing.notes??'',recovery:existing.recovery??null,exercises:{}};
       session.exercises.forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
       return m;
     }
-    const s={program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:todayISO(),warmupDone:false,cooldownDone:false,exercises:{},rpe:null,notes:'',recovery:null};
+    const s={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:todayISO(),warmupDone:false,cooldownDone:false,exercises:{},rpe:null,notes:'',recovery:null};
     session.exercises.forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
     return s;
   },[]);
@@ -1038,7 +1059,8 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
         if(ok){
           // Reconcile against the current template — if exercises were added/swapped
           // since this draft was saved, backfill fresh entries instead of crashing.
-          const patched={...draft,exercises:{...draft.exercises}};
+          // Also backfill sessionKey for drafts saved before that field existed.
+          const patched={...draft,exercises:{...draft.exercises},sessionKey:draft.sessionKey??session.key};
           session.exercises.forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
           setHadDraft(true);return patched;
         }else clearDraft(program,'session',resolvedSlot,null);
@@ -1119,7 +1141,9 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const isEditing=!!existing;
   const exProgram=isEditing?(existing.program??program):program;
   const exProg=PROGRAMS[exProgram];
-  const resolvedSlot=isEditing?(existing.slot??slot??0):slot;
+  const resolvedSlot=isEditing
+    ?(existing.sessionKey!=null&&slotForKey(exProg,existing.sessionKey)>=0?slotForKey(exProg,existing.sessionKey):(existing.slot??slot??0))
+    :slot;
   const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
   const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
   const isCurrentDay=!isEditing&&exProgram===program&&resolvedCycleDay===(data.cycleDays[program]??1);
@@ -1132,11 +1156,11 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
     const exercises={};
     (session.exercises||[]).forEach(ex=>{exercises[ex.id]=buildFreshExercise(ex,data);});
     if(existing){
-      const m={program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:existing.date,distance:existing.distance??'',duration:existing.duration??'',notes:existing.notes??'',warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,recovery:existing.recovery??null,exercises};
+      const m={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:existing.date,distance:existing.distance??'',duration:existing.duration??'',notes:existing.notes??'',warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,recovery:existing.recovery??null,exercises};
       (session.exercises||[]).forEach(ex=>{const le=existing.exercises?.[ex.id];if(le)m.exercises[ex.id]=le;});
       return m;
     }
-    return{program:exProgram,slot:resolvedSlot,cycleDay:resolvedCycleDay,date:todayISO(),distance:'',duration:'',notes:'',warmupDone:false,cooldownDone:false,recovery:null,exercises};
+    return{program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:todayISO(),distance:'',duration:'',notes:'',warmupDone:false,cooldownDone:false,recovery:null,exercises};
   },[]);
 
   const [walk,setWalk]=useState(()=>{
@@ -1145,7 +1169,7 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       if(draft){
         const ok=!(data.walks||[]).some(w=>w.savedAt&&draft.savedAt&&w.savedAt===draft.savedAt);
         if(ok){
-          const patched={...draft,exercises:{...(draft.exercises||{})}};
+          const patched={...draft,exercises:{...(draft.exercises||{})},sessionKey:draft.sessionKey??session.key};
           (session.exercises||[]).forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
           setHadDraft(true);return patched;
         }else clearDraft(program,'walk',resolvedSlot,null);
@@ -1415,7 +1439,7 @@ function HistoryDetailView({savedAt,data,setView}){
           {ex.track==='farmer'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{s.value||'–'} {s.unit||'m'}</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
           {ex.track==='sprint'&&<div className="text-sm text-stone-700 num">{logged.completedReps} of {SPRINT_STAGES[logged.stageIndex]?.reps||'–'} sprints</div>}
           {ex.track==='norwegian'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged</div>}
-          {ex.track==='norwegian_bike'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged · bike</div>}
+          {ex.track==='norwegian_bike'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged</div>}
           {ex.track==='tgu'&&<div className="text-sm text-stone-700 num">{TGU_STAGES[logged.stageIndex]?.label} {logged.done&&'✓'}</div>}
           {ex.track==='kb_swings'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/{logged.rounds} rounds {logged.done&&'✓'}</div>}
           {ex.track==='kb_emom'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/10 rounds × 10 {logged.done&&'✓'}</div>}
