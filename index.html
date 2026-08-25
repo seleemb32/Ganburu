@@ -89,6 +89,10 @@ const RIR_MAP = {
   toe_touches:{type:'none',label:'Tabata'}, bicycle_crunches:{type:'none',label:'Tabata'},
   scissor_kicks:{type:'none',label:'Tabata'},
   cable_crunch2:{type:'2-3'}, chest_supported_row:{type:'1-2'},
+  // Back A/B + Chest/Shoulders split — hamstring strain period
+  chest_press_machine:{type:'2-3'}, incline_chest_press_machine:{type:'1-2'},
+  shoulder_press_machine:{type:'1-2'}, pec_deck:{type:'1-2'},
+  db_lateral_raise:{type:'1-2'}, norwegian_ski:{type:'none',label:'HR-targeted'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -155,6 +159,17 @@ const NORWEGIAN_STAGES=[
 // Separate Assault-Bike Norwegian progression — used by BOTH programs.
 const NORWEGIAN_BIKE_STAGES=[
   {week:1,workMin:1,intensity:'75–80%',restSec:180},
+  {week:2,workMin:2,intensity:'80–85%',restSec:180},
+  {week:3,workMin:2.5,intensity:'80–85%',restSec:180},
+  {week:4,workMin:3,intensity:'85–90%',restSec:180,note:'Deload volume'},
+  {week:5,workMin:3.5,intensity:'85–90%',restSec:180},
+  {week:6,workMin:4,intensity:'85–90%',restSec:180},
+  {week:7,workMin:4,intensity:'85–92%',restSec:180},
+  {week:8,workMin:4,intensity:'85–95%',restSec:180,note:'Target ✓'},
+];
+// Ski Erg Norwegian progression — new modality for the Conditioning day,
+// starts at the 2-min stage per user instruction (skips the 1-min week).
+const NORWEGIAN_SKI_STAGES=[
   {week:2,workMin:2,intensity:'80–85%',restSec:180},
   {week:3,workMin:2.5,intensity:'80–85%',restSec:180},
   {week:4,workMin:3,intensity:'85–90%',restSec:180,note:'Deload volume'},
@@ -268,80 +283,54 @@ const GANBARU_SESSIONS=[
 // Rhomboid Modified sessions (5 sessions, no fixed rest days)
 const RHOMBOID_SESSIONS=[
   {
-    slot:0,key:'lower_b_sprints',kind:'power',title:'Lower B + Sprints',subtitle:'Hinge + Sprints',
-    warmup:{duration:'~5.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Leg swings — 10 front-to-back and 10 lateral, each leg','Hip internal rotation — 10 reps per side','Glute bridge — 10 reps','A-skips — 2 × 20m','2 × 30m strides at 60% effort']},
-    cooldown:{duration:'~5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Ankle circles — 30 sec each foot']},
-    exercises:[
-      {id:'broad_jump',name:'Broad Jump',scheme:'3 × 3–5',sets:3,track:'reps',rest:'Walk back, full recovery'},
-      {id:'sprints',name:'Sprints',scheme:'progression',track:'sprint'},
-      {id:'rdl_hyp',name:'Barbell Deadlift',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
-      {id:'bss',name:'Bulgarian Split Squat',scheme:'2–3 × 8–15/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
-      {id:'cable_kickback',name:'Cable Kickback (Unilateral)',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Hamstring floor stretch · 30s/side'},
-      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'3 × 15',sets:3,track:'weight',rest:'Ankle circles · 30s',note:'1-sec pause at top',ssGroup:'r1'},
-      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s',ssGroup:'r1'},
-    ],
-  },
-  {
-    slot:1,key:'upper_a',kind:'hypertrophy',title:'Upper Pull A',subtitle:'Horizontal + Vertical Pull',
+    slot:0,key:'back_a',kind:'hypertrophy',title:'Back A',subtitle:'Compound Pull + Grip',
     warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
     cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
     exercises:[
       {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
       {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
-      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
       {id:'db_reverse_fly',name:'DB Reverse Fly 45°',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
-      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
-      // Core Block finisher — Tabata circuit: 20s work / 10s rest × 4 rounds each,
-      // cycled continuously through Crunches → Leg Raises → Toe Touches →
-      // Bicycle Crunches → Scissor Kicks. Logged here as 4 × 20s sets each so
-      // every movement still gets its own trackable history.
-      {id:'hollow_body_hold',name:'Hollow Body Hold',scheme:'3 × 20–30 sec',sets:3,track:'time'},
-      {id:'crunches',name:'Crunches',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata: 20s work / 10s rest, cycling continuously through the 5-exercise circuit'},
-      {id:'leg_raises',name:'Leg Raises',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — straight into this after Crunches, 10s rest between'},
-      {id:'toe_touches',name:'Toe Touches',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — straight into this after Leg Raises, 10s rest between'},
-      {id:'bicycle_crunches',name:'Bicycle Crunches',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — straight into this after Toe Touches, 10s rest between'},
-      {id:'scissor_kicks',name:'Scissor Kicks',scheme:'4 × 20 sec',sets:4,track:'time',note:'Tabata circuit — final movement, 10s rest between, then cycle back to Crunches for round 2'},
+      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
+      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Wrist circles · 30s'},
     ],
   },
   {
-    slot:2,key:'zone2',kind:'zone2',title:'Zone 2 Walk',subtitle:'Aerobic Conditioning',special:'walk',
-    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
-    cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
-    walkNotes:['Nose breathing only throughout','45 min walk, 5 km building to 6 km','If breathing through mouth, slow down'],
+    slot:1,key:'back_b',kind:'hypertrophy',title:'Back B',subtitle:'Vertical + Horizontal Pull',
+    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
+    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
     exercises:[
-      {id:'bk_calf_raise',name:'Bent-Knee Calf Raises',scheme:'2 × 15',sets:2,track:'weight',rest:'Ankle circles · 30s'},
-      {id:'tib_raise',name:'Tibialis Raises',scheme:'2 × 15',sets:2,track:'reps',rest:'Ankle circles · 30s'},
-    ],
-  },
-  {
-    slot:3,key:'lower_a_swings',kind:'strength',title:'Lower A + Swings',subtitle:'Squat + Swings',
-    warmup:{duration:'~4 min',items:['Bent-knee calf raises — 2 × 10, 1-sec pause','Deep goblet squat with hip opening — 5 slow reps','Hip internal rotation — 10 reps per side','Leg swings — 10 front-to-back and 10 lateral, each leg','Single leg glute bridge (right side only) — 2 × 10, 1-sec pause']},
-    cooldown:{duration:'~4 min',items:['Hip flexor stretch kneeling — 45 sec per side','Hamstring floor stretch — 45 sec per side','Glute figure-4 stretch — 45 sec per side','Forward fold — 30 sec','Ankle circles — 30 sec each foot']},
-    exercises:[
-      {id:'box_jump',name:'Box Jump',scheme:'3 × 2–5',sets:3,track:'reps',rest:'Full recovery · 2–3 min',note:'Log box height in notes'},
-      {id:'back_squat',name:'Barbell Back Squat',scheme:'3 × 2–5',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side',note:'Push floor away with right foot at bottom'},
-      {id:'kb_swings_emom',name:'EMOM KB Swings',scheme:'progression',track:'kb_emom'},
-      {id:'hip_thrust',name:'Hip Thrust',scheme:'3 × 12',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side',ssGroup:'r1'},
-      {id:'back_ext',name:'Back Extensions',scheme:'3 × 12',sets:3,track:'weight',rest:'Glute figure-4 · 30s/side',ssGroup:'r1'},
-      {id:'walking_lunges',name:'Walking Lunges',scheme:'3 × 10/side',sets:3,track:'weight',rest:'Kneeling hip flexor · 30s/side'},
-    ],
-  },
-  {
-    slot:4,key:'upper_b_broccoli',kind:'mixed',title:'Upper Pull B + Broccoli',subtitle:'Pull + Norwegian 4×4',
-    warmup:{duration:'~6 min',items:['Bent-knee soleus stretch — 30 sec per side','KB Halo — 5 slow reps each direction, light bell','Arm circles — 10 reps each direction','Thoracic rotation in quadruped — 5 reps per side','Cat-cow — 8 slow reps','Scapular push-ups — 10 reps','Easy rowing — 2–3 min, building effort']},
-    cooldown:{duration:'~4 min',items:['Bent-knee soleus stretch — 45 sec per side','Shoulder cross-body stretch — 30 sec per side','Lat stretch against rack — 30 sec per side','Seated forward fold — 45 sec','Ankle circles — 30 sec each foot']},
-    exercises:[
-      {id:'norwegian_bike',name:'Norwegian 4×4 — Rowing',scheme:'progression',track:'norwegian_bike',intervalLabel:'3 min easy rowing between each · Rower'},
       {id:'straight_arm_pulldown',name:'Straight Arm Pulldown',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',ssGroup:'r2'},
+      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+      {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
+      {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r2'},
       {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
       {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
       {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
-      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Kneeling hip flexor · 30s/side'},
+    ],
+  },
+  {
+    slot:2,key:'chest_shoulders',kind:'hypertrophy',title:'Chest & Shoulders',subtitle:'Machine-Based Press',
+    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Shoulder dislocates with band — 10 reps','Light chest press machine ramp-up set — 15 reps, empty/light stack']},
+    cooldown:{duration:'~4 min',items:['Chest doorframe stretch — 30 sec','Shoulder cross-body stretch — 30 sec per side','Seated forward fold — 45 sec','Wrist circles — 30 sec']},
+    exercises:[
+      {id:'chest_press_machine',name:'Chest Press Machine',scheme:'4 × 6–12',sets:4,track:'weight',rest:'Chest doorframe · 30s'},
+      {id:'incline_chest_press_machine',name:'Incline Chest Press Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
+      {id:'shoulder_press_machine',name:'Shoulder Press Machine',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'pec_deck',name:'Pec Deck / Chest Fly Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
+      {id:'db_lateral_raise',name:'DB Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
+    ],
+  },
+  {
+    slot:3,key:'conditioning',kind:'zone2',title:'Conditioning',subtitle:'Elliptical + Ski Erg',special:'walk',
+    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
+    cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
+    walkNotes:['Elliptical — forward direction only, per physio','Zone 2 pace, 30–45 min, nose breathing target','Ski Erg Norwegian 4×4 follows — see exercise below'],
+    exercises:[
+      {id:'norwegian_ski',name:'Norwegian 4×4 — Ski Erg',scheme:'progression',track:'norwegian_ski',intervalLabel:'3 min easy pace between each · Ski Erg'},
     ],
   },
 ];
@@ -381,7 +370,7 @@ const GAIT_SESSIONS={
 
 const PROGRAMS={
   ganbaru:{ id:'ganbaru', name:'Ganbaru Method', sessions:GANBARU_SESSIONS, cycleLength:8, hasFixedRest:true },
-  rhomboid:{ id:'rhomboid', name:'Rhomboid Modified', sessions:RHOMBOID_SESSIONS, cycleLength:5, hasFixedRest:false },
+  rhomboid:{ id:'rhomboid', name:'Rhomboid Modified', sessions:RHOMBOID_SESSIONS, cycleLength:4, hasFixedRest:false },
   gait:{ id:'gait', name:'Gait Corrective', sessions:GAIT_SESSIONS, isPhaseProgram:true },
 };
 
@@ -429,7 +418,7 @@ const DATA_KEY='ganburu-v4';
 const DEFAULT_DATA={
   activeProgram:'ganbaru',
   cycleDays:{ganbaru:1,rhomboid:1},
-  progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0,norwegianBikeStageIndex:0,kbEmomWeight:16},
+  progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0,norwegianBikeStageIndex:0,norwegianSkiStageIndex:0,kbEmomWeight:16},
   gaitPhase:1,
   sessions:[], walks:[], cycleEvents:[],
 };
@@ -503,6 +492,7 @@ function buildFreshExercise(ex,data){
   if(ex.track==='sprint') return {intervalsText:'',duration:'',avgHR:'',maxHR:'',done:false,completedReps:0,stageIndex:data.progressions.sprintStageIndex??0};
   if(ex.track==='norwegian') return {done:false,completedReps:0,stageIndex:data.progressions.norwegianStageIndex??0,avgHR:'',maxHR:'',notes:''};
   if(ex.track==='norwegian_bike') return {done:false,completedReps:0,stageIndex:data.progressions.norwegianBikeStageIndex??0,avgHR:'',maxHR:'',notes:''};
+  if(ex.track==='norwegian_ski') return {done:false,completedReps:0,stageIndex:data.progressions.norwegianSkiStageIndex??0,avgHR:'',maxHR:'',notes:''};
   if(ex.track==='tgu') return {stageIndex:data.progressions.tguStageIndex,done:false};
   if(ex.track==='kb_swings'){const s=KB_SWING_STAGES[data.progressions.kbStageIndex]??KB_SWING_STAGES[0];return{weight:s.weight,rounds:s.minutes,completed:0,swingsPerRound:s.swingsPerMin,stageIndex:data.progressions.kbStageIndex,done:false};}
   if(ex.track==='kb_emom'){return{weight:data.progressions.kbEmomWeight??16,rounds:10,completed:0,swingsPerRound:10,done:false};}
@@ -518,6 +508,7 @@ function calcProgressionAdvances(session,exercises,progressions){
     if(ex.track==='sprint'&&logged.done&&logged.stageIndex===progressions.sprintStageIndex&&progressions.sprintStageIndex<SPRINT_STAGES.length-1) advances.sprintStageIndex=progressions.sprintStageIndex+1;
     if(ex.track==='norwegian'&&logged.done&&logged.stageIndex===progressions.norwegianStageIndex&&progressions.norwegianStageIndex<NORWEGIAN_STAGES.length-1) advances.norwegianStageIndex=progressions.norwegianStageIndex+1;
     if(ex.track==='norwegian_bike'&&logged.done&&logged.stageIndex===progressions.norwegianBikeStageIndex&&progressions.norwegianBikeStageIndex<NORWEGIAN_BIKE_STAGES.length-1) advances.norwegianBikeStageIndex=progressions.norwegianBikeStageIndex+1;
+    if(ex.track==='norwegian_ski'&&logged.done&&logged.stageIndex===progressions.norwegianSkiStageIndex&&progressions.norwegianSkiStageIndex<NORWEGIAN_SKI_STAGES.length-1) advances.norwegianSkiStageIndex=progressions.norwegianSkiStageIndex+1;
   });
   return advances;
 }
@@ -842,6 +833,7 @@ function NorwegianTrackBase({value,setValue,stages,label,recovery}){
 }
 function NorwegianTrack({value,setValue,recovery}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_STAGES} label="3 min walk between each" recovery={recovery}/>;}
 function NorwegianBikeTrack({value,setValue,recovery,label}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_BIKE_STAGES} label={label??"3 min easy pedaling between each · Assault Bike"} recovery={recovery}/>;}
+function NorwegianSkiTrack({value,setValue,recovery,label}){return <NorwegianTrackBase value={value} setValue={setValue} stages={NORWEGIAN_SKI_STAGES} label={label??"3 min easy pace between each · Ski Erg"} recovery={recovery}/>;}
 
 function TGUInline({value,setValue}){
   const stage=TGU_STAGES[value.stageIndex];
@@ -963,6 +955,7 @@ function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery})
         {exercise.track==='sprint'        &&<SprintTrack value={value} setValue={setValue}/>}
         {exercise.track==='norwegian'     &&<NorwegianTrack value={value} setValue={setValue} recovery={recovery}/>}
         {exercise.track==='norwegian_bike'&&<NorwegianBikeTrack value={value} setValue={setValue} recovery={recovery} label={exercise.intervalLabel}/>}
+        {exercise.track==='norwegian_ski'&&<NorwegianSkiTrack value={value} setValue={setValue} recovery={recovery} label={exercise.intervalLabel}/>}
         {exercise.track==='tgu'           &&<TGUInline value={value} setValue={setValue}/>}
         {exercise.track==='kb_swings'     &&<KBInline value={value} setValue={setValue}/>}
         {exercise.track==='kb_emom'       &&<KBEmomInline value={value} setValue={setValue}/>}
@@ -1346,6 +1339,7 @@ function TGUView(p){return<ProgressionView title="Turkish Get-Up" subtitle="From
 function KBView(p){return<ProgressionView title="KB Swings" subtitle="Builds to 30/min × 20 min @ 16kg." stages={KB_SWING_STAGES} stageKey="kbStageIndex" {...p} renderHero={s=><><div className="flex items-baseline gap-4 mb-1"><div className="serif text-4xl num">{s.swingsPerMin}<span className="text-stone-300 text-lg">/min</span></div><div className="serif text-2xl num text-stone-300">× {s.minutes}<span className="text-stone-400 text-sm"> min</span></div></div><div className="text-stone-300 text-sm num">{s.weight}kg · {s.total} total</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="flex items-baseline gap-2"><div className="serif text-base text-stone-900">{s.label}</div><div className="text-xs text-stone-500 num">{s.total} total</div></div><div className="text-xs text-stone-500 num">{s.swingsPerMin}/min × {s.minutes} min · {s.weight}kg</div></div>}/>;}
 function SprintsView(p){return<ProgressionView title="Sprints" subtitle="Shared across both programs · 8-week build to 8 × 20s @ 95%." stages={SPRINT_STAGES} stageKey="sprintStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">{s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · {s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-[10px] text-amber-700 mt-0.5">{s.note}</div>}</div>}/>;}
 function NorwegianBikeView(p){return<ProgressionView title="Norwegian 4×4 (Bike)" subtitle="Shared across both programs · Assault Bike intervals · gated to 3 intervals below 70% recovery." stages={NORWEGIAN_BIKE_STAGES} stageKey="norwegianBikeStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
+function NorwegianSkiView(p){return<ProgressionView title="Norwegian 4×4 (Ski Erg)" subtitle="Rhomboid Conditioning day · Ski Erg intervals · gated to 3 intervals below 70% recovery." stages={NORWEGIAN_SKI_STAGES} stageKey="norwegianSkiStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
 function HistoryView({data,update,setView}){
@@ -1440,6 +1434,7 @@ function HistoryDetailView({savedAt,data,setView}){
           {ex.track==='sprint'&&<div className="text-sm text-stone-700 num">{logged.completedReps} of {SPRINT_STAGES[logged.stageIndex]?.reps||'–'} sprints</div>}
           {ex.track==='norwegian'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged</div>}
           {ex.track==='norwegian_bike'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged</div>}
+          {ex.track==='norwegian_ski'&&<div className="text-sm text-stone-700 num">{logged.completedReps} intervals logged</div>}
           {ex.track==='tgu'&&<div className="text-sm text-stone-700 num">{TGU_STAGES[logged.stageIndex]?.label} {logged.done&&'✓'}</div>}
           {ex.track==='kb_swings'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/{logged.rounds} rounds {logged.done&&'✓'}</div>}
           {ex.track==='kb_emom'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/10 rounds × 10 {logged.done&&'✓'}</div>}
@@ -1667,6 +1662,7 @@ function HomeView({data,update,setView}){
             {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
             <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[p.sprintStageIndex].week} · shared</div></button>
             <button onClick={()=>setView({name:'norwegian_bike'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Bike)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week} · shared</div></button>
+            <button onClick={()=>setView({name:'norwegian_ski'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Ski Erg)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].week} · Rhomboid</div></button>
           </div>
         </section>
       )}
@@ -1712,6 +1708,7 @@ function App(){
           {view.name==='kb'             &&<KBView {...shared}/>}
           {view.name==='sprints'        &&<SprintsView {...shared}/>}
           {view.name==='norwegian_bike' &&<NorwegianBikeView {...shared}/>}
+          {view.name==='norwegian_ski'  &&<NorwegianSkiView {...shared}/>}
           {view.name==='history'        &&<HistoryView {...shared}/>}
           {view.name==='history-detail' &&<HistoryDetailView savedAt={view.savedAt} {...shared}/>}
           {view.name==='settings'       &&<SettingsView program={program} {...shared}/>}
