@@ -93,6 +93,7 @@ const RIR_MAP = {
   chest_press_machine:{type:'2-3'}, incline_chest_press_machine:{type:'1-2'},
   shoulder_press_machine:{type:'1-2'}, pec_deck:{type:'1-2'},
   db_lateral_raise:{type:'1-2'}, norwegian_ski:{type:'none',label:'HR-targeted'},
+  machine_reverse_fly:{type:'1-2'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -287,32 +288,17 @@ const RHOMBOID_SESSIONS=[
     warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
     cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
     exercises:[
-      {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
+      {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
       {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
       {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'db_reverse_fly',name:'DB Reverse Fly 45°',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'machine_reverse_fly',name:'Machine Reverse Fly',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
       {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
       {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Wrist circles · 30s'},
     ],
   },
   {
-    slot:1,key:'back_b',kind:'hypertrophy',title:'Back B',subtitle:'Vertical + Horizontal Pull',
-    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
-    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
-    exercises:[
-      {id:'straight_arm_pulldown',name:'Straight Arm Pulldown',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
-      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
-      {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
-      {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r2'},
-      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
-      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
-      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
-    ],
-  },
-  {
-    slot:2,key:'chest_shoulders',kind:'hypertrophy',title:'Chest & Shoulders',subtitle:'Machine-Based Press',
+    slot:1,key:'chest_shoulders',kind:'hypertrophy',title:'Chest & Shoulders',subtitle:'Machine-Based Press',
     warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Shoulder dislocates with band — 10 reps','Light chest press machine ramp-up set — 15 reps, empty/light stack']},
     cooldown:{duration:'~4 min',items:['Chest doorframe stretch — 30 sec','Shoulder cross-body stretch — 30 sec per side','Seated forward fold — 45 sec','Wrist circles — 30 sec']},
     exercises:[
@@ -322,6 +308,21 @@ const RHOMBOID_SESSIONS=[
       {id:'pec_deck',name:'Pec Deck / Chest Fly Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
       {id:'db_lateral_raise',name:'DB Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
       {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
+    ],
+  },
+  {
+    slot:2,key:'back_b',kind:'hypertrophy',title:'Back B',subtitle:'Vertical + Horizontal Pull',
+    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
+    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
+    exercises:[
+      {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
+      {id:'straight_arm_pulldown',name:'Straight Arm Pulldown',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
+      {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'incline_db_curl',name:'Incline DB Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+      {id:'single_arm_cable_pushdown',name:'Single Arm Cable Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r2'},
+      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'wrist_curl',name:'Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
+      {id:'reverse_wrist_curl',name:'Reverse Wrist Curls',scheme:'3 × 15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r3'},
     ],
   },
   {
