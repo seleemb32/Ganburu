@@ -436,11 +436,27 @@ function migrateV3toV4(){
     return {
       activeProgram:'ganbaru',
       cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1},
-      progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
+      progressions:clampProgressions({...DEFAULT_DATA.progressions,...(p.progressions||{})}),
       gaitPhase:1,
       sessions,walks,cycleEvents,
     };
   }catch{ return null; }
+}
+
+// Stored stage indexes can outlive their arrays when a progression track is
+// rebuilt or shortened. An out-of-range index makes HomeView dereference
+// undefined and white-screens the whole app, so clamp everything on load.
+function clampProgressions(pr){
+  const idx=(v,len)=>{const n=Number.isFinite(v)?v:0;return Math.max(0,Math.min(len-1,n));};
+  return {
+    ...pr,
+    tguStageIndex:idx(pr.tguStageIndex,TGU_STAGES.length),
+    kbStageIndex:idx(pr.kbStageIndex,KB_SWING_STAGES.length),
+    sprintStageIndex:idx(pr.sprintStageIndex,SPRINT_STAGES.length),
+    norwegianStageIndex:idx(pr.norwegianStageIndex,NORWEGIAN_STAGES.length),
+    norwegianBikeStageIndex:idx(pr.norwegianBikeStageIndex,NORWEGIAN_BIKE_STAGES.length),
+    norwegianSkiStageIndex:idx(pr.norwegianSkiStageIndex,NORWEGIAN_SKI_STAGES.length),
+  };
 }
 
 function loadData(){
@@ -450,9 +466,9 @@ function loadData(){
       const p=JSON.parse(res.value);
       return {
         ...DEFAULT_DATA,...p,
-        activeProgram:p.activeProgram??'ganbaru',
+        activeProgram:PROGRAMS[p.activeProgram]?p.activeProgram:'ganbaru',
         cycleDays:{...DEFAULT_DATA.cycleDays,...(p.cycleDays||{})},
-        progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
+        progressions:clampProgressions({...DEFAULT_DATA.progressions,...(p.progressions||{})}),
         gaitPhase:Math.max(1,Math.min(3,p.gaitPhase??1)),
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
@@ -1730,4 +1746,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
