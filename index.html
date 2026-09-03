@@ -284,35 +284,8 @@ const GANBARU_SESSIONS=[
 // Rhomboid Modified sessions (5 sessions, no fixed rest days)
 const RHOMBOID_SESSIONS=[
   {
-    slot:0,key:'back_a',kind:'hypertrophy',title:'Back A',subtitle:'Compound Pull + Grip',
-    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
-    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
-    exercises:[
-      {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
-      {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
-      {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
-      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'machine_reverse_fly',name:'Machine Reverse Fly',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
-      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Wrist circles · 30s'},
-    ],
-  },
-  {
-    slot:1,key:'chest_shoulders',kind:'hypertrophy',title:'Chest & Shoulders',subtitle:'Machine-Based Press',
-    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Shoulder dislocates with band — 10 reps','Light chest press machine ramp-up set — 15 reps, empty/light stack']},
-    cooldown:{duration:'~4 min',items:['Chest doorframe stretch — 30 sec','Shoulder cross-body stretch — 30 sec per side','Seated forward fold — 45 sec','Wrist circles — 30 sec']},
-    exercises:[
-      {id:'chest_press_machine',name:'Chest Press Machine',scheme:'4 × 6–12',sets:4,track:'weight',rest:'Chest doorframe · 30s'},
-      {id:'incline_chest_press_machine',name:'Incline Chest Press Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
-      {id:'shoulder_press_machine',name:'Shoulder Press Machine',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
-      {id:'pec_deck',name:'Pec Deck / Chest Fly Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
-      {id:'db_lateral_raise',name:'DB Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
-      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
-    ],
-  },
-  {
-    slot:2,key:'back_b',kind:'hypertrophy',title:'Back B',subtitle:'Vertical + Horizontal Pull',
-    warmup:{duration:'~4 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
+    slot:0,key:'back_a',kind:'hypertrophy',title:'Back A',subtitle:'Vertical + Horizontal Pull',
+    warmup:{duration:'~4.5 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','YTWL (light plate or band) — 6–8 reps each position','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
     cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
     exercises:[
       {id:'barbell_row',name:'Barbell Row',scheme:'3 × 5–8',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side',note:'Overhand grip'},
@@ -326,8 +299,35 @@ const RHOMBOID_SESSIONS=[
     ],
   },
   {
+    slot:1,key:'chest_shoulders',kind:'hypertrophy',title:'Chest & Shoulders',subtitle:'Machine-Based Press',
+    warmup:{duration:'~4.5 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','YTWL (light plate or band) — 6–8 reps each position','Scapular push-ups — 10 reps','Shoulder dislocates with band — 10 reps','Light chest press machine ramp-up set — 15 reps, empty/light stack']},
+    cooldown:{duration:'~4 min',items:['Chest doorframe stretch — 30 sec','Shoulder cross-body stretch — 30 sec per side','Seated forward fold — 45 sec','Wrist circles — 30 sec']},
+    exercises:[
+      {id:'chest_press_machine',name:'Chest Press Machine',scheme:'4 × 6–12',sets:4,track:'weight',rest:'Chest doorframe · 30s'},
+      {id:'incline_chest_press_machine',name:'Incline Chest Press Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
+      {id:'shoulder_press_machine',name:'Shoulder Press Machine',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'pec_deck',name:'Pec Deck / Chest Fly Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
+      {id:'db_lateral_raise',name:'DB Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
+      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
+    ],
+  },
+  {
+    slot:2,key:'back_b',kind:'hypertrophy',title:'Back B',subtitle:'Compound Pull + Grip',
+    warmup:{duration:'~4.5 min',items:['Arm circles — 10 reps each direction','Band pull-aparts — 2 × 15','YTWL (light plate or band) — 6–8 reps each position','Scapular push-ups — 10 reps','Thoracic rotation in quadruped — 5 reps per side','Chin tucks — 10 reps, 5 sec hold']},
+    cooldown:{duration:'~4 min',items:['Shoulder cross-body stretch — 30 sec per side','Thoracic rotation in quadruped — 30 sec per side','Lat stretch against rack — 30 sec per side','Levator scapulae stretch — 30 sec per side','Wrist circles — 30 sec']},
+    exercises:[
+      {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
+      {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
+      {id:'db_row',name:'Single Arm DB Row',scheme:'3 × 6–12/side',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
+      {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'machine_reverse_fly',name:'Machine Reverse Fly',scheme:'3 × 15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
+      {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Wrist circles · 30s'},
+    ],
+  },
+  {
     slot:3,key:'conditioning',kind:'zone2',title:'Conditioning',subtitle:'Elliptical + Ski Erg',special:'walk',
-    warmup:{duration:'~3.5 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
+    warmup:{duration:'~4 min',items:['Bent-knee soleus stretch — 30 sec per side','Bent-knee calf raises — 2 × 10, 1-sec pause','YTWL (light plate or band) — 6–8 reps each position','Ankle circles — 30 sec each foot','Leg swings — 10 front-to-back and 10 lateral, each leg']},
     cooldown:{duration:'~2.5 min',items:['Bent-knee soleus stretch — 45 sec per side','Straight-leg calf stretch — 30 sec per side','Ankle circles — 30 sec each foot']},
     walkNotes:['Elliptical — forward direction only, per physio','Zone 2 pace, 30–45 min, nose breathing target','Ski Erg Norwegian 4×4 follows — see exercise below'],
     exercises:[
@@ -436,27 +436,11 @@ function migrateV3toV4(){
     return {
       activeProgram:'ganbaru',
       cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1},
-      progressions:clampProgressions({...DEFAULT_DATA.progressions,...(p.progressions||{})}),
+      progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
       gaitPhase:1,
       sessions,walks,cycleEvents,
     };
   }catch{ return null; }
-}
-
-// Stored stage indexes can outlive their arrays when a progression track is
-// rebuilt or shortened. An out-of-range index makes HomeView dereference
-// undefined and white-screens the whole app, so clamp everything on load.
-function clampProgressions(pr){
-  const idx=(v,len)=>{const n=Number.isFinite(v)?v:0;return Math.max(0,Math.min(len-1,n));};
-  return {
-    ...pr,
-    tguStageIndex:idx(pr.tguStageIndex,TGU_STAGES.length),
-    kbStageIndex:idx(pr.kbStageIndex,KB_SWING_STAGES.length),
-    sprintStageIndex:idx(pr.sprintStageIndex,SPRINT_STAGES.length),
-    norwegianStageIndex:idx(pr.norwegianStageIndex,NORWEGIAN_STAGES.length),
-    norwegianBikeStageIndex:idx(pr.norwegianBikeStageIndex,NORWEGIAN_BIKE_STAGES.length),
-    norwegianSkiStageIndex:idx(pr.norwegianSkiStageIndex,NORWEGIAN_SKI_STAGES.length),
-  };
 }
 
 function loadData(){
@@ -466,9 +450,9 @@ function loadData(){
       const p=JSON.parse(res.value);
       return {
         ...DEFAULT_DATA,...p,
-        activeProgram:PROGRAMS[p.activeProgram]?p.activeProgram:'ganbaru',
+        activeProgram:p.activeProgram??'ganbaru',
         cycleDays:{...DEFAULT_DATA.cycleDays,...(p.cycleDays||{})},
-        progressions:clampProgressions({...DEFAULT_DATA.progressions,...(p.progressions||{})}),
+        progressions:{...DEFAULT_DATA.progressions,...(p.progressions||{})},
         gaitPhase:Math.max(1,Math.min(3,p.gaitPhase??1)),
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
