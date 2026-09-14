@@ -94,6 +94,7 @@ const RIR_MAP = {
   shoulder_press_machine:{type:'1-2'}, pec_deck:{type:'1-2'},
   db_lateral_raise:{type:'1-2'}, norwegian_ski:{type:'none',label:'HR-targeted'},
   machine_reverse_fly:{type:'1-2'},
+  overhead_tricep_extension:{type:'1-2'},
 };
 function getRIR(exId,recovery){
   const cfg=RIR_MAP[exId]; if(!cfg) return null;
@@ -307,8 +308,9 @@ const RHOMBOID_SESSIONS=[
       {id:'incline_chest_press_machine',name:'Incline Chest Press Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
       {id:'shoulder_press_machine',name:'Shoulder Press Machine',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
       {id:'pec_deck',name:'Pec Deck / Chest Fly Machine',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Chest doorframe · 30s'},
-      {id:'db_lateral_raise',name:'DB Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side'},
-      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
+      {id:'db_lateral_raise',name:'DB Lateral Raises',scheme:'3 × 12–15/side',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
+      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s'},
     ],
   },
   {
@@ -319,9 +321,9 @@ const RHOMBOID_SESSIONS=[
       {id:'chest_supported_row',name:'Chest Supported DB Row',scheme:'3 × 8–12',sets:3,track:'weight',rest:'Thoracic rotation quadruped · 30s/side'},
       {id:'lat_pulldown',name:'Lat Pulldown',scheme:'3 × 8–15',sets:3,track:'weight',rest:'Lat stretch against rack · 30s/side'},
       {id:'face_pull',name:'Cable Face Pull',scheme:'3 × 12–15',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r1'},
-      {id:'cable_curl',name:'Cable Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
+      {id:'cable_tricep_pushdown',name:'Cable Tricep Pushdown',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r1'},
       {id:'cable_row',name:'Cable Seated Row',scheme:'3 × 6–12',sets:3,track:'weight',rest:'Shoulder cross-body · 30s/side',ssGroup:'r2'},
-      {id:'hammer_curl',name:'Hammer Curl',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
+      {id:'overhead_tricep_extension',name:'Overhead Cable Tricep Extension',scheme:'3 × 10–15',sets:3,track:'weight',rest:'Wrist circles · 30s',ssGroup:'r2'},
       {id:'farmer',name:'Farmer Carry',scheme:'2–3 × 30m',sets:3,track:'farmer',rest:'Wrist circles · 30s'},
     ],
   },
