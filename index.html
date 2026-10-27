@@ -373,9 +373,72 @@ const GAIT_SESSIONS={
 
 const PROGRAMS={
   ganbaru:{ id:'ganbaru', name:'Ganbaru Method', sessions:GANBARU_SESSIONS, cycleLength:8, hasFixedRest:true },
-  rhomboid:{ id:'rhomboid', name:'Rhomboid Modified', sessions:RHOMBOID_SESSIONS, cycleLength:4, hasFixedRest:false },
+  // id stays 'rhomboid' so all logged history keeps resolving; only the display name changed.
+  rhomboid:{ id:'rhomboid', name:'Injury Modified', get sessions(){return injurySessions();}, cycleLength:4, hasFixedRest:false },
   gait:{ id:'gait', name:'Gait Corrective', sessions:GAIT_SESSIONS, isPhaseProgram:true },
 };
+
+// ── IMPORTED SESSIONS (Injury Modified) ─────────────────────────────────────
+// Sessions pasted in as a JSON block live in data.customSessions and are mirrored
+// here on every render (see App). They are never hard-deleted: "Remove" archives
+// them so logged history still resolves its template by sessionKey.
+let CUSTOM_SESSIONS=[];
+function injurySessions(){
+  const active=CUSTOM_SESSIONS.filter(c=>!c.archived);
+  const replaced=[];
+  const base=RHOMBOID_SESSIONS.map(s=>{
+    const r=active.find(c=>c.replaces===s.key);
+    if(!r) return s;
+    replaced.push(s);
+    return {...r,slot:s.slot,custom:true,inCycle:true};
+  });
+  // Originals that were swapped out stay resolvable by key for old history,
+  // then every imported session (active or archived) for key lookups and the
+  // standalone list. Cycle views only read the first cycleLength entries.
+  return [...base,...replaced,...CUSTOM_SESSIONS.map(c=>({...c,custom:true,inCycle:false}))];
+}
+const IMPORT_TRACKS=['weight','reps','time'];
+function parseSessionBlock(text){
+  let raw=String(text||'').trim().replace(/^```[a-zA-Z]*\s*/,'').replace(/```\s*$/,'').trim();
+  let p;
+  try{p=JSON.parse(raw);}catch{throw new Error('That is not valid JSON. Copy the whole block, including the first { and last }.');}
+  if(!p||typeof p!=='object'||Array.isArray(p)) throw new Error('Expected one session block.');
+  const title=String(p.title||'').trim(); if(!title) throw new Error('Missing "title".');
+  const slug=String(p.key||title).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+  if(!slug) throw new Error('Could not build a key from the title.');
+  const key='custom_'+slug;
+  let replaces=p.replaces?String(p.replaces).trim():null;
+  if(replaces&&!RHOMBOID_SESSIONS.some(s=>s.key===replaces)) throw new Error(`"replaces" must be one of: ${RHOMBOID_SESSIONS.map(s=>s.key).join(', ')}.`);
+  const kind=p.kind?String(p.kind):'hypertrophy';
+  if(!THEMES[kind]||kind==='rest') throw new Error(`Unknown "kind": ${kind}.`);
+  const block=(v,dur)=>{
+    if(!v) return null;
+    const items=Array.isArray(v)?v:(Array.isArray(v.items)?v.items:null);
+    if(!items||!items.length) return null;
+    return {duration:String((!Array.isArray(v)&&v.duration)||dur||'~5 min'),items:items.map(x=>String(x))};
+  };
+  if(!Array.isArray(p.exercises)||!p.exercises.length) throw new Error('Needs at least one exercise.');
+  const seen=new Set();
+  const exercises=p.exercises.map((e,i)=>{
+    const n=i+1;
+    const id=String(e?.id||'').trim();
+    if(!/^[a-z0-9_]+$/.test(id)) throw new Error(`Exercise ${n}: "id" must be lowercase letters, numbers or _.`);
+    if(seen.has(id)) throw new Error(`Exercise ${n}: id "${id}" is used twice.`);
+    seen.add(id);
+    const name=String(e.name||'').trim(); if(!name) throw new Error(`Exercise ${n}: missing "name".`);
+    const sets=parseInt(e.sets,10); if(!(sets>=1&&sets<=10)) throw new Error(`Exercise ${n}: "sets" must be 1 to 10.`);
+    const track=e.track?String(e.track):'weight';
+    if(!IMPORT_TRACKS.includes(track)) throw new Error(`Exercise ${n}: "track" must be ${IMPORT_TRACKS.join(', ')}.`);
+    const reps=e.reps!=null?String(e.reps):'';
+    const ex={id,name,sets,track,scheme:e.scheme?String(e.scheme):(reps?`${sets} × ${reps}`:`${sets} sets`)};
+    if(e.rir!=null&&String(e.rir).trim()) ex.rir=String(e.rir).trim();
+    if(e.note) ex.note=String(e.note);
+    if(e.rest) ex.rest=String(e.rest);
+    if(e.superset) ex.ssGroup='imp_'+String(e.superset);
+    return ex;
+  });
+  return {key,title,subtitle:String(p.subtitle||''),kind,replaces,warmup:block(p.warmup,p.warmupDuration),cooldown:block(p.cooldown,p.cooldownDuration),exercises,importedAt:new Date().toISOString(),archived:false};
+}
 
 // Resolves the session template for a logged/edited item regardless of whether
 // it came from a cycle-based program (by slot) or the phase-based Gait program.
@@ -411,7 +474,7 @@ const THEMES={
   rest:{label:'Rest',bg:'bg-stone-100',text:'text-stone-600',border:'border-stone-200',stripe:'bg-stone-400'},
 };
 
-function buildCycle(program){ return program.sessions.map((s,i)=>({day:i+1,slot:i})); }
+function buildCycle(program){ return program.sessions.slice(0,program.cycleLength??program.sessions.length).map((s,i)=>({day:i+1,slot:i})); }
 function cycleEntry(program,day){const len=program.cycleLength;const safe=((day-1)%len+len)%len;return {day:safe+1,slot:safe};}
 function nextCycleDay(program,day){return(day%program.cycleLength)+1;}
 const todayISO=()=>new Date().toISOString().slice(0,10);
@@ -423,7 +486,7 @@ const DEFAULT_DATA={
   cycleDays:{ganbaru:1,rhomboid:1},
   progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0,norwegianBikeStageIndex:0,norwegianSkiStageIndex:0,kbEmomWeight:16},
   gaitPhase:1,
-  sessions:[], walks:[], cycleEvents:[],
+  sessions:[], walks:[], cycleEvents:[], customSessions:[],
 };
 
 // One-time migration from v3 (single program) to v4 (multi program)
@@ -459,6 +522,7 @@ function loadData(){
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
         cycleEvents:Array.isArray(p.cycleEvents)?p.cycleEvents:[],
+        customSessions:Array.isArray(p.customSessions)?p.customSessions:[],
       };
     }
     // No v4 — try migrating v3
@@ -945,7 +1009,7 @@ function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery})
         <h3 className="serif text-xl text-stone-900 leading-tight">{exercise.name}</h3>
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className={`text-[11px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full num`}>{exercise.scheme}</span>
-          <RIRBadge exId={exercise.id} recovery={recovery} small/>
+          {exercise.rir?<span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-100 border border-stone-200 text-stone-600 uppercase tracking-wider font-medium flex-shrink-0 num">{exercise.rir} RIR</span>:<RIRBadge exId={exercise.id} recovery={recovery} small/>}
         </div>
       </div>
       {exercise.rest&&<div className={`text-xs ${theme.text} opacity-80 mb-1 italic`}>Rest · {exercise.rest}</div>}
@@ -1025,12 +1089,14 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   const resolvedSlot=isEditing
     ?(existing.sessionKey!=null&&slotForKey(exProg,existing.sessionKey)>=0?slotForKey(exProg,existing.sessionKey):(existing.slot??slot??0))
     :(slot??cycleEntry(prog,data.cycleDays[program]).slot);
-  const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??1):(cycleDay??data.cycleDays[program]);
   const session=exProg.sessions[resolvedSlot],theme=THEMES[session.kind];
+  // Imported sessions that don't replace a cycle slot are logged outside the cycle.
+  const standalone=!!session.custom&&!session.inCycle;
+  const resolvedCycleDay=isEditing?(existing.cycleDay??cycleDay??null):(standalone?null:(cycleDay??data.cycleDays[program]));
   // Logging a day other than the one the cycle is currently sitting on (e.g. tapped
   // an earlier/later day from the cycle list to fill in a missed session) should
   // NOT skip the cycle forward past whatever is actually still due.
-  const isCurrentDay=!isEditing&&exProgram===program&&resolvedCycleDay===(data.cycleDays[program]??1);
+  const isCurrentDay=!isEditing&&!standalone&&exProgram===program&&resolvedCycleDay===(data.cycleDays[program]??1);
   const [hadDraft,setHadDraft]=useState(false);
   const [workoutStarted,setWorkoutStarted]=useState(false);
   const [saving,setSaving]=useState(false);
@@ -1101,10 +1167,10 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
       <header className="mb-4">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span>
+          <span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · {standalone?'Imported':`Day ${resolvedCycleDay??'–'}/${exProg.cycleLength}`}</span>
           <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
           {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
-          {!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}
+          {!isEditing&&!isCurrentDay&&!standalone&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}
         </div>
         <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
         <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
@@ -1130,7 +1196,7 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={state.cooldownDone} onToggle={()=>setState(s=>({...s,cooldownDone:!s.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       <SessionMeta session={state} setSession={setState} theme={theme}/>
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':'Save entry (cycle stays)'}</button>
+      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':standalone?'Save entry':'Save entry (cycle stays)'}</button>
     </div>
   );
 }
@@ -1348,7 +1414,7 @@ function TGUView(p){return<ProgressionView title="Turkish Get-Up" subtitle="From
 function KBView(p){return<ProgressionView title="KB Swings" subtitle="Builds to 30/min × 20 min @ 16kg." stages={KB_SWING_STAGES} stageKey="kbStageIndex" {...p} renderHero={s=><><div className="flex items-baseline gap-4 mb-1"><div className="serif text-4xl num">{s.swingsPerMin}<span className="text-stone-300 text-lg">/min</span></div><div className="serif text-2xl num text-stone-300">× {s.minutes}<span className="text-stone-400 text-sm"> min</span></div></div><div className="text-stone-300 text-sm num">{s.weight}kg · {s.total} total</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="flex items-baseline gap-2"><div className="serif text-base text-stone-900">{s.label}</div><div className="text-xs text-stone-500 num">{s.total} total</div></div><div className="text-xs text-stone-500 num">{s.swingsPerMin}/min × {s.minutes} min · {s.weight}kg</div></div>}/>;}
 function SprintsView(p){return<ProgressionView title="Sprints" subtitle="Shared across both programs · 8-week build to 8 × 20s @ 95%." stages={SPRINT_STAGES} stageKey="sprintStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">{s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · {s.reps} × {s.sprintSec}s @ {s.intensity}</div>{s.note&&<div className="text-[10px] text-amber-700 mt-0.5">{s.note}</div>}</div>}/>;}
 function NorwegianBikeView(p){return<ProgressionView title="Norwegian 4×4 (Bike)" subtitle="Shared across both programs · Assault Bike intervals · gated to 3 intervals below 70% recovery." stages={NORWEGIAN_BIKE_STAGES} stageKey="norwegianBikeStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
-function NorwegianSkiView(p){return<ProgressionView title="Norwegian 4×4 (Ski Erg)" subtitle="Rhomboid Conditioning day · Ski Erg intervals · gated to 3 intervals below 70% recovery." stages={NORWEGIAN_SKI_STAGES} stageKey="norwegianSkiStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
+function NorwegianSkiView(p){return<ProgressionView title="Norwegian 4×4 (Ski Erg)" subtitle="Injury Modified Conditioning day · Ski Erg intervals · gated to 3 intervals below 70% recovery." stages={NORWEGIAN_SKI_STAGES} stageKey="norwegianSkiStageIndex" {...p} renderHero={s=><><div className="serif text-3xl num mb-1">4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div>{s.note&&<div className="text-xs text-amber-300 mt-1">{s.note}</div>}</>} renderRow={s=><div className="flex-1"><div className="serif text-base text-stone-900 num">Wk {s.week} · 4 × {fmtWorkMin(s.workMin)} @ {s.intensity}</div></div>}/>;}
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
 function HistoryView({data,update,setView}){
@@ -1361,13 +1427,13 @@ function HistoryView({data,update,setView}){
   ].sort((a,b)=>{const ad=a.date||'',bd=b.date||'';return ad!==bd?bd.localeCompare(ad):(b.savedAt||'').localeCompare(a.savedAt||'');});
   if(filter!=='all') all=all.filter(x=>progOf(x)===filter);
   const badgeClass=p=>p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
-  const badgeLabel=p=>p==='rhomboid'?'Rhomboid':p==='gait'?'Gait Corrective':'Ganbaru';
+  const badgeLabel=p=>p==='rhomboid'?'Injury':p==='gait'?'Gait Corrective':'Ganbaru';
   return(
     <div>
       <TopBar onBack={()=>setView({name:'home'})}/>
       <header className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Log</div><h1 className="serif text-4xl text-stone-900">History</h1></header>
       <div className="flex gap-1.5 mb-5 bg-stone-100 rounded-xl p-1">
-        {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Rhomboid'],['gait','Gait']].map(([k,l])=>(
+        {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Injury'],['gait','Gait']].map(([k,l])=>(
           <button key={k} onClick={()=>setFilter(k)} className={`flex-1 py-2 text-xs rounded-lg ${filter===k?'bg-white text-stone-900 shadow-sm font-medium':'text-stone-500'}`}>{l}</button>
         ))}
       </div>
@@ -1461,7 +1527,7 @@ function SettingsView({program,data,update,setView}){
   const cycle=isGait?[]:buildCycle(prog);
   const [copyStatus,setCopyStatus]=useState(null),[importOpen,setImportOpen]=useState(false),[importText,setImportText]=useState(''),[importStatus,setImportStatus]=useState(null),[importError,setImportError]=useState('');
   const exportJSON=()=>{
-    const exportable={exportVersion:4,exportedAt:new Date().toISOString(),activeProgram:data.activeProgram,cycleDays:data.cycleDays,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
+    const exportable={exportVersion:4,exportedAt:new Date().toISOString(),activeProgram:data.activeProgram,cycleDays:data.cycleDays,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],customSessions:data.customSessions||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
     const text=JSON.stringify(exportable,null,2);
     if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>{setCopyStatus('copied');setTimeout(()=>setCopyStatus(null),3000);},()=>dl(text));else dl(text);
   };
@@ -1474,7 +1540,7 @@ function SettingsView({program,data,update,setView}){
       // v3 (single-program) imports: tag everything as ganbaru
       const tag=arr=>Array.isArray(arr)?arr.map(x=>({...x,program:x.program??'ganbaru'})):arr;
       const cycleDays=p.cycleDays?p.cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1};
-      update(d=>({...d,activeProgram:p.activeProgram??d.activeProgram,cycleDays:{...d.cycleDays,...cycleDays},progressions:{...d.progressions,...(p.progressions||{})},sessions:tag(p.sessions)||d.sessions,walks:tag(p.walks)||d.walks,cycleEvents:tag(p.cycleEvents)||(d.cycleEvents||[])}));
+      update(d=>({...d,activeProgram:p.activeProgram??d.activeProgram,cycleDays:{...d.cycleDays,...cycleDays},progressions:{...d.progressions,...(p.progressions||{})},sessions:tag(p.sessions)||d.sessions,walks:tag(p.walks)||d.walks,cycleEvents:tag(p.cycleEvents)||(d.cycleEvents||[]),customSessions:Array.isArray(p.customSessions)?p.customSessions:(d.customSessions||[])}));
       setImportStatus('success');setImportText('');setTimeout(()=>{setImportStatus(null);setImportOpen(false);},2000);
     }catch(e){setImportStatus('error');setImportError(e.message||'Could not parse');}
   };
@@ -1522,8 +1588,63 @@ function SettingsView({program,data,update,setView}){
 }
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
+function ImportSessionSheet({data,update,onClose}){
+  const [text,setText]=useState('');
+  const [parsed,setParsed]=useState(null);
+  const [error,setError]=useState('');
+  const customs=data.customSessions||[];
+  const preview=()=>{setError('');try{setParsed(parseSessionBlock(text));}catch(e){setParsed(null);setError(e.message||'Could not read that block.');}};
+  const existing=parsed?customs.find(c=>c.key===parsed.key):null;
+  const displaced=parsed?.replaces?customs.filter(c=>!c.archived&&c.replaces===parsed.replaces&&c.key!==parsed.key):[];
+  const replacedTitle=parsed?.replaces?RHOMBOID_SESSIONS.find(s=>s.key===parsed.replaces)?.title:null;
+  const save=()=>{
+    if(!parsed)return;
+    update(d=>{
+      const list=(d.customSessions||[]).map(c=>(parsed.replaces&&c.replaces===parsed.replaces&&c.key!==parsed.key)?{...c,replaces:null}:c);
+      const i=list.findIndex(c=>c.key===parsed.key);
+      const next=i>=0?list.map((c,j)=>j===i?{...parsed,importedAt:c.importedAt||parsed.importedAt,updatedAt:new Date().toISOString()}:c):[...list,parsed];
+      return {...d,customSessions:next};
+    });
+    onClose();
+  };
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={onClose}>
+      <div style={{background:'#fafaf9',borderRadius:16,maxWidth:448,width:'100%',padding:20,maxHeight:'88vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
+        <div className="text-[10px] uppercase tracking-widest text-stone-500 text-center">Injury Modified</div>
+        <div className="serif text-xl text-stone-900 text-center mt-1 mb-4">Import session</div>
+        {!parsed?(
+          <>
+            <textarea value={text} onChange={e=>{setText(e.target.value);setError('');}} className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none min-h-[180px] font-mono" placeholder='Paste the session block here'/>
+            {error&&<div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2 mt-2">{error}</div>}
+            <button onClick={preview} disabled={!text.trim()} className="w-full bg-blue-900 text-stone-50 rounded-xl py-3 mt-3 text-sm disabled:opacity-40">Preview</button>
+          </>
+        ):(
+          <>
+            <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
+              <div className="serif text-lg text-stone-900">{parsed.title}</div>
+              {parsed.subtitle&&<div className="text-xs text-stone-500 mt-0.5">{parsed.subtitle}</div>}
+              <div className="text-[10px] uppercase tracking-wider text-stone-500 mt-2">{replacedTitle?`Takes the ${replacedTitle} slot in the cycle`:'Separate session · cycle stays'}{parsed.warmup?` · warm-up ${parsed.warmup.items.length} items`:''}</div>
+              <div className="mt-3 space-y-1.5">{parsed.exercises.map(ex=>(
+                <div key={ex.id} className="flex items-baseline justify-between gap-3 text-sm"><span className="text-stone-800">{ex.name}{ex.ssGroup&&<span className="text-[10px] text-amber-700 ml-1">SS</span>}</span><span className="text-xs text-stone-500 num flex-shrink-0">{ex.scheme}{ex.rir?` · ${ex.rir} RIR`:''}</span></div>
+              ))}</div>
+            </div>
+            {existing&&<div className="text-xs text-blue-900 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 mb-2">Updates your existing "{existing.title}". Logged history stays linked.</div>}
+            {displaced.length>0&&<div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-2">"{displaced.map(c=>c.title).join('", "')}" moves out of the cycle and stays in your imported list until you remove it.</div>}
+            <div className="flex gap-2">
+              <button onClick={()=>setParsed(null)} className="flex-1 bg-white border border-stone-200 text-stone-700 rounded-xl py-3 text-sm">Back</button>
+              <button onClick={save} className="flex-1 bg-purple-700 text-white rounded-xl py-3 text-sm">{existing?'Update session':'Save session'}</button>
+            </div>
+          </>
+        )}
+        <button onClick={onClose} className="w-full py-3 text-stone-500 text-sm mt-1">Cancel</button>
+      </div>
+    </div>
+  );
+}
+
 function HomeView({data,update,setView}){
   const [skipOpen,setSkipOpen]=useState(false);
+  const [importOpen,setImportOpen]=useState(false);
   const program=data.activeProgram??'ganbaru';
   const prog=PROGRAMS[program];
   const isGait=!!prog.isPhaseProgram;
@@ -1563,7 +1684,7 @@ function HomeView({data,update,setView}){
   return(
     <div>
       <header className="mb-5 flex items-start justify-between gap-3">
-        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V13</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
+        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V14</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
         <button onClick={()=>setView({name:'settings'})} className="w-10 h-10 rounded-full bg-white border border-stone-200 flex items-center justify-center"><I.settings/></button>
       </header>
 
@@ -1649,7 +1770,7 @@ function HomeView({data,update,setView}){
 
       {!isGait&&(
         <section className="mb-8">
-          <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">{isRhom?'The 5-day cycle':'The 8-day cycle'}</h2><span className="text-xs text-stone-500">Tap to open</span></div>
+          <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">{`The ${prog.cycleLength}-day cycle`}</h2><span className="text-xs text-stone-500">Tap to open</span></div>
           <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
             {cycle.map((c,i)=>{
               const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
@@ -1663,6 +1784,33 @@ function HomeView({data,update,setView}){
         </section>
       )}
 
+      {isRhom&&(()=>{
+        const active=(data.customSessions||[]).filter(c=>!c.archived);
+        const remove=c=>{if(!window.confirm(`Remove "${c.title}"? Your logged workouts stay in History.`))return;update(d=>({...d,customSessions:(d.customSessions||[]).map(x=>x.key===c.key?{...x,archived:true,replaces:null,archivedAt:new Date().toISOString()}:x)}));};
+        const open=c=>{const slot=slotForKey(prog,c.key);if(slot<0)return;const inCycle=slot<prog.cycleLength;setView({name:'day',slot,cycleDay:inCycle?slot+1:undefined});};
+        return(
+          <section className="mb-8">
+            <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">Imported sessions</h2><button onClick={()=>setImportOpen(true)} className="text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-full px-3 py-1 flex items-center gap-1"><I.plus/>Import</button></div>
+            {active.length===0?(
+              <div className="bg-white border border-dashed border-stone-300 rounded-2xl p-5 text-center text-sm text-stone-500">Paste a session block from Claude to add this week's workout.</div>
+            ):(
+              <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+                {active.map((c,i)=>{const t=THEMES[c.kind]||THEMES.hypertrophy;const rt=c.replaces?RHOMBOID_SESSIONS.find(s=>s.key===c.replaces)?.title:null;return(
+                  <div key={c.key} className={`flex items-center gap-3 px-5 py-4 ${i>0?'border-t border-stone-100':''}`}>
+                    <button onClick={()=>open(c)} className="flex-1 min-w-0 text-left">
+                      <div className="flex items-center gap-2 flex-wrap"><div className="serif text-lg text-stone-900">{c.title}</div><span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-1.5 py-0.5 rounded-full`}>{t.label}</span></div>
+                      <div className="text-xs text-stone-500 truncate">{rt?`In cycle as ${rt} · `:''}{c.exercises.length} exercises{c.subtitle?` · ${c.subtitle}`:''}</div>
+                    </button>
+                    <button onClick={()=>remove(c)} className="text-stone-400 px-2 py-1 flex-shrink-0" aria-label={`Remove ${c.title}`}><I.x/></button>
+                  </div>
+                );})}
+              </div>
+            )}
+          </section>
+        );
+      })()}
+      {importOpen&&<ImportSessionSheet data={data} update={update} onClose={()=>setImportOpen(false)}/>}
+
       {!isGait&&(
         <section className="mb-8">
           <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-3">Progressions</h2>
@@ -1671,7 +1819,7 @@ function HomeView({data,update,setView}){
             {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
             <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[p.sprintStageIndex].week} · shared</div></button>
             <button onClick={()=>setView({name:'norwegian_bike'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Bike)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week} · shared</div></button>
-            <button onClick={()=>setView({name:'norwegian_ski'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Ski Erg)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].week} · Rhomboid</div></button>
+            <button onClick={()=>setView({name:'norwegian_ski'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Ski Erg)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].week} · Injury</div></button>
           </div>
         </section>
       )}
@@ -1703,6 +1851,7 @@ function App(){
   const [data,setData]=useState(()=>loadData());
   const [view,setView]=useState({name:'home'});
   const update=useCallback(patch=>setData(prev=>{const next=typeof patch==='function'?patch(prev):{...prev,...patch};saveData(next);return next;}),[]);
+  CUSTOM_SESSIONS=Array.isArray(data.customSessions)?data.customSessions:[];
   const program=data.activeProgram??'ganbaru';
   const shared={data,update,setView,program};
   return(
