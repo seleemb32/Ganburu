@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Ganburu" />
-  <title>Ganburu V12</title>
+  <title>Ganburu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600&display=swap" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -22,6 +22,8 @@
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
     input[type=date] { font-family: inherit; }
+    .glass { background: rgba(255,255,255,0.72); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 30px -14px rgba(28,25,23,0.22), 0 1px 3px rgba(28,25,23,0.05); }
+    .glass-strong { background: rgba(255,255,255,0.86); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 1px solid rgba(255,255,255,0.9); box-shadow: inset 0 1px 0 #fff, 0 18px 40px -12px rgba(28,25,23,0.30), 0 2px 8px rgba(28,25,23,0.08); }
   </style>
 </head>
 <body>
@@ -469,7 +471,7 @@ const THEMES={
   hypertrophy:{label:'Hypertrophy',bg:'bg-amber-50',text:'text-amber-800',border:'border-amber-200',stripe:'bg-amber-600'},
   power:{label:'Power & Speed',bg:'bg-red-50',text:'text-red-800',border:'border-red-200',stripe:'bg-red-600'},
   zone2:{label:'Zone 2',bg:'bg-teal-50',text:'text-teal-800',border:'border-teal-200',stripe:'bg-teal-600'},
-  mixed:{label:'Mixed',bg:'bg-purple-50',text:'text-purple-800',border:'border-purple-200',stripe:'bg-purple-600'},
+  mixed:{label:'Mixed',bg:'bg-sky-50',text:'text-sky-800',border:'border-sky-200',stripe:'bg-sky-600'},
   corrective:{label:'Corrective',bg:'bg-emerald-50',text:'text-emerald-800',border:'border-emerald-200',stripe:'bg-emerald-600'},
   rest:{label:'Rest',bg:'bg-stone-100',text:'text-stone-600',border:'border-stone-200',stripe:'bg-stone-400'},
 };
@@ -481,6 +483,9 @@ const todayISO=()=>new Date().toISOString().slice(0,10);
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 const DATA_KEY='ganburu-v4';
+// Imported sessions are also mirrored under their own key, so they survive even if
+// the main data blob is ever reset or fails to parse after an update.
+const CUSTOM_KEY='ganburu-custom-sessions';
 const DEFAULT_DATA={
   activeProgram:'ganbaru',
   cycleDays:{ganbaru:1,rhomboid:1},
@@ -522,16 +527,21 @@ function loadData(){
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
         cycleEvents:Array.isArray(p.cycleEvents)?p.cycleEvents:[],
-        customSessions:Array.isArray(p.customSessions)?p.customSessions:[],
+        customSessions:(Array.isArray(p.customSessions)&&p.customSessions.length)?p.customSessions:loadCustomMirror(),
       };
     }
     // No v4 — try migrating v3
     const migrated=migrateV3toV4();
     if(migrated){ saveDataRaw(migrated); return migrated; }
   }catch{}
-  return DEFAULT_DATA;
+  return {...DEFAULT_DATA,customSessions:loadCustomMirror()};
 }
-function saveDataRaw(data){const r=storage.set(DATA_KEY,JSON.stringify(data));return !!r;}
+function loadCustomMirror(){try{const r=storage.get(CUSTOM_KEY);const v=r?.value?JSON.parse(r.value):[];return Array.isArray(v)?v:[];}catch{return [];}}
+function saveDataRaw(data){
+  const r=storage.set(DATA_KEY,JSON.stringify(data));
+  try{if(Array.isArray(data.customSessions)&&data.customSessions.length)storage.set(CUSTOM_KEY,JSON.stringify(data.customSessions));}catch{}
+  return !!r;
+}
 function saveData(data){return saveDataRaw(data);}
 
 const draftKey=(program,kind,slot,esa)=>`ganburu-draft-${program}-${kind}-s${slot}${esa?`-edit-${esa}`:''}`;
@@ -657,6 +667,59 @@ const I={
   upload:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
   zap:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
 };
+
+// ── THREE PLANES ──────────────────────────────────────────────────────────────
+// Plane 1: fixed background wash. Plane 2: floating content cards (.glass).
+// Plane 3: floating controls (ActionDock / home dock) above everything.
+const ACCENT={
+  rhomboid:{from:'#292524',to:'#6b625c',glow:'rgba(41,37,36,0.34)',blobA:'rgba(168,162,158,0.32)',blobB:'rgba(251,191,36,0.18)'},
+  ganbaru:{from:'#1e3a8a',to:'#3b82f6',glow:'rgba(30,58,138,0.36)',blobA:'rgba(59,130,246,0.26)',blobB:'rgba(251,191,36,0.18)'},
+  gait:{from:'#065f46',to:'#10b981',glow:'rgba(4,120,87,0.34)',blobA:'rgba(16,185,129,0.26)',blobB:'rgba(163,230,53,0.18)'},
+};
+const accentFor=p=>ACCENT[p]||ACCENT.ganbaru;
+const accentBg=a=>({background:`linear-gradient(140deg, ${a.from} 0%, ${a.to} 100%)`});
+function BackgroundPlane({program}){
+  const a=accentFor(program);
+  return(
+    <div aria-hidden="true" style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',background:'linear-gradient(180deg,#f5f5f4 0%,#fafaf9 45%,#f5f5f4 100%)'}}>
+      <div style={{position:'absolute',top:'-12%',left:'-20%',width:'75vw',height:'75vw',maxWidth:520,maxHeight:520,borderRadius:'50%',background:a.blobA,filter:'blur(70px)',transition:'background 0.4s'}}/>
+      <div style={{position:'absolute',bottom:'-10%',right:'-25%',width:'80vw',height:'80vw',maxWidth:560,maxHeight:560,borderRadius:'50%',background:a.blobB,filter:'blur(80px)'}}/>
+    </div>
+  );
+}
+function SubjectHero({program,eyebrow,title,subtitle,chips,children}){
+  const a=accentFor(program);
+  return(
+    <div className="rounded-3xl p-6 mb-5 text-white relative overflow-hidden" style={{...accentBg(a),boxShadow:`0 24px 48px -16px ${a.glow}, 0 2px 6px -2px rgba(28,25,23,0.15)`}}>
+      <div aria-hidden="true" style={{position:'absolute',top:-60,right:-60,width:180,height:180,borderRadius:'50%',background:'rgba(255,255,255,0.10)'}}/>
+      <div className="relative">
+        <div className="flex items-center gap-2 flex-wrap mb-4">
+          {eyebrow&&<span className="text-[10px] uppercase tracking-[0.2em] text-white/75 mr-auto">{eyebrow}</span>}
+          {chips}
+        </div>
+        <h1 className="serif text-[32px] leading-[1.08]">{title}</h1>
+        {subtitle&&<p className="text-white/75 text-sm mt-1">{subtitle}</p>}
+        {children}
+      </div>
+    </div>
+  );
+}
+const heroChip='text-[10px] uppercase tracking-wider bg-white/15 border border-white/20 rounded-full px-2 py-0.5';
+function ActionDock({program,onBack,backLabel='Back',secondary,primary}){
+  const t=useRestTimer(); if(t?.active) return null;
+  const a=accentFor(program);
+  return(
+    <div style={{position:'fixed',left:0,right:0,bottom:0,zIndex:30,pointerEvents:'none'}}>
+      <div style={{maxWidth:576,margin:'0 auto',padding:'0 16px',paddingBottom:'max(16px,env(safe-area-inset-bottom))',display:'flex',justifyContent:'center'}}>
+        <div className="glass-strong rounded-[28px] p-2 flex items-center gap-1.5" style={{pointerEvents:'auto',maxWidth:'100%'}}>
+          {onBack&&<button onClick={onBack} className="h-14 px-4 rounded-2xl text-stone-600 flex items-center gap-1 active:scale-95 transition-transform flex-shrink-0"><I.back/><span className="text-sm">{backLabel}</span></button>}
+          {secondary&&<button onClick={secondary.onClick} className="h-14 px-4 rounded-2xl text-stone-700 bg-white/70 border border-stone-200 text-sm active:scale-95 transition-transform flex-shrink-0">{secondary.label}</button>}
+          {primary&&<button onClick={primary.onClick} disabled={primary.disabled} className="h-14 px-6 rounded-2xl text-white serif text-lg active:scale-95 transition-transform disabled:opacity-60 min-w-0 truncate" style={{...accentBg(a),boxShadow:`0 10px 24px -8px ${a.glow}`}}>{primary.label}</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function TopBar({onBack,right}){
@@ -880,16 +943,16 @@ function NorwegianTrackBase({value,setValue,stages,label,recovery}){
       </div>
       {recovery==null&&<div className="text-xs text-stone-400 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2">Log WHOOP recovery above — below 70% this drops to 3 intervals automatically.</div>}
       {gated&&<div className="flex items-start gap-2 bg-amber-50 border border-amber-300 rounded-xl px-3 py-2"><span className="text-amber-700 mt-0.5"><I.warn/></span><div className="text-xs text-amber-900">Recovery below 70% — dropped to 3 intervals per the Broccoli recovery gate.</div></div>}
-      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-        <div className="flex items-baseline justify-between mb-3"><div className="text-[10px] uppercase tracking-widest text-purple-700">Intervals</div><div className="serif text-2xl num">{completed}<span className="text-stone-400 text-base">/{total}</span></div></div>
-        <div className="flex gap-1.5 mb-3">{Array.from({length:total},(_,i)=><div key={i} className={`flex-1 h-2.5 rounded-full ${i<completed?'bg-purple-600':'bg-purple-200'}`}/>)}</div>
+      <div className="bg-sky-50 border border-sky-200 rounded-xl p-4">
+        <div className="flex items-baseline justify-between mb-3"><div className="text-[10px] uppercase tracking-widest text-sky-700">Intervals</div><div className="serif text-2xl num">{completed}<span className="text-stone-400 text-base">/{total}</span></div></div>
+        <div className="flex gap-1.5 mb-3">{Array.from({length:total},(_,i)=><div key={i} className={`flex-1 h-2.5 rounded-full ${i<completed?'bg-sky-600':'bg-sky-200'}`}/>)}</div>
         <div className="flex gap-2">
-          <button onClick={log} disabled={allDone} className={`flex-1 rounded-xl py-3 text-sm font-medium ${allDone?'bg-emerald-100 text-emerald-700 border border-emerald-200':'bg-purple-600 text-white'}`}>{allDone?'✓ All done':`Log interval ${completed+1} → rest`}</button>
-          {completed>0&&<button onClick={()=>setValue({completedReps:completed-1,done:false})} className="bg-white border border-purple-200 text-purple-700 rounded-xl px-4 flex items-center"><I.minus/></button>}
+          <button onClick={log} disabled={allDone} className={`flex-1 rounded-xl py-3 text-sm font-medium ${allDone?'bg-emerald-100 text-emerald-700 border border-emerald-200':'bg-sky-600 text-white'}`}>{allDone?'✓ All done':`Log interval ${completed+1} → rest`}</button>
+          {completed>0&&<button onClick={()=>setValue({completedReps:completed-1,done:false})} className="bg-white border border-sky-200 text-sky-700 rounded-xl px-4 flex items-center"><I.minus/></button>}
         </div>
       </div>
       <div className="flex gap-1.5 justify-end">
-        <button onClick={()=>timer.start(stage.restSec)} className="text-xs num bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-3 py-1">3 min rest</button>
+        <button onClick={()=>timer.start(stage.restSec)} className="text-xs num bg-sky-50 text-sky-700 border border-sky-200 rounded-full px-3 py-1">3 min rest</button>
         <button onClick={()=>timer.start(workSec)} className="text-xs num bg-stone-50 text-stone-600 border border-stone-200 rounded-full px-3 py-1">{workLabel} work</button>
       </div>
       <div className="grid grid-cols-3 gap-2"><Field label="Total min" value={value.duration??''} onChange={v=>setValue({duration:v})}/><Field label="Avg HR" value={value.avgHR??''} onChange={v=>setValue({avgHR:v})}/><Field label="Max HR" value={value.maxHR??''} onChange={v=>setValue({maxHR:v})}/></div>
@@ -1001,7 +1064,7 @@ function EMOMTimer({totalRounds,completed,onRoundComplete,repsPerRound}){
 
 function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery}){
   const showRest=['weight','reps','time','tgu'].includes(exercise.track);
-  const wrap=flat?'bg-white p-5 relative overflow-hidden':'bg-white border border-stone-200 rounded-2xl p-5 relative overflow-hidden';
+  const wrap=flat?'bg-white p-5 relative overflow-hidden':'glass rounded-2xl p-5 relative overflow-hidden';
   return(
     <div className={wrap}>
       {!flat&&<div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/>}
@@ -1164,17 +1227,11 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   return(
     <div>
-      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
-      <header className="mb-4">
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · {standalone?'Imported':`Day ${resolvedCycleDay??'–'}/${exProg.cycleLength}`}</span>
-          <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
-          {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
-          {!isEditing&&!isCurrentDay&&!standalone&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}
-        </div>
-        <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
-        <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
-      </header>
+      <SubjectHero program={exProgram} eyebrow={`${exProg.name} · ${standalone?'Imported':`Day ${resolvedCycleDay??'–'} of ${exProg.cycleLength}`}`} title={session.title} subtitle={session.subtitle} chips={<>
+        <span className={heroChip}>{theme.label}</span>
+        {isEditing&&<span className={heroChip}>Editing</span>}
+        {!isEditing&&!isCurrentDay&&!standalone&&<span className="text-[10px] uppercase tracking-wider bg-amber-400 text-stone-900 rounded-full px-2 py-0.5">Out of sequence · cycle stays</span>}
+      </>}/>
       {hadDraft&&!isEditing&&(
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
           <div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div>
@@ -1189,14 +1246,14 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       {low&&<div className="bg-amber-50 border border-amber-300 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3"><span className="text-amber-700 mt-0.5"><I.warn/></span><div className="text-sm text-amber-900">Low recovery — add 1 RIR to all RIR-governed sets.</div></div>}
       {!isEditing&&(workoutStarted
         ?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">{session.title} started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>
-        :<button onClick={()=>setWorkoutStarted(true)} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-5 mb-4 shadow-lg"><div className="flex items-center justify-center gap-2.5"><div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-blue-900"><I.play/></div><span className="serif text-xl">Start workout</span></div><div className="text-[10px] uppercase tracking-widest text-stone-400 mt-1.5">Warm-up starts automatically</div></button>
+        :<button onClick={()=>setWorkoutStarted(true)} className="w-full glass rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={accentBg(accentFor(exProgram))}><I.play/></div><span className="serif text-xl text-stone-900">Start workout</span></div><div className="text-[10px] uppercase tracking-widest text-stone-500 mt-1.5">Warm-up starts automatically</div></button>
       )}
       {session.warmup&&<MobilitySection kind="warmup" data={session.warmup} done={state.warmupDone} onToggle={()=>setState(s=>({...s,warmupDone:!s.warmupDone}))} theme={theme} defaultExpanded={!state.warmupDone} autoStart={workoutStarted}/>}
       <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={state.recovery}/>
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={state.cooldownDone} onToggle={()=>setState(s=>({...s,cooldownDone:!s.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       <SessionMeta session={state} setSession={setState} theme={theme}/>
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':standalone?'Save entry':'Save entry (cycle stays)'}</button>
+      <ActionDock program={exProgram} onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})} primary={{onClick:save,disabled:saving,label:saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance':'Save entry'}}/>
     </div>
   );
 }
@@ -1268,17 +1325,17 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   return(
     <div>
-      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
-      <header className="mb-4">
-        <div className="flex items-center gap-2 mb-2 flex-wrap"><span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>{!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}</div>
-        <h1 className="serif text-4xl text-stone-900">Zone 2 Walk</h1>
-      </header>
+      <SubjectHero program={exProgram} eyebrow={`${exProg.name} · Day ${resolvedCycleDay} of ${exProg.cycleLength}`} title="Zone 2 Walk" chips={<>
+        <span className={heroChip}>{theme.label}</span>
+        {isEditing&&<span className={heroChip}>Editing</span>}
+        {!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider bg-amber-400 text-stone-900 rounded-full px-2 py-0.5">Out of sequence · cycle stays</span>}
+      </>}/>
       {hadDraft&&!isEditing&&<div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div><button onClick={()=>{clearDraft(program,'walk',resolvedSlot,null);setWalk(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button></div>}
       <div className={`${theme.bg} border ${theme.border} rounded-2xl px-4 py-3 mb-4 flex items-center justify-between`}><div className={`text-xs uppercase tracking-wider ${theme.text}`}>Logged on</div><input type="date" value={walk.date} onChange={e=>setWalk(w=>({...w,date:e.target.value}))} className="bg-transparent text-sm num focus:outline-none text-right text-stone-900"/></div>
       <RecoveryInput value={walk.recovery} onChange={v=>setWalk(w=>({...w,recovery:v}))}/>
-      {!isEditing&&(workoutStarted?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">Walk started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>:<button onClick={()=>setWorkoutStarted(true)} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-blue-900"><I.play/></div><span className="serif text-xl">Start walk</span></div><div className="text-[10px] uppercase tracking-widest text-stone-400 mt-1.5">Warm-up starts automatically</div></button>)}
+      {!isEditing&&(workoutStarted?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">Walk started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>:<button onClick={()=>setWorkoutStarted(true)} className="w-full glass rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={accentBg(accentFor(exProgram))}><I.play/></div><span className="serif text-xl text-stone-900">Start walk</span></div><div className="text-[10px] uppercase tracking-widest text-stone-500 mt-1.5">Warm-up starts automatically</div></button>)}
       {session.warmup&&<MobilitySection kind="warmup" data={session.warmup} done={walk.warmupDone} onToggle={()=>setWalk(w=>({...w,warmupDone:!w.warmupDone}))} theme={theme} defaultExpanded={!walk.warmupDone} autoStart={workoutStarted}/>}
-      <div className="bg-white border border-stone-200 rounded-2xl p-5 space-y-4 relative overflow-hidden mb-4">
+      <div className="glass rounded-2xl p-5 space-y-4 relative overflow-hidden mb-4">
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/>
         <Field label="Distance (km)" value={walk.distance} onChange={v=>setWalk(w=>({...w,distance:v}))}/>
         <Field label="Duration (min)" value={walk.duration} onChange={v=>setWalk(w=>({...w,duration:v}))}/>
@@ -1289,7 +1346,7 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={walk.cooldownDone} onToggle={()=>setWalk(w=>({...w,cooldownDone:!w.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       {last&&<div className="mt-4 text-xs text-stone-500 text-center">Last walk: <span className="num text-stone-700">{last.distance}km / {last.duration}min</span> · {last.date}</div>}
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <button onClick={save} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':'Save entry (cycle stays)'}</button>
+      <ActionDock program={exProgram} onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})} primary={{onClick:save,disabled:saving,label:saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance':'Save entry'}}/>
     </div>
   );
 }
@@ -1355,16 +1412,10 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
 
   return(
     <div>
-      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
-      <header className="mb-4">
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="text-xs uppercase tracking-widest text-stone-500">Gait Corrective · Phase {resolvedPhase} of 3</span>
-          <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
-          {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
-        </div>
-        <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
-        <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
-      </header>
+      <SubjectHero program="gait" eyebrow={`Gait Corrective · Phase ${resolvedPhase} of 3`} title={session.title.replace(/^Phase \d+ — /,'')} subtitle={session.subtitle} chips={<>
+        <span className={heroChip}>{theme.label}</span>
+        {isEditing&&<span className={heroChip}>Editing</span>}
+      </>}/>
       {hadDraft&&!isEditing&&(
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
           <div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div>
@@ -1378,7 +1429,7 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
       <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={null}/>
       <SessionMeta session={state} setSession={setState} theme={theme}/>
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <button onClick={save} disabled={saving} className="w-full bg-emerald-700 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':'Save session'}</button>
+      <ActionDock program="gait" onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})} primary={{onClick:save,disabled:saving,label:saving?'Saving…':isEditing?'Save changes':'Save session'}}/>
     </div>
   );
 }
@@ -1389,17 +1440,17 @@ function ProgressionView({title,subtitle,stages,stageKey,setView,data,update,ren
   const setStage=n=>update(d=>({...d,progressions:{...d.progressions,[stageKey]:Math.max(0,Math.min(stages.length-1,n))}}));
   return(
     <div>
-      <TopBar onBack={()=>setView({name:'home'})}/>
-      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Progression</div><h1 className="serif text-4xl text-stone-900">{title}</h1>{subtitle&&<p className="text-stone-500 text-sm mt-2">{subtitle}</p>}</header>
-      <div className="bg-blue-900 text-stone-50 rounded-2xl p-6 mb-6">
+      <ActionDock program={data.activeProgram} onBack={()=>setView({name:'home'})}/>
+      <header className="mb-5"><div className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-1">Progression</div><h1 className="serif text-3xl text-stone-900">{title}</h1>{subtitle&&<p className="text-stone-500 text-sm mt-1">{subtitle}</p>}</header>
+      <div className="text-stone-50 rounded-3xl p-6 mb-6" style={{...accentBg(accentFor(data.activeProgram)),boxShadow:`0 24px 48px -16px ${accentFor(data.activeProgram).glow}`}}>
         <div className="text-xs uppercase tracking-widest text-stone-300 mb-2">Stage {idx+1} of {stages.length}</div>
         {renderHero(stages[idx])}
         <div className="flex gap-2 mt-4">
-          <button onClick={()=>setStage(idx-1)} disabled={idx===0} className="flex-1 py-2.5 rounded-xl bg-blue-800 text-stone-300 text-sm disabled:opacity-30">← Regress</button>
+          <button onClick={()=>setStage(idx-1)} disabled={idx===0} className="flex-1 py-2.5 rounded-xl bg-white/15 text-white text-sm disabled:opacity-30">← Regress</button>
           <button onClick={()=>setStage(idx+1)} disabled={idx===stages.length-1} className="flex-1 py-2.5 rounded-xl bg-amber-600 text-white text-sm disabled:opacity-30">Advance →</button>
         </div>
       </div>
-      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+      <div className="glass rounded-2xl overflow-hidden">
         {stages.map((s,i)=>(
           <button key={i} onClick={()=>setStage(i)} className={`w-full flex items-center gap-4 px-5 py-3.5 text-left ${i>0?'border-t border-stone-100':''} ${i===idx?'bg-blue-50':''}`}>
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs num flex-shrink-0 ${i<idx?'bg-emerald-600 text-white':i===idx?'bg-blue-900 text-white':'bg-stone-100 text-stone-500'}`}>{i<idx?<I.check/>:i+1}</div>
@@ -1426,18 +1477,18 @@ function HistoryView({data,update,setView}){
     ...(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type)).map(e=>({...e,_kind:'event'})),
   ].sort((a,b)=>{const ad=a.date||'',bd=b.date||'';return ad!==bd?bd.localeCompare(ad):(b.savedAt||'').localeCompare(a.savedAt||'');});
   if(filter!=='all') all=all.filter(x=>progOf(x)===filter);
-  const badgeClass=p=>p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
+  const badgeClass=p=>p==='rhomboid'?'text-stone-700 bg-stone-100 border border-stone-300':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
   const badgeLabel=p=>p==='rhomboid'?'Injury':p==='gait'?'Gait Corrective':'Ganbaru';
   return(
     <div>
-      <TopBar onBack={()=>setView({name:'home'})}/>
+      <ActionDock program={data.activeProgram} onBack={()=>setView({name:'home'})}/>
       <header className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Log</div><h1 className="serif text-4xl text-stone-900">History</h1></header>
       <div className="flex gap-1.5 mb-5 bg-stone-100 rounded-xl p-1">
         {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Injury'],['gait','Gait']].map(([k,l])=>(
           <button key={k} onClick={()=>setFilter(k)} className={`flex-1 py-2 text-xs rounded-lg ${filter===k?'bg-white text-stone-900 shadow-sm font-medium':'text-stone-500'}`}>{l}</button>
         ))}
       </div>
-      {all.length===0?<div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500 text-sm">Nothing logged yet.</div>:<div className="space-y-3">{all.map((s,i)=>{
+      {all.length===0?<div className="glass rounded-2xl p-8 text-center text-stone-500 text-sm">Nothing logged yet.</div>:<div className="space-y-3">{all.map((s,i)=>{
         const p=progOf(s);
         if(s._kind==='event'){
           const sess=templateFor(p,s);
@@ -1453,7 +1504,7 @@ function HistoryView({data,update,setView}){
         const title=s._kind==='walk'?'Zone 2 Walk':(sess?.title||'Session');
         const lowRec=typeof s.recovery==='number'&&s.recovery<50;
         return(
-          <button key={i} onClick={()=>setView({name:'history-detail',savedAt:s.savedAt})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-4 relative overflow-hidden">
+          <button key={i} onClick={()=>setView({name:'history-detail',savedAt:s.savedAt})} className="w-full text-left glass rounded-2xl p-4 relative overflow-hidden">
             <div className={`absolute left-0 top-0 bottom-0 w-1 ${t.stripe}`}/>
             <div className="flex items-baseline justify-between mb-1 gap-3">
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -1476,15 +1527,15 @@ function HistoryView({data,update,setView}){
 
 function HistoryDetailView({savedAt,data,setView}){
   const session=data.sessions.find(s=>s.savedAt===savedAt),walk=data.walks.find(w=>w.savedAt===savedAt),item=session||walk;
-  if(!item)return<div><TopBar onBack={()=>setView({name:'history'})}/><div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500">Not found.</div></div>;
+  if(!item)return<div><ActionDock program={data.activeProgram} onBack={()=>setView({name:'history'})}/><div className="glass rounded-2xl p-8 text-center text-stone-500">Not found.</div></div>;
   const isWalk=!!walk;const p=item.program??'ganbaru';const isGaitItem=p==='gait';
   const template=templateFor(p,item),theme=template?THEMES[template.kind]:THEMES.rest;
   const lowRec=typeof item.recovery==='number'&&item.recovery<50;
-  const badgeClass=p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
+  const badgeClass=p==='rhomboid'?'text-stone-700 bg-stone-100 border border-stone-300':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
   const editTarget=isWalk?'walk':(isGaitItem?'gait-session':'day');
   return(
     <div>
-      <TopBar onBack={()=>setView({name:'history'})} right={<button onClick={()=>setView({name:editTarget,phase:isGaitItem?item.phase:undefined,editingSavedAt:item.savedAt})} className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">Edit</button>}/>
+      <ActionDock program={p} onBack={()=>setView({name:'history'})} primary={{label:'Edit',onClick:()=>setView({name:editTarget,phase:isGaitItem?item.phase:undefined,editingSavedAt:item.savedAt})}}/>
       <header className="mb-4">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${badgeClass}`}>{PROGRAMS[p]?.name}</span>
@@ -1497,9 +1548,9 @@ function HistoryDetailView({savedAt,data,setView}){
         {template?.subtitle&&<p className="text-stone-500 text-sm mt-1">{template.subtitle}</p>}
         <p className="text-xs text-stone-500 num mt-2">{item.date}</p>
       </header>
-      {isWalk&&<div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4 relative overflow-hidden"><div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/><div className="grid grid-cols-2 gap-4"><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Distance</div><div className="serif text-2xl num text-stone-900">{item.distance||'—'}<span className="text-stone-400 text-base"> km</span></div></div><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Duration</div><div className="serif text-2xl num text-stone-900">{item.duration||'—'}<span className="text-stone-400 text-base"> min</span></div></div></div></div>}
+      {isWalk&&<div className="glass rounded-2xl p-5 mb-4 relative overflow-hidden"><div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/><div className="grid grid-cols-2 gap-4"><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Distance</div><div className="serif text-2xl num text-stone-900">{item.distance||'—'}<span className="text-stone-400 text-base"> km</span></div></div><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Duration</div><div className="serif text-2xl num text-stone-900">{item.duration||'—'}<span className="text-stone-400 text-base"> min</span></div></div></div></div>}
       {template?.exercises&&<div className="space-y-3 mb-4">{template.exercises.map(ex=>{const logged=item.exercises?.[ex.id];if(!logged)return null;return(
-        <div key={ex.id} className="bg-white border border-stone-200 rounded-2xl p-4 relative overflow-hidden">
+        <div key={ex.id} className="glass rounded-2xl p-4 relative overflow-hidden">
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/>
           <div className="flex items-start justify-between gap-3 mb-2"><h3 className="serif text-lg text-stone-900">{ex.name}</h3><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{ex.scheme}</span></div>
           {ex.track==='weight'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{(s.weight??logged.weight)?`${s.weight??logged.weight}kg`:'–'} × {s.reps||'–'}</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
@@ -1546,16 +1597,16 @@ function SettingsView({program,data,update,setView}){
   };
   return(
     <div>
-      <TopBar onBack={()=>setView({name:'home'})}/>
+      <ActionDock program={program} onBack={()=>setView({name:'home'})}/>
       <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Settings · {prog.name}</div><h1 className="serif text-4xl text-stone-900">{isGait?'Phase control':'Cycle position'}</h1></header>
       {isGait?(
-        <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-8">
+        <div className="glass rounded-2xl p-5 mb-8">
           <p className="text-stone-600 text-sm">Gait Corrective doesn't run on a rolling cycle — Phase 1 is daily and Phases 2/3 advance manually when you're ready. Set your current phase from the Home screen.</p>
         </div>
       ):(
         <>
           <p className="text-stone-500 text-sm mb-4">Set which day of {prog.name} comes next.</p>
-          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden mb-8">
+          <div className="glass rounded-2xl overflow-hidden mb-8">
             {cycle.map((c,i)=>{const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===data.cycleDays[program];return(
               <button key={c.day} onClick={()=>update(d=>({...d,cycleDays:{...d.cycleDays,[program]:c.day}}))} className={`w-full flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':''}`}>
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${isCurrent?'border-blue-900 bg-blue-900':'border-stone-300'}`}>{isCurrent&&<div className="w-2 h-2 rounded-full bg-white"/>}</div>
@@ -1566,13 +1617,13 @@ function SettingsView({program,data,update,setView}){
         </>
       )}
       <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-2">Backup & restore</h2>
-      <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
+      <div className="glass rounded-2xl p-4 mb-3">
         <div className="flex items-baseline justify-between mb-3"><div className="text-xs uppercase tracking-wider text-stone-500">All data</div><div className="text-xs text-stone-700 num">{data.sessions?.length||0} sessions · {data.walks?.length||0} walks</div></div>
         <button onClick={exportJSON} className="w-full flex items-center justify-center gap-2 bg-blue-900 text-stone-50 rounded-xl py-3"><I.download/><span className="text-sm">Export backup</span></button>
         {copyStatus==='copied'&&<div className="text-xs text-emerald-700 mt-2 text-center">✓ Copied to clipboard.</div>}
         {copyStatus==='downloaded'&&<div className="text-xs text-emerald-700 mt-2 text-center">✓ Downloaded.</div>}
       </div>
-      <div className="bg-white border border-stone-200 rounded-2xl p-4">
+      <div className="glass rounded-2xl p-4">
         <button onClick={()=>setImportOpen(o=>!o)} className="w-full flex items-center justify-between text-left"><div className="flex items-center gap-2"><I.upload/><span className="text-sm text-stone-900">Restore from backup</span></div><span className={`text-stone-400 inline-block transition-transform ${importOpen?'rotate-180':''}`}><I.chevDown/></span></button>
         {importOpen&&<div className="mt-3 space-y-2">
           <div className="text-xs text-stone-500">Paste JSON. This <span className="text-red-700">replaces all data</span>.</div>
@@ -1620,7 +1671,7 @@ function ImportSessionSheet({data,update,onClose}){
           </>
         ):(
           <>
-            <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
+            <div className="glass rounded-2xl p-4 mb-3">
               <div className="serif text-lg text-stone-900">{parsed.title}</div>
               {parsed.subtitle&&<div className="text-xs text-stone-500 mt-0.5">{parsed.subtitle}</div>}
               <div className="text-[10px] uppercase tracking-wider text-stone-500 mt-2">{replacedTitle?`Takes the ${replacedTitle} slot in the cycle`:'Separate session · cycle stays'}{parsed.warmup?` · warm-up ${parsed.warmup.items.length} items`:''}</div>
@@ -1632,7 +1683,7 @@ function ImportSessionSheet({data,update,onClose}){
             {displaced.length>0&&<div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-2">"{displaced.map(c=>c.title).join('", "')}" moves out of the cycle and stays in your imported list until you remove it.</div>}
             <div className="flex gap-2">
               <button onClick={()=>setParsed(null)} className="flex-1 bg-white border border-stone-200 text-stone-700 rounded-xl py-3 text-sm">Back</button>
-              <button onClick={save} className="flex-1 bg-purple-700 text-white rounded-xl py-3 text-sm">{existing?'Update session':'Save session'}</button>
+              <button onClick={save} className="flex-1 bg-stone-900 text-white rounded-xl py-3 text-sm">{existing?'Update session':'Save session'}</button>
             </div>
           </>
         )}
@@ -1681,162 +1732,156 @@ function HomeView({data,update,setView}){
   const lastTitle=last?(last._w?'Zone 2 Walk':(lastTemplate?.title||'Session')):null;
   const p=data.progressions;
 
+  // ── Three planes: background (fixed), content (floating cards), controls (floating dock)
+  const acc=accentFor(program);
+  const heroStyle={background:`linear-gradient(140deg, ${acc.from} 0%, ${acc.to} 100%)`,boxShadow:`0 24px 48px -16px ${acc.glow}, 0 2px 6px -2px rgba(28,25,23,0.15)`};
+  const heroEx=isGait?(gaitSession?.exercises||[]):(session?.exercises||[]);
+  const exPreview=heroEx.slice(0,4).map(e=>e.name);
+  const exMore=Math.max(0,heroEx.length-4);
+  const dockBtn='flex flex-col items-center justify-center gap-1 w-12 h-14 rounded-2xl text-stone-600 active:scale-95 transition-transform';
+  const startHero=()=>{if(isGait)setView({name:'gait-session',phase:1});else if(isRest)advanceCycle('rest');else handleStart();};
+
   return(
     <div>
-      <header className="mb-5 flex items-start justify-between gap-3">
-        <div><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Ganburu V14</div><h1 className="serif text-4xl text-stone-900 leading-tight">Training cycle.</h1></div>
-        <button onClick={()=>setView({name:'settings'})} className="w-10 h-10 rounded-full bg-white border border-stone-200 flex items-center justify-center"><I.settings/></button>
-      </header>
+      {/* Plane 2 · content */}
+      <div style={{position:'relative',zIndex:1}}>
+        <header className="mb-4 flex items-end justify-between gap-3">
+          <div><div className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-1">Ganburu V16</div><h1 className="serif text-3xl text-stone-900 leading-tight">Today.</h1></div>
+          <div className="text-xs text-stone-500 num pb-1">{new Date().toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}</div>
+        </header>
 
-      {/* Program selector */}
-      <div className="flex gap-1.5 mb-6 bg-stone-100 rounded-2xl p-1">
-        {Object.values(PROGRAMS).map(pr=>(
-          <button key={pr.id} onClick={()=>setProgram(pr.id)} className={`flex-1 py-2.5 text-sm rounded-xl transition-colors ${program===pr.id?(pr.id==='rhomboid'?'bg-purple-700 text-white shadow-sm':pr.id==='gait'?'bg-emerald-700 text-white shadow-sm':'bg-blue-900 text-white shadow-sm'):'text-stone-600'}`}>{pr.name}</button>
-        ))}
-      </div>
-
-      {isGait?(
-        <>
-          <div className="bg-emerald-900 text-stone-50 rounded-2xl p-6 mb-3">
-            <div className="text-xs uppercase tracking-widest text-emerald-200 mb-2">Phase {gaitPhase} of 3</div>
-            <div className="serif text-3xl mb-1">{gaitSession.title}</div>
-            <div className="text-emerald-200 text-sm mb-5">{gaitSession.subtitle}</div>
-            <div className="flex gap-2">
-              <button onClick={()=>setGaitPhase(gaitPhase-1)} disabled={gaitPhase===1} className="flex-1 py-2.5 rounded-xl bg-emerald-800 text-emerald-100 text-sm disabled:opacity-30">← Regress phase</button>
-              <button onClick={()=>setGaitPhase(gaitPhase+1)} disabled={gaitPhase===3} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-emerald-950 text-sm font-medium disabled:opacity-30">Advance phase →</button>
-            </div>
-          </div>
-
-          <button onClick={()=>setView({name:'gait-session',phase:1})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-5 mb-3 relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600"/>
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-xs uppercase tracking-wider text-emerald-700 mb-1">Phase 1 · Daily</div>
-                <div className="serif text-xl text-stone-900">Establish the Connection</div>
-                <div className="text-stone-500 text-sm mt-0.5">~10 min · right-side glute activation</div>
-              </div>
-              {phase1Today?<span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full flex-shrink-0">Done today ✓</span>:<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full flex-shrink-0">Log today</span>}
-            </div>
-          </button>
-
-          {gaitPhase>=2&&(
-            <button onClick={()=>setView({name:'gait-session',phase:gaitPhase})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-5 mb-3 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-lime-600"/>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs uppercase tracking-wider text-lime-700 mb-1">Phase {gaitPhase} · 3× per week</div>
-                  <div className="serif text-xl text-stone-900">{gaitPhase===2?'Load the Pattern':'Transfer to Running Mechanics'}</div>
-                  <div className="text-stone-500 text-sm mt-0.5">{gaitPhase===3?'Do immediately before sprint sessions':'Minimum one rest day between sessions'}</div>
-                </div>
-                <span className="text-[10px] text-stone-600 bg-stone-100 border border-stone-200 px-2 py-1 rounded-full flex-shrink-0 num">{bonusThisWeek}/3 this wk</span>
-              </div>
-            </button>
-          )}
-
-          <p className="text-[10px] text-stone-400 text-center mt-1 mb-8 uppercase tracking-wider">Phase 1 always runs daily, even on rest days from other programs · advance phases yourself when ready</p>
-        </>
-      ):(
-        <>
-          {isRest?(
-            <div className="bg-blue-900 text-stone-50 rounded-2xl p-6 mb-3">
-              <div className="text-xs uppercase tracking-widest text-stone-300 mb-4">Day {cycleDay} of {prog.cycleLength}</div>
-              <div className="serif text-3xl mb-1">{session.title}</div>
-              <div className="text-stone-300 text-sm mb-5">{session.subtitle}</div>
-              <button onClick={()=>advanceCycle('rest')} className="w-full bg-amber-500 text-blue-900 rounded-xl py-4 flex items-center justify-center gap-2"><I.check/><span className="serif text-lg font-medium">Mark rest day taken</span></button>
-            </div>
-          ):(
-            <button onClick={handleStart} className={`w-full text-left rounded-2xl p-6 mb-3 text-stone-50 ${isRhom?'bg-purple-800':'bg-blue-900'}`}>
-              <div className="flex items-center justify-between mb-4"><span className="text-xs uppercase tracking-widest text-stone-300">Day {cycleDay} of {prog.cycleLength}</span></div>
-              <div className="serif text-3xl mb-1">{session.title}</div>
-              <div className="text-stone-300 text-sm">{session.subtitle}</div>
-              <div className="mt-4 text-xs uppercase tracking-wider text-amber-300/90">Tap to open →</div>
-            </button>
-          )}
-
-          <div className="flex gap-2 mb-8">
-            <button onClick={()=>setSkipOpen(true)} className="flex-1 text-sm text-stone-700 bg-white border border-stone-200 rounded-xl py-3 flex items-center justify-center gap-1.5"><I.skip/> Skip session</button>
-            {!isRest&&<button onClick={logRest} className="flex-1 text-sm text-stone-700 bg-white border border-stone-200 rounded-xl py-3 flex items-center justify-center gap-1.5"><I.coffee/> Take rest day</button>}
-          </div>
-        </>
-      )}
-
-      {last&&lastTheme&&(
-        <div className={`${lastTheme.bg} border ${lastTheme.border} rounded-2xl px-4 py-3.5 mb-8 flex items-center gap-4 relative overflow-hidden`}>
-          <div className={`absolute left-0 top-0 bottom-0 w-1 ${lastTheme.stripe}`}/>
-          <div className="flex-1 min-w-0"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5">Last logged · {prog.name}</div><div className={`serif text-lg ${lastTheme.text}`}>{lastTitle}</div></div>
-          <div className="flex-shrink-0 text-right"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5 num">{last.date}</div>{last.rpe&&<div className={`serif text-xl num ${lastTheme.text}`}>RPE {last.rpe}</div>}</div>
+        <div className="glass-strong rounded-2xl p-1 flex gap-1 mb-5 sticky top-2 z-10">
+          {Object.values(PROGRAMS).map(pr=>(
+            <button key={pr.id} onClick={()=>setProgram(pr.id)} className={`flex-1 py-2 text-[13px] rounded-xl transition-all ${program===pr.id?'bg-white text-stone-900 font-medium shadow-sm':'text-stone-500'}`}>{pr.name}</button>
+          ))}
         </div>
-      )}
 
-      {!isGait&&(
-        <section className="mb-8">
-          <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">{`The ${prog.cycleLength}-day cycle`}</h2><span className="text-xs text-stone-500">Tap to open</span></div>
-          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-            {cycle.map((c,i)=>{
-              const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
-              const circle=isDone?<div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white"><I.check/></div>:<div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium num flex-shrink-0 ${isCurrent?'bg-blue-900 text-stone-50':`${t.bg} ${t.text}`}`}>{c.day}</div>;
-              const inner=<>{circle}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><div className={`serif text-lg ${isDone?'text-stone-500':'text-stone-900'}`}>{s.title}</div>{isCurrent&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">Next ←</span>}{isDone&&<span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">Done ✓</span>}</div><div className={`text-xs truncate ${isDone?'text-stone-400':'text-stone-500'}`}>{s.subtitle}</div></div></>;
-              const base=`flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':isDone?'bg-stone-50/60':''}`;
-              return isRestDay?<div key={c.day} className={base}>{inner}</div>:<button key={c.day} onClick={()=>{if(s.special==='walk')setView({name:'walk',slot:c.slot,cycleDay:c.day});else setView({name:'day',slot:c.slot,cycleDay:c.day});}} className={`w-full ${base}`}>{inner}</button>;
-            })}
-          </div>
-          {isRhom&&<p className="text-[10px] text-stone-400 text-center mt-2 uppercase tracking-wider">Rest days as needed — use "Take rest day"</p>}
-        </section>
-      )}
-
-      {isRhom&&(()=>{
-        const active=(data.customSessions||[]).filter(c=>!c.archived);
-        const remove=c=>{if(!window.confirm(`Remove "${c.title}"? Your logged workouts stay in History.`))return;update(d=>({...d,customSessions:(d.customSessions||[]).map(x=>x.key===c.key?{...x,archived:true,replaces:null,archivedAt:new Date().toISOString()}:x)}));};
-        const open=c=>{const slot=slotForKey(prog,c.key);if(slot<0)return;const inCycle=slot<prog.cycleLength;setView({name:'day',slot,cycleDay:inCycle?slot+1:undefined});};
-        return(
-          <section className="mb-8">
-            <div className="flex items-baseline justify-between mb-3"><h2 className="text-xs uppercase tracking-widest text-stone-500">Imported sessions</h2><button onClick={()=>setImportOpen(true)} className="text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-full px-3 py-1 flex items-center gap-1"><I.plus/>Import</button></div>
-            {active.length===0?(
-              <div className="bg-white border border-dashed border-stone-300 rounded-2xl p-5 text-center text-sm text-stone-500">Paste a session block from Claude to add this week's workout.</div>
-            ):(
-              <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-                {active.map((c,i)=>{const t=THEMES[c.kind]||THEMES.hypertrophy;const rt=c.replaces?RHOMBOID_SESSIONS.find(s=>s.key===c.replaces)?.title:null;return(
-                  <div key={c.key} className={`flex items-center gap-3 px-5 py-4 ${i>0?'border-t border-stone-100':''}`}>
-                    <button onClick={()=>open(c)} className="flex-1 min-w-0 text-left">
-                      <div className="flex items-center gap-2 flex-wrap"><div className="serif text-lg text-stone-900">{c.title}</div><span className={`text-[10px] uppercase tracking-wider ${t.text} ${t.bg} border ${t.border} px-1.5 py-0.5 rounded-full`}>{t.label}</span></div>
-                      <div className="text-xs text-stone-500 truncate">{rt?`In cycle as ${rt} · `:''}{c.exercises.length} exercises{c.subtitle?` · ${c.subtitle}`:''}</div>
-                    </button>
-                    <button onClick={()=>remove(c)} className="text-stone-400 px-2 py-1 flex-shrink-0" aria-label={`Remove ${c.title}`}><I.x/></button>
-                  </div>
-                );})}
+        {/* The subject */}
+        <button onClick={startHero} className="w-full text-left rounded-3xl p-6 mb-5 text-white relative overflow-hidden active:scale-[0.99] transition-transform" style={heroStyle}>
+          <div aria-hidden="true" style={{position:'absolute',top:-60,right:-60,width:180,height:180,borderRadius:'50%',background:'rgba(255,255,255,0.12)'}}/>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-white/75">{isGait?`Phase ${gaitPhase} of 3`:`Day ${cycleDay} of ${prog.cycleLength}`}</span>
+              {!isGait&&theme&&<span className="text-[10px] uppercase tracking-wider bg-white/15 border border-white/20 rounded-full px-2 py-0.5">{theme.label}</span>}
+              {isGait&&(phase1Today?<span className="text-[10px] uppercase tracking-wider bg-white/15 border border-white/20 rounded-full px-2 py-0.5">Done today ✓</span>:<span className="text-[10px] uppercase tracking-wider bg-amber-400 text-emerald-950 rounded-full px-2 py-0.5">Log today</span>)}
+            </div>
+            <div className="serif text-[34px] leading-[1.05] mb-1">{isGait?gaitSession.title.replace(/^Phase \d+ — /,''):session.title}</div>
+            <div className="text-white/75 text-sm">{isGait?gaitSession.subtitle:session.subtitle}</div>
+            {!isRest&&exPreview.length>0&&(
+              <div className="mt-5 pt-4 border-t border-white/15 space-y-1">
+                {exPreview.map((n,i)=><div key={i} className="text-[13px] text-white/90 flex gap-2"><span className="text-white/40 num w-3">{i+1}</span><span className="truncate">{n}</span></div>)}
+                {exMore>0&&<div className="text-[11px] text-white/55 pl-5">+{exMore} more</div>}
               </div>
             )}
+          </div>
+        </button>
+
+        {isGait&&(
+          <div className="glass rounded-2xl p-4 mb-5">
+            <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-3">Phase control</div>
+            <div className="flex gap-2">
+              <button onClick={()=>setGaitPhase(gaitPhase-1)} disabled={gaitPhase===1} className="flex-1 py-2.5 rounded-xl bg-white border border-stone-200 text-stone-700 text-sm disabled:opacity-30">← Regress</button>
+              <button onClick={()=>setGaitPhase(gaitPhase+1)} disabled={gaitPhase===3} className="flex-1 py-2.5 rounded-xl bg-emerald-700 text-white text-sm disabled:opacity-30">Advance →</button>
+            </div>
+            {gaitPhase>=2&&(
+              <button onClick={()=>setView({name:'gait-session',phase:gaitPhase})} className="w-full mt-3 text-left bg-white/70 border border-stone-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0"><div className="text-[10px] uppercase tracking-wider text-lime-700">Phase {gaitPhase} · 3× per week</div><div className="serif text-base text-stone-900">{gaitPhase===2?'Load the Pattern':'Transfer to Running Mechanics'}</div></div>
+                <span className="text-[10px] text-stone-600 bg-stone-100 border border-stone-200 px-2 py-1 rounded-full num flex-shrink-0">{bonusThisWeek}/3 this wk</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {last&&lastTheme&&(
+          <div className="glass rounded-2xl px-4 py-3.5 mb-5 flex items-center gap-4">
+            <div className={`w-2 h-10 rounded-full ${lastTheme.stripe}`}/>
+            <div className="flex-1 min-w-0"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5">Last logged</div><div className="serif text-lg text-stone-900 truncate">{lastTitle}</div></div>
+            <div className="flex-shrink-0 text-right"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-0.5 num">{last.date}</div>{last.rpe&&<div className="serif text-lg num text-stone-900">RPE {last.rpe}</div>}</div>
+          </div>
+        )}
+
+        {isRhom&&(()=>{
+          const active=(data.customSessions||[]).filter(c=>!c.archived);
+          const remove=c=>{if(!window.confirm(`Remove "${c.title}"? Your logged workouts stay in History.`))return;update(d=>({...d,customSessions:(d.customSessions||[]).map(x=>x.key===c.key?{...x,archived:true,replaces:null,archivedAt:new Date().toISOString()}:x)}));};
+          const open=c=>{const slot=slotForKey(prog,c.key);if(slot<0)return;const inCycle=slot<prog.cycleLength;setView({name:'day',slot,cycleDay:inCycle?slot+1:undefined});};
+          return(
+            <section className="mb-5">
+              <div className="flex items-baseline justify-between mb-2 px-1"><h2 className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Imported sessions</h2><button onClick={()=>setImportOpen(true)} className="text-xs text-stone-800 bg-white/80 border border-stone-300 rounded-full px-3 py-1 flex items-center gap-1 shadow-sm"><I.plus/>Import</button></div>
+              {active.length===0?(
+                <div className="glass rounded-2xl p-5 text-center text-sm text-stone-500">Paste a session block from Claude to add this week's workout.</div>
+              ):(
+                <div className="space-y-2.5">
+                  {active.map(c=>{const t=THEMES[c.kind]||THEMES.hypertrophy;const rt=c.replaces?RHOMBOID_SESSIONS.find(s=>s.key===c.replaces)?.title:null;return(
+                    <div key={c.key} className="glass rounded-2xl flex items-center gap-3 pl-4 pr-2 py-3.5">
+                      <div className={`w-2 h-10 rounded-full ${t.stripe} flex-shrink-0`}/>
+                      <button onClick={()=>open(c)} className="flex-1 min-w-0 text-left">
+                        <div className="serif text-lg text-stone-900 truncate">{c.title}</div>
+                        <div className="text-xs text-stone-500 truncate">{rt?`In cycle as ${rt} · `:''}{c.exercises.length} exercises{c.subtitle?` · ${c.subtitle}`:''}</div>
+                      </button>
+                      <button onClick={()=>remove(c)} className="text-stone-400 w-9 h-9 flex items-center justify-center flex-shrink-0" aria-label={`Remove ${c.title}`}><I.x/></button>
+                    </div>
+                  );})}
+                </div>
+              )}
+            </section>
+          );
+        })()}
+
+        {!isGait&&(
+          <section className="mb-5">
+            <h2 className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-2 px-1">{`The ${prog.cycleLength}-day cycle`}</h2>
+            <div className="glass rounded-2xl overflow-hidden">
+              {cycle.map((c,i)=>{
+                const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===cycleDay,isDone=c.day<cycleDay,isRestDay=s.special==='rest';
+                const circle=isDone?<div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white"><I.check/></div>:<div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium num flex-shrink-0 ${isCurrent?'text-white':`${t.bg} ${t.text}`}`} style={isCurrent?{background:acc.from}:undefined}>{c.day}</div>;
+                const inner=<>{circle}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><div className={`serif text-base ${isDone?'text-stone-400':'text-stone-900'}`}>{s.title}</div>{isCurrent&&<span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">Next</span>}</div><div className={`text-xs truncate ${isDone?'text-stone-400':'text-stone-500'}`}>{s.subtitle}</div></div></>;
+                const base=`flex items-center gap-3.5 px-4 py-3 text-left ${i>0?'border-t border-stone-200/60':''} ${isCurrent?'bg-white/70':''}`;
+                return isRestDay?<div key={c.day} className={base}>{inner}</div>:<button key={c.day} onClick={()=>{if(s.special==='walk')setView({name:'walk',slot:c.slot,cycleDay:c.day});else setView({name:'day',slot:c.slot,cycleDay:c.day});}} className={`w-full ${base}`}>{inner}</button>;
+              })}
+            </div>
           </section>
-        );
-      })()}
+        )}
+
+        {!isGait&&(
+          <section className="mb-5">
+            <h2 className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-2 px-1">Progressions</h2>
+            <div className="grid grid-cols-2 gap-2.5">
+              {!isRhom&&<button onClick={()=>setView({name:'tgu'})} className="glass rounded-2xl p-4 text-left"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5">TGU</div><div className="serif text-xl text-stone-900 num">{p.tguStageIndex+1}<span className="text-stone-400">/{TGU_STAGES.length}</span></div><div className="text-xs text-stone-500 mt-0.5 truncate">{TGU_STAGES[p.tguStageIndex].scheme} · {TGU_STAGES[p.tguStageIndex].weight}kg</div></button>}
+              {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="glass rounded-2xl p-4 text-left"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5">KB Swings</div><div className="serif text-xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-base">/min</span></div><div className="text-xs text-stone-500 mt-0.5 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
+              <button onClick={()=>setView({name:'sprints'})} className="glass rounded-2xl p-4 text-left"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5">Sprints</div><div className="serif text-xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-0.5">Wk {SPRINT_STAGES[p.sprintStageIndex].week}</div></button>
+              <button onClick={()=>setView({name:'norwegian_bike'})} className="glass rounded-2xl p-4 text-left"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5">Norwegian · Bike</div><div className="serif text-xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-0.5">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week}</div></button>
+              <button onClick={()=>setView({name:'norwegian_ski'})} className="glass rounded-2xl p-4 text-left"><div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5">Norwegian · Ski</div><div className="serif text-xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-0.5">Wk {NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].week}</div></button>
+            </div>
+          </section>
+        )}
+        {isGait&&<p className="text-[10px] text-stone-400 text-center mt-1 mb-5 uppercase tracking-wider">Phase 1 runs daily · advance phases when ready</p>}
+      </div>
+
+      {/* Plane 3 · controls */}
+      <div style={{position:'fixed',left:0,right:0,bottom:0,zIndex:30,pointerEvents:'none'}}>
+        <div style={{maxWidth:576,margin:'0 auto',padding:'0 16px',paddingBottom:'max(16px,env(safe-area-inset-bottom))',display:'flex',justifyContent:'center'}}>
+          <div className="glass-strong rounded-[28px] p-2 flex items-center gap-1" style={{pointerEvents:'auto'}}>
+            <button onClick={()=>setView({name:'history'})} className={dockBtn} aria-label="History"><I.cal/><span className="text-[8.5px] uppercase tracking-wide">History</span></button>
+            {!isGait&&<button onClick={()=>setSkipOpen(true)} className={dockBtn} aria-label="Skip"><I.skip/><span className="text-[8.5px] uppercase tracking-wide">Skip</span></button>}
+            <button onClick={startHero} className="h-14 px-5 rounded-2xl text-white flex items-center gap-2 mx-1 active:scale-95 transition-transform" style={{background:`linear-gradient(140deg, ${acc.from}, ${acc.to})`,boxShadow:`0 10px 24px -8px ${acc.glow}`}} aria-label="Start">
+              {isRest?<I.check/>:<I.play/>}<span className="serif text-lg">{isRest?'Rest':'Start'}</span>
+            </button>
+            {!isGait&&!isRest&&<button onClick={logRest} className={dockBtn} aria-label="Rest day"><I.coffee/><span className="text-[8.5px] uppercase tracking-wide">Rest</span></button>}
+            <button onClick={()=>setView({name:'settings'})} className={dockBtn} aria-label="Settings"><I.settings/><span className="text-[8.5px] uppercase tracking-wide">Settings</span></button>
+          </div>
+        </div>
+      </div>
+
       {importOpen&&<ImportSessionSheet data={data} update={update} onClose={()=>setImportOpen(false)}/>}
 
-      {!isGait&&(
-        <section className="mb-8">
-          <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-3">Progressions</h2>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            {!isRhom&&<button onClick={()=>setView({name:'tgu'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">TGU</div><div className="serif text-2xl text-stone-900 num">{p.tguStageIndex+1}<span className="text-stone-400">/{TGU_STAGES.length}</span></div><div className="text-xs text-stone-500 mt-1 truncate">{TGU_STAGES[p.tguStageIndex].scheme} · {TGU_STAGES[p.tguStageIndex].weight}kg</div></button>}
-            {!isRhom&&<button onClick={()=>setView({name:'kb'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">KB Swings</div><div className="serif text-2xl text-stone-900 num">{KB_SWING_STAGES[p.kbStageIndex].swingsPerMin}<span className="text-stone-400 text-lg">/min</span></div><div className="text-xs text-stone-500 mt-1 truncate">{KB_SWING_STAGES[p.kbStageIndex].minutes} min · {KB_SWING_STAGES[p.kbStageIndex].weight}kg</div></button>}
-            <button onClick={()=>setView({name:'sprints'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sprints</div><div className="serif text-2xl text-stone-900 num">{SPRINT_STAGES[p.sprintStageIndex].reps}×{SPRINT_STAGES[p.sprintStageIndex].sprintSec}s</div><div className="text-xs text-stone-500 mt-1">Wk {SPRINT_STAGES[p.sprintStageIndex].week} · shared</div></button>
-            <button onClick={()=>setView({name:'norwegian_bike'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Bike)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_BIKE_STAGES[p.norwegianBikeStageIndex].week} · shared</div></button>
-            <button onClick={()=>setView({name:'norwegian_ski'})} className="bg-white border border-stone-200 rounded-2xl p-4 text-left"><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Norwegian (Ski Erg)</div><div className="serif text-2xl text-stone-900 num">4×{fmtWorkMin(NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].workMin)}</div><div className="text-xs text-stone-500 mt-1">Wk {NORWEGIAN_SKI_STAGES[p.norwegianSkiStageIndex].week} · Injury</div></button>
-          </div>
-        </section>
-      )}
-
-      <button onClick={()=>setView({name:'history'})} className="w-full bg-white border border-stone-200 rounded-2xl px-5 py-4 flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3"><I.cal/><span className="text-stone-900">History</span></div>
-        <span className="text-xs text-stone-500 num">{(data.sessions?.length||0)+(data.walks?.length||0)}</span>
-      </button>
-
       {!isGait&&skipOpen&&(
-        <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={()=>setSkipOpen(false)}>
-          <div style={{background:'#fafaf9',borderRadius:16,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
+        <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(28,25,23,0.35)',backdropFilter:'blur(4px)',WebkitBackdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={()=>setSkipOpen(false)}>
+          <div className="glass-strong" style={{borderRadius:24,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
             <div className="text-center mb-3"><div className="text-[10px] uppercase tracking-widest text-stone-500">Day {cycleDay} · {prog.name}</div><div className="serif text-xl text-stone-900 mt-1">{session.title}</div></div>
             <div className="space-y-2.5">
-              <button onClick={()=>{advanceCycle('skipped');setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700"><I.skip/></div><div><div className="serif text-base text-stone-900">Skip entirely</div><div className="text-xs text-stone-500 mt-0.5">Advance to Day {nextCycleDay(prog,cycleDay)}</div></div></button>
-              <button onClick={()=>setSkipOpen(false)} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700"><I.cal/></div><div><div className="serif text-base text-stone-900">Come back to it</div><div className="text-xs text-stone-500 mt-0.5">Cycle stays</div></div></button>
-              {!isRest&&<button onClick={()=>{logRest();setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600"><I.coffee/></div><div><div className="serif text-base text-stone-900">Take a rest day</div><div className="text-xs text-stone-500 mt-0.5">Logs a rest — cycle stays</div></div></button>}
+              <button onClick={()=>{advanceCycle('skipped');setSkipOpen(false);}} className="w-full glass rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700"><I.skip/></div><div><div className="serif text-base text-stone-900">Skip entirely</div><div className="text-xs text-stone-500 mt-0.5">Advance to Day {nextCycleDay(prog,cycleDay)}</div></div></button>
+              <button onClick={()=>setSkipOpen(false)} className="w-full glass rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700"><I.cal/></div><div><div className="serif text-base text-stone-900">Come back to it</div><div className="text-xs text-stone-500 mt-0.5">Cycle stays</div></div></button>
+              {!isRest&&<button onClick={()=>{logRest();setSkipOpen(false);}} className="w-full glass rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600"><I.coffee/></div><div><div className="serif text-base text-stone-900">Take a rest day</div><div className="text-xs text-stone-500 mt-0.5">Logs a rest, cycle stays</div></div></button>}
               <button onClick={()=>setSkipOpen(false)} className="w-full py-3 text-stone-500 text-sm">Cancel</button>
             </div>
           </div>
@@ -1857,7 +1902,8 @@ function App(){
   return(
     <RestTimerProvider>
       <div style={{minHeight:'100vh',background:'#fafaf9',paddingTop:'env(safe-area-inset-top)'}}>
-        <div style={{maxWidth:576,margin:'0 auto',padding:'24px 20px',paddingBottom:'calc(env(safe-area-inset-bottom) + 8rem)'}}>
+        <BackgroundPlane program={view.name==='gait-session'?'gait':program}/>
+        <div style={{maxWidth:576,margin:'0 auto',padding:'24px 20px',paddingBottom:'calc(env(safe-area-inset-bottom) + 8rem)',position:'relative',zIndex:1}}>
           {view.name==='home'           &&<HomeView {...shared}/>}
           {view.name==='day'            &&<DayView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
           {view.name==='walk'           &&<WalkView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
