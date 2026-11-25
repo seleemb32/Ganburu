@@ -471,10 +471,238 @@ const THEMES={
   hypertrophy:{label:'Hypertrophy',bg:'bg-amber-50',text:'text-amber-800',border:'border-amber-200',stripe:'bg-amber-600'},
   power:{label:'Power & Speed',bg:'bg-red-50',text:'text-red-800',border:'border-red-200',stripe:'bg-red-600'},
   zone2:{label:'Zone 2',bg:'bg-teal-50',text:'text-teal-800',border:'border-teal-200',stripe:'bg-teal-600'},
-  mixed:{label:'Mixed',bg:'bg-sky-50',text:'text-sky-800',border:'border-sky-200',stripe:'bg-sky-600'},
+  mixed:{label:'Mixed',bg:'bg-purple-50',text:'text-purple-800',border:'border-purple-200',stripe:'bg-purple-600'},
   corrective:{label:'Corrective',bg:'bg-emerald-50',text:'text-emerald-800',border:'border-emerald-200',stripe:'bg-emerald-600'},
   rest:{label:'Rest',bg:'bg-stone-100',text:'text-stone-600',border:'border-stone-200',stripe:'bg-stone-400'},
 };
+
+// ── EXERCISE LIBRARY ──────────────────────────────────────────────────────────
+// The predetermined list used by "Add exercise" inside any workout. Ids match the
+// program ids wherever the movement already exists, so weight/rep history and RIR
+// targets carry over automatically. To add or drop a movement, edit this list.
+const MUSCLES=['Chest','Back','Shoulders','Biceps','Triceps','Forearms','Core','Glutes','Quads','Hamstrings','Hips','Lower leg','Full body'];
+const LIB_CATS=[['strength','Strength'],['cardio','Cardio'],['mobility','Mobility']];
+const MAX_SETS=10;
+const L=(id,name,cat,muscles,track,sets,reps,note)=>({id,name,cat,muscles,track,sets,scheme:track==='cardio'?reps:`${sets} × ${reps}`,...(note?{note}:{})});
+const GC_MUSCLES={gc_short_foot:['Lower leg'],gc_towel_scrunch:['Lower leg'],gc_sl_balance:['Lower leg','Glutes'],gc_banded_squat:['Glutes','Quads'],gc_stepup:['Glutes','Quads'],gc_suitcase_lunge:['Glutes','Quads','Core'],gc_sl_rdl:['Glutes','Hamstrings'],gc_askip:['Glutes','Hips'],gc_wall_drive:['Glutes','Hips'],gc_wicket:['Glutes','Hips'],gc_clamshell:['Glutes','Hips'],gc_lateral_walk:['Glutes','Hips'],gc_hip_bump_wall:['Glutes','Hips'],gc_dog_leash:['Glutes','Hips']};
+const EXERCISE_LIBRARY=[
+  // Strength · legs
+  L('back_squat','Barbell Back Squat','strength',['Quads','Glutes'],'weight',3,'2–5'),
+  L('rdl','Barbell Deadlift','strength',['Hamstrings','Glutes','Back'],'weight',4,'5'),
+  L('rdl_hyp','Romanian Deadlift','strength',['Hamstrings','Glutes'],'weight',3,'8–12'),
+  L('hip_thrust','Hip Thrust','strength',['Glutes','Hamstrings'],'weight',3,'10–15'),
+  L('bss','Bulgarian Split Squat','strength',['Quads','Glutes'],'weight',3,'8–15/side'),
+  L('walking_lunges','Walking Lunges','strength',['Quads','Glutes'],'weight',3,'10/side'),
+  L('cossack','Cossack Squat','strength',['Hips','Quads','Glutes'],'weight',3,'5/side'),
+  L('leg_curl','Leg Curl','strength',['Hamstrings'],'weight',3,'10–15','Machine'),
+  L('back_ext','Back Extensions','strength',['Back','Glutes','Hamstrings'],'weight',3,'12'),
+  L('bk_calf_raise','Bent-Knee Calf Raises','strength',['Lower leg'],'weight',3,'15','1-sec pause at top'),
+  L('tib_raise','Tibialis Raises','strength',['Lower leg'],'reps',2,'15'),
+  L('box_jump','Box Jump','strength',['Quads','Glutes','Lower leg'],'reps',3,'2–5','Log box height in notes'),
+  L('broad_jump','Broad Jump','strength',['Glutes','Quads','Hamstrings'],'reps',3,'3–5'),
+  L('kb_swing_sets','KB Swings','strength',['Glutes','Hamstrings','Full body'],'weight',3,'15'),
+  // Strength · chest
+  L('bench_press','Barbell Bench Press','strength',['Chest','Triceps','Shoulders'],'weight',4,'2–5'),
+  L('incline_db','Incline DB Press','strength',['Chest','Shoulders','Triceps'],'weight',3,'6–12'),
+  L('low_incline_db','Low Incline DB Press','strength',['Chest','Shoulders','Triceps'],'weight',3,'8–12'),
+  L('chest_press_machine','Chest Press Machine','strength',['Chest','Triceps'],'weight',4,'6–12'),
+  L('incline_chest_press_machine','Incline Chest Press Machine','strength',['Chest','Shoulders'],'weight',3,'10–15'),
+  L('pec_deck','Pec Deck / Chest Fly Machine','strength',['Chest'],'weight',3,'10–15'),
+  L('cable_fly','Cable Fly','strength',['Chest'],'weight',3,'10–15'),
+  // Strength · back
+  L('barbell_row','Barbell Row','strength',['Back','Biceps'],'weight',3,'5–8','Overhand grip'),
+  L('db_row','Single Arm DB Row','strength',['Back','Biceps'],'weight',3,'6–12/side'),
+  L('chest_supported_row','Chest Supported DB Row','strength',['Back','Biceps'],'weight',3,'8–12'),
+  L('cable_row','Cable Seated Row','strength',['Back','Biceps'],'weight',3,'6–12'),
+  L('lat_pulldown','Lat Pulldown','strength',['Back','Biceps'],'weight',3,'8–15'),
+  L('sa_pulldown','Single Arm Lat Pulldown','strength',['Back','Biceps'],'weight',3,'6–12/side'),
+  L('straight_arm_pulldown','Straight Arm Pulldown','strength',['Back'],'weight',3,'8–12'),
+  L('pull_ups','Pull-Ups','strength',['Back','Biceps'],'weight',3,'4–8'),
+  // Strength · shoulders
+  L('db_press','Single Arm DB Shoulder Press','strength',['Shoulders','Triceps'],'weight',3,'6–12/side'),
+  L('shoulder_press_machine','Shoulder Press Machine','strength',['Shoulders','Triceps'],'weight',3,'8–12'),
+  L('db_lateral_raise','DB Lateral Raises','strength',['Shoulders'],'weight',3,'12–15/side'),
+  L('cable_lateral','Cable Lateral Raises','strength',['Shoulders'],'weight',3,'12–15/side'),
+  L('face_pull','Cable Face Pull','strength',['Shoulders','Back'],'weight',3,'12–15'),
+  L('machine_reverse_fly','Machine Reverse Fly','strength',['Shoulders','Back'],'weight',3,'15'),
+  L('db_reverse_fly','DB Reverse Fly','strength',['Shoulders','Back'],'weight',3,'12–15'),
+  L('kb_clean_press','KB Clean and Press','strength',['Shoulders','Full body'],'weight',3,'6–12/side'),
+  L('tgu_sets','Turkish Get-Up','strength',['Full body','Shoulders','Core'],'weight',3,'1/side'),
+  // Strength · arms
+  L('hammer_curl','Hammer Curl','strength',['Biceps','Forearms'],'weight',3,'10–15'),
+  L('cable_curl','Cable Curl','strength',['Biceps'],'weight',3,'10–15'),
+  L('incline_db_curl','Incline DB Curl','strength',['Biceps'],'weight',3,'10–15'),
+  L('cable_tricep_pushdown','Cable Tricep Pushdown','strength',['Triceps'],'weight',3,'10–15'),
+  L('single_arm_cable_pushdown','Single Arm Cable Pushdown','strength',['Triceps'],'weight',3,'10–15'),
+  L('overhead_tricep_extension','Overhead Cable Tricep Extension','strength',['Triceps'],'weight',3,'10–15'),
+  L('db_kickback','DB Tricep Kickback','strength',['Triceps'],'weight',3,'10–15'),
+  L('wrist_curl','Wrist Curls','strength',['Forearms'],'weight',3,'15'),
+  L('reverse_wrist_curl','Reverse Wrist Curls','strength',['Forearms'],'weight',3,'15'),
+  L('farmer','Farmer Carry','strength',['Forearms','Core','Full body'],'farmer',3,'30m'),
+  // Strength · core
+  L('cable_crunch2','Cable Crunch','strength',['Core'],'reps',3,'15–20'),
+  L('landmine_rotation','Landmine Rotation','strength',['Core'],'weight',3,'8–10/side'),
+  L('hanging_knees','Hanging Knee Raises','strength',['Core'],'reps',3,'8–12'),
+  L('side_plank','Side Plank with Reach','strength',['Core'],'reps',3,'8/side'),
+  L('pallof_press','Pallof Press','strength',['Core'],'weight',3,'10/side'),
+  L('dead_bug','Dead Bug','strength',['Core'],'reps',3,'8/side'),
+  L('bird_dog','Bird Dog','strength',['Core','Back'],'reps',3,'8/side'),
+  L('hollow_body_hold','Hollow Body Hold','strength',['Core'],'time',3,'30 sec'),
+  // Cardio
+  L('cardio_walk','Zone 2 Walk','cardio',['Full body'],'cardio',null,'Zone 2 · 30–60 min'),
+  L('cardio_elliptical','Elliptical','cardio',['Full body'],'cardio',null,'Zone 2 · 30–45 min'),
+  L('cardio_recumbent_bike','Recumbent Bike','cardio',['Quads','Glutes'],'cardio',null,'Zone 2 · 30–45 min'),
+  L('cardio_arm_bike','Arm Bike','cardio',['Shoulders','Biceps','Triceps'],'cardio',null,'Zone 2 · 20–30 min'),
+  L('cardio_assault_bike','Assault Bike','cardio',['Full body'],'cardio',null,'Intervals or steady'),
+  L('cardio_ski_erg','Ski Erg','cardio',['Back','Core','Triceps'],'cardio',null,'Intervals or steady'),
+  L('cardio_sprints','Sprints','cardio',['Hamstrings','Glutes','Quads'],'cardio',null,'Log total time'),
+  // Mobility · stretches and prep
+  L('hip_switch','90/90 Hip Switch','mobility',['Hips'],'time',2,'1–2 min'),
+  L('couch_stretch','Couch Stretch','mobility',['Hips','Quads'],'time',2,'60 sec/side'),
+  L('mob_hip_flexor','Kneeling Hip Flexor Stretch','mobility',['Hips','Quads'],'time',2,'45 sec/side'),
+  L('mob_pigeon','Pigeon Pose','mobility',['Glutes','Hips'],'time',2,'60 sec/side'),
+  L('mob_figure4','Glute Figure-4 Stretch','mobility',['Glutes','Hips'],'time',2,'45 sec/side'),
+  L('mob_hamstring','Hamstring Floor Stretch','mobility',['Hamstrings'],'time',2,'45 sec/side'),
+  L('mob_soleus','Bent-Knee Soleus Stretch','mobility',['Lower leg'],'time',2,'45 sec/side'),
+  L('mob_calf','Straight-Leg Calf Stretch','mobility',['Lower leg'],'time',2,'30 sec/side'),
+  L('mob_lat','Lat Stretch Against Rack','mobility',['Back'],'time',2,'30 sec/side'),
+  L('mob_chest','Chest Doorframe Stretch','mobility',['Chest','Shoulders'],'time',2,'30 sec'),
+  L('mob_cross_body','Shoulder Cross-Body Stretch','mobility',['Shoulders'],'time',2,'30 sec/side'),
+  L('mob_levator','Levator Scapulae Stretch','mobility',['Back','Shoulders'],'time',2,'30 sec/side'),
+  L('mob_thoracic','Thoracic Rotation in Quadruped','mobility',['Back'],'reps',2,'5/side'),
+  L('mob_cat_cow','Cat-Cow','mobility',['Back','Core'],'reps',2,'8'),
+  L('mob_goblet_squat','Deep Goblet Squat with Hip Opening','mobility',['Hips','Quads'],'reps',2,'5'),
+  L('mob_hip_ir','Hip Internal Rotation','mobility',['Hips'],'reps',2,'10/side'),
+  L('mob_band_pullapart','Band Pull-Aparts','mobility',['Shoulders','Back'],'reps',2,'15'),
+  L('mob_ytwl','YTWL','mobility',['Shoulders','Back'],'reps',2,'6–8 each'),
+  L('mob_scap_pushup','Scapular Push-Ups','mobility',['Shoulders','Back'],'reps',2,'10'),
+  L('mob_kb_halo','KB Halo','mobility',['Shoulders'],'reps',2,'5/direction'),
+  L('mob_chin_tuck','Chin Tucks','mobility',['Back'],'reps',2,'10'),
+  // Mobility · gait corrective drills, straight from the Gait Corrective program
+  ...[...GAIT_PHASE1_EXERCISES,...GAIT_PHASE2_EXERCISES,...GAIT_PHASE3_EXERCISES].map(e=>({...e,cat:'mobility',muscles:GC_MUSCLES[e.id]||['Glutes']})),
+];
+const libToExercise=l=>{const {cat,muscles,custom,...ex}=l;return {...ex,added:true};};
+
+// ── DIRECTORY IMPORTS ─────────────────────────────────────────────────────────
+// Exercises pasted in as a block from Claude live in data.customLibrary; built-in
+// entries dropped by a block live in data.hiddenLibrary. Both are mirrored here on
+// every render (see App). A custom entry with a built-in id replaces that entry.
+let CUSTOM_LIBRARY=[],HIDDEN_LIBRARY=[];
+function fullLibrary(){
+  const customIds=new Set(CUSTOM_LIBRARY.map(e=>e.id));
+  return [...EXERCISE_LIBRARY.filter(e=>!customIds.has(e.id)&&!HIDDEN_LIBRARY.includes(e.id)),...CUSTOM_LIBRARY];
+}
+const LIB_TRACKS=['weight','reps','time','farmer','cardio'];
+function parseExerciseBlock(text){
+  const raw=String(text||'').trim().replace(/^```[a-zA-Z]*\s*/,'').replace(/```\s*$/,'').trim();
+  let p;
+  try{p=JSON.parse(raw);}catch{throw new Error('That is not valid JSON. Copy the whole block, including the first { and last }.');}
+  if(Array.isArray(p)) p={exercises:p};
+  if(!p||typeof p!=='object') throw new Error('Expected an exercise block.');
+  const list=Array.isArray(p.exercises)?p.exercises:[];
+  const remove=Array.isArray(p.remove)?[...new Set(p.remove.map(x=>String(x).trim()).filter(Boolean))]:[];
+  if(!list.length&&!remove.length) throw new Error('The block needs "exercises" or "remove".');
+  const seen=new Set();
+  const exercises=list.map((e,i)=>{
+    const n=i+1;
+    const name=String(e?.name||'').trim(); if(!name) throw new Error(`Exercise ${n}: missing "name".`);
+    const id=String(e.id||name).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+    if(!id) throw new Error(`Exercise ${n}: could not build an id.`);
+    if(seen.has(id)) throw new Error(`Exercise ${n}: id "${id}" is used twice.`);
+    seen.add(id);
+    const cat=String(e.segment||e.cat||'').trim().toLowerCase();
+    if(!LIB_CATS.some(c=>c[0]===cat)) throw new Error(`Exercise ${n}: "segment" must be strength, cardio or mobility.`);
+    const muscles=(Array.isArray(e.muscles)?e.muscles:[e.muscles]).filter(Boolean).map(m=>{
+      const hit=MUSCLES.find(x=>x.toLowerCase()===String(m).trim().toLowerCase());
+      if(!hit) throw new Error(`Exercise ${n}: unknown muscle "${m}". Use ${MUSCLES.join(', ')}.`);
+      return hit;
+    });
+    if(!muscles.length) throw new Error(`Exercise ${n}: needs at least one muscle.`);
+    const track=e.track?String(e.track).trim().toLowerCase():(cat==='cardio'?'cardio':'weight');
+    if(!LIB_TRACKS.includes(track)) throw new Error(`Exercise ${n}: "track" must be ${LIB_TRACKS.join(', ')}.`);
+    const out={id,name,cat,muscles:[...new Set(muscles)],track,custom:true};
+    if(track==='cardio'){out.sets=null;out.scheme=String(e.scheme||e.reps||'Log time and distance');}
+    else{
+      const sets=e.sets==null?3:parseInt(e.sets,10);
+      if(!(sets>=1&&sets<=MAX_SETS)) throw new Error(`Exercise ${n}: "sets" must be 1 to ${MAX_SETS}.`);
+      const reps=e.reps!=null?String(e.reps):'';
+      out.sets=sets;out.scheme=e.scheme?String(e.scheme):(reps?`${sets} × ${reps}`:`${sets} sets`);
+    }
+    if(e.note) out.note=String(e.note);
+    return out;
+  });
+  return {exercises,remove:remove.filter(id=>!seen.has(id))};
+}
+function applyExerciseBlock(d,parsed){
+  const ids=new Set(parsed.exercises.map(e=>e.id)),rm=new Set(parsed.remove);
+  const customLibrary=[...(d.customLibrary||[]).filter(e=>!ids.has(e.id)&&!rm.has(e.id)),...parsed.exercises];
+  const hiddenLibrary=[...new Set([...(d.hiddenLibrary||[]).filter(id=>!ids.has(id)),...parsed.remove.filter(id=>EXERCISE_LIBRARY.some(e=>e.id===id))])];
+  return {...d,customLibrary,hiddenLibrary};
+}
+
+// A logged workout can differ from its program template: `removed` holds template
+// exercise ids dropped for that workout, `extras` holds full exercise definitions
+// added from the library. Both are saved with the entry so History and Edit always
+// rebuild the same list. The program templates themselves never change.
+function rawSessionExercises(session,state){
+  const removed=state?.removed||[];
+  const base=(session?.exercises||[]).filter(e=>!removed.includes(e.id));
+  const extras=(state?.extras||[]).filter(e=>!base.some(b=>b.id===e.id));
+  // An extra added with the + on a card carries `after` (that card's id) and is
+  // placed right behind it. If the anchor sits in a superset the extra goes after
+  // the whole superset, so the superset block is never split.
+  const list=[...base];
+  extras.forEach(e=>{
+    let i=e.after?list.findIndex(x=>x.id===e.after):-1;
+    if(i<0){list.push(e);return;}
+    const g=list[i].ssGroup;
+    if(g) while(i+1<list.length&&list[i+1].ssGroup===g) i++;
+    list.splice(i+1,0,e);
+  });
+  return list;
+}
+// Saved set counts (data.setCounts, mirrored here on every render like
+// CUSTOM_SESSIONS). Keyed by workout + exercise so the same movement can run a
+// different number of sets on different days.
+let SET_COUNTS={};
+const sessKey=s=>s?.key??(s?.phase!=null?`gait_${s.phase}`:null);
+function sessionExercises(session,state){
+  const key=sessKey(session);
+  return rawSessionExercises(session,state).map(ex=>{
+    const n=key&&ex.sets!=null?SET_COUNTS[`${key}:${ex.id}`]:null;
+    if(!n||n===ex.sets) return ex;
+    return {...ex,sets:n,scheme:String(ex.scheme||'').replace(/^\d+(?:–\d+)?(?= × )/,String(n))};
+  });
+}
+// The saved version of a workout (data.overrides[key] = {removed,extras}). Every
+// new workout starts from it; each logged entry still stores its own
+// removed/extras against the original template, so history never shifts.
+function seedPlan(session,data){
+  const o=data?.overrides?.[sessKey(session)];
+  return {extras:(o?.extras||[]).map(e=>({...e})),removed:[...(o?.removed||[])]};
+}
+// Built when a NEW entry is saved: set counts always persist; the exercise list
+// only persists when the user chose to update the workout.
+function planPatch(data,session,state,updatePlan){
+  const key=sessKey(session); if(!key) return {};
+  const setCounts={...(data.setCounts||{})};
+  rawSessionExercises(session,state).forEach(ex=>{
+    const n=state.exercises?.[ex.id]?.sets?.length;
+    if(!n||ex.sets==null) return;
+    const k=`${key}:${ex.id}`;
+    if(n===ex.sets) delete setCounts[k]; else setCounts[k]=n;
+  });
+  const out={setCounts};
+  if(updatePlan){
+    const tmpl=new Set((session.exercises||[]).map(e=>e.id));
+    const removed=(state.removed||[]).filter(id=>tmpl.has(id));
+    const extras=(state.extras||[]).filter(e=>!tmpl.has(e.id)).map(e=>({...e,added:false}));
+    const overrides={...(data.overrides||{})};
+    if(removed.length||extras.length) overrides[key]={removed,extras}; else delete overrides[key];
+    out.overrides=overrides;
+  }
+  return out;
+}
 
 function buildCycle(program){ return program.sessions.slice(0,program.cycleLength??program.sessions.length).map((s,i)=>({day:i+1,slot:i})); }
 function cycleEntry(program,day){const len=program.cycleLength;const safe=((day-1)%len+len)%len;return {day:safe+1,slot:safe};}
@@ -483,15 +711,13 @@ const todayISO=()=>new Date().toISOString().slice(0,10);
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 const DATA_KEY='ganburu-v4';
-// Imported sessions are also mirrored under their own key, so they survive even if
-// the main data blob is ever reset or fails to parse after an update.
-const CUSTOM_KEY='ganburu-custom-sessions';
 const DEFAULT_DATA={
   activeProgram:'ganbaru',
   cycleDays:{ganbaru:1,rhomboid:1},
   progressions:{tguStageIndex:0,kbStageIndex:0,sprintStageIndex:0,norwegianStageIndex:0,norwegianBikeStageIndex:0,norwegianSkiStageIndex:0,kbEmomWeight:16},
   gaitPhase:1,
   sessions:[], walks:[], cycleEvents:[], customSessions:[],
+  overrides:{}, setCounts:{}, customLibrary:[], hiddenLibrary:[],
 };
 
 // One-time migration from v3 (single program) to v4 (multi program)
@@ -527,21 +753,20 @@ function loadData(){
         sessions:Array.isArray(p.sessions)?p.sessions:[],
         walks:Array.isArray(p.walks)?p.walks:[],
         cycleEvents:Array.isArray(p.cycleEvents)?p.cycleEvents:[],
-        customSessions:(Array.isArray(p.customSessions)&&p.customSessions.length)?p.customSessions:loadCustomMirror(),
+        customSessions:Array.isArray(p.customSessions)?p.customSessions:[],
+        overrides:p.overrides&&typeof p.overrides==='object'?p.overrides:{},
+        setCounts:p.setCounts&&typeof p.setCounts==='object'?p.setCounts:{},
+        customLibrary:Array.isArray(p.customLibrary)?p.customLibrary:[],
+        hiddenLibrary:Array.isArray(p.hiddenLibrary)?p.hiddenLibrary:[],
       };
     }
     // No v4 — try migrating v3
     const migrated=migrateV3toV4();
     if(migrated){ saveDataRaw(migrated); return migrated; }
   }catch{}
-  return {...DEFAULT_DATA,customSessions:loadCustomMirror()};
+  return DEFAULT_DATA;
 }
-function loadCustomMirror(){try{const r=storage.get(CUSTOM_KEY);const v=r?.value?JSON.parse(r.value):[];return Array.isArray(v)?v:[];}catch{return [];}}
-function saveDataRaw(data){
-  const r=storage.set(DATA_KEY,JSON.stringify(data));
-  try{if(Array.isArray(data.customSessions)&&data.customSessions.length)storage.set(CUSTOM_KEY,JSON.stringify(data.customSessions));}catch{}
-  return !!r;
-}
+function saveDataRaw(data){const r=storage.set(DATA_KEY,JSON.stringify(data));return !!r;}
 function saveData(data){return saveDataRaw(data);}
 
 const draftKey=(program,kind,slot,esa)=>`ganburu-draft-${program}-${kind}-s${slot}${esa?`-edit-${esa}`:''}`;
@@ -573,6 +798,7 @@ function buildFreshExercise(ex,data){
   if(ex.track==='tgu') return {stageIndex:data.progressions.tguStageIndex,done:false};
   if(ex.track==='kb_swings'){const s=KB_SWING_STAGES[data.progressions.kbStageIndex]??KB_SWING_STAGES[0];return{weight:s.weight,rounds:s.minutes,completed:0,swingsPerRound:s.swingsPerMin,stageIndex:data.progressions.kbStageIndex,done:false};}
   if(ex.track==='kb_emom'){return{weight:data.progressions.kbEmomWeight??16,rounds:10,completed:0,swingsPerRound:10,done:false};}
+  if(ex.track==='cardio') return {duration:'',distance:'',avgHR:'',done:false};
   return {};
 }
 
@@ -667,59 +893,6 @@ const I={
   upload:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
   zap:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
 };
-
-// ── THREE PLANES ──────────────────────────────────────────────────────────────
-// Plane 1: fixed background wash. Plane 2: floating content cards (.glass).
-// Plane 3: floating controls (ActionDock / home dock) above everything.
-const ACCENT={
-  rhomboid:{from:'#292524',to:'#6b625c',glow:'rgba(41,37,36,0.34)',blobA:'rgba(168,162,158,0.32)',blobB:'rgba(251,191,36,0.18)'},
-  ganbaru:{from:'#1e3a8a',to:'#3b82f6',glow:'rgba(30,58,138,0.36)',blobA:'rgba(59,130,246,0.26)',blobB:'rgba(251,191,36,0.18)'},
-  gait:{from:'#065f46',to:'#10b981',glow:'rgba(4,120,87,0.34)',blobA:'rgba(16,185,129,0.26)',blobB:'rgba(163,230,53,0.18)'},
-};
-const accentFor=p=>ACCENT[p]||ACCENT.ganbaru;
-const accentBg=a=>({background:`linear-gradient(140deg, ${a.from} 0%, ${a.to} 100%)`});
-function BackgroundPlane({program}){
-  const a=accentFor(program);
-  return(
-    <div aria-hidden="true" style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',background:'linear-gradient(180deg,#f5f5f4 0%,#fafaf9 45%,#f5f5f4 100%)'}}>
-      <div style={{position:'absolute',top:'-12%',left:'-20%',width:'75vw',height:'75vw',maxWidth:520,maxHeight:520,borderRadius:'50%',background:a.blobA,filter:'blur(70px)',transition:'background 0.4s'}}/>
-      <div style={{position:'absolute',bottom:'-10%',right:'-25%',width:'80vw',height:'80vw',maxWidth:560,maxHeight:560,borderRadius:'50%',background:a.blobB,filter:'blur(80px)'}}/>
-    </div>
-  );
-}
-function SubjectHero({program,eyebrow,title,subtitle,chips,children}){
-  const a=accentFor(program);
-  return(
-    <div className="rounded-3xl p-6 mb-5 text-white relative overflow-hidden" style={{...accentBg(a),boxShadow:`0 24px 48px -16px ${a.glow}, 0 2px 6px -2px rgba(28,25,23,0.15)`}}>
-      <div aria-hidden="true" style={{position:'absolute',top:-60,right:-60,width:180,height:180,borderRadius:'50%',background:'rgba(255,255,255,0.10)'}}/>
-      <div className="relative">
-        <div className="flex items-center gap-2 flex-wrap mb-4">
-          {eyebrow&&<span className="text-[10px] uppercase tracking-[0.2em] text-white/75 mr-auto">{eyebrow}</span>}
-          {chips}
-        </div>
-        <h1 className="serif text-[32px] leading-[1.08]">{title}</h1>
-        {subtitle&&<p className="text-white/75 text-sm mt-1">{subtitle}</p>}
-        {children}
-      </div>
-    </div>
-  );
-}
-const heroChip='text-[10px] uppercase tracking-wider bg-white/15 border border-white/20 rounded-full px-2 py-0.5';
-function ActionDock({program,onBack,backLabel='Back',secondary,primary}){
-  const t=useRestTimer(); if(t?.active) return null;
-  const a=accentFor(program);
-  return(
-    <div style={{position:'fixed',left:0,right:0,bottom:0,zIndex:30,pointerEvents:'none'}}>
-      <div style={{maxWidth:576,margin:'0 auto',padding:'0 16px',paddingBottom:'max(16px,env(safe-area-inset-bottom))',display:'flex',justifyContent:'center'}}>
-        <div className="glass-strong rounded-[28px] p-2 flex items-center gap-1.5" style={{pointerEvents:'auto',maxWidth:'100%'}}>
-          {onBack&&<button onClick={onBack} className="h-14 px-4 rounded-2xl text-stone-600 flex items-center gap-1 active:scale-95 transition-transform flex-shrink-0"><I.back/><span className="text-sm">{backLabel}</span></button>}
-          {secondary&&<button onClick={secondary.onClick} className="h-14 px-4 rounded-2xl text-stone-700 bg-white/70 border border-stone-200 text-sm active:scale-95 transition-transform flex-shrink-0">{secondary.label}</button>}
-          {primary&&<button onClick={primary.onClick} disabled={primary.disabled} className="h-14 px-6 rounded-2xl text-white serif text-lg active:scale-95 transition-transform disabled:opacity-60 min-w-0 truncate" style={{...accentBg(a),boxShadow:`0 10px 24px -8px ${a.glow}`}}>{primary.label}</button>}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function TopBar({onBack,right}){
@@ -824,6 +997,20 @@ function MobilitySection({kind,data,done,onToggle,theme,defaultExpanded,autoStar
   );
 }
 
+// Add or remove a set on any set-based exercise. Applies to this workout only;
+// a new set starts as a copy of the last one so weight and reps carry down.
+function SetControls({value,setValue}){
+  const n=value?.sets?.length||0;
+  const add=()=>setValue(v=>(v.sets||[]).length>=MAX_SETS?v:({...v,sets:[...(v.sets||[]),{...((v.sets||[])[(v.sets||[]).length-1]||{}),done:false}]}));
+  const remove=()=>setValue(v=>(v.sets||[]).length<=1?v:({...v,sets:v.sets.slice(0,-1)}));
+  const btn='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-stone-300 text-xs text-stone-600 bg-white disabled:opacity-30';
+  return(
+    <div className="flex gap-2 mt-2">
+      <button onClick={remove} disabled={n<=1} className={btn} aria-label="Remove last set"><I.minus/>Remove set</button>
+      <button onClick={add} disabled={n>=MAX_SETS} className={btn} aria-label="Add set"><I.plus/>Add set</button>
+    </div>
+  );
+}
 function SetGrid({value,setValue,tracksReps,tracksWeight,lastWeights}){
   return(
     <div className="space-y-2">
@@ -850,9 +1037,9 @@ function SetGrid({value,setValue,tracksReps,tracksWeight,lastWeights}){
 }
 function WeightTrack({value,setValue,lastWeights}){
   const hasPrev=lastWeights?.some(w=>w);
-  return<div>{hasPrev&&<div className="text-xs text-stone-500 mb-2">Last · <span className="num text-stone-700">{lastWeights.map(w=>w||'–').join(' · ')}</span> kg</div>}<div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sets</div><SetGrid value={value} setValue={setValue} tracksReps tracksWeight lastWeights={lastWeights}/></div>;
+  return<div>{hasPrev&&<div className="text-xs text-stone-500 mb-2">Last · <span className="num text-stone-700">{lastWeights.map(w=>w||'–').join(' · ')}</span> kg</div>}<div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sets</div><SetGrid value={value} setValue={setValue} tracksReps tracksWeight lastWeights={lastWeights}/><SetControls value={value} setValue={setValue}/></div>;
 }
-function RepsTrack({value,setValue}){return<div><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sets</div><SetGrid value={value} setValue={setValue} tracksReps/></div>;}
+function RepsTrack({value,setValue}){return<div><div className="text-xs uppercase tracking-wider text-stone-500 mb-2">Sets</div><SetGrid value={value} setValue={setValue} tracksReps/><SetControls value={value} setValue={setValue}/></div>;}
 function TimeTrack({value,setValue}){
   return(
     <div>
@@ -869,6 +1056,7 @@ function TimeTrack({value,setValue}){
           );
         })}
       </div>
+      <SetControls value={value} setValue={setValue}/>
     </div>
   );
 }
@@ -895,6 +1083,7 @@ function FarmerTrack({value,setValue}){
           );
         })}
       </div>
+      <SetControls value={value} setValue={setValue}/>
     </div>
   );
 }
@@ -943,16 +1132,16 @@ function NorwegianTrackBase({value,setValue,stages,label,recovery}){
       </div>
       {recovery==null&&<div className="text-xs text-stone-400 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2">Log WHOOP recovery above — below 70% this drops to 3 intervals automatically.</div>}
       {gated&&<div className="flex items-start gap-2 bg-amber-50 border border-amber-300 rounded-xl px-3 py-2"><span className="text-amber-700 mt-0.5"><I.warn/></span><div className="text-xs text-amber-900">Recovery below 70% — dropped to 3 intervals per the Broccoli recovery gate.</div></div>}
-      <div className="bg-sky-50 border border-sky-200 rounded-xl p-4">
-        <div className="flex items-baseline justify-between mb-3"><div className="text-[10px] uppercase tracking-widest text-sky-700">Intervals</div><div className="serif text-2xl num">{completed}<span className="text-stone-400 text-base">/{total}</span></div></div>
-        <div className="flex gap-1.5 mb-3">{Array.from({length:total},(_,i)=><div key={i} className={`flex-1 h-2.5 rounded-full ${i<completed?'bg-sky-600':'bg-sky-200'}`}/>)}</div>
+      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+        <div className="flex items-baseline justify-between mb-3"><div className="text-[10px] uppercase tracking-widest text-purple-700">Intervals</div><div className="serif text-2xl num">{completed}<span className="text-stone-400 text-base">/{total}</span></div></div>
+        <div className="flex gap-1.5 mb-3">{Array.from({length:total},(_,i)=><div key={i} className={`flex-1 h-2.5 rounded-full ${i<completed?'bg-purple-600':'bg-purple-200'}`}/>)}</div>
         <div className="flex gap-2">
-          <button onClick={log} disabled={allDone} className={`flex-1 rounded-xl py-3 text-sm font-medium ${allDone?'bg-emerald-100 text-emerald-700 border border-emerald-200':'bg-sky-600 text-white'}`}>{allDone?'✓ All done':`Log interval ${completed+1} → rest`}</button>
-          {completed>0&&<button onClick={()=>setValue({completedReps:completed-1,done:false})} className="bg-white border border-sky-200 text-sky-700 rounded-xl px-4 flex items-center"><I.minus/></button>}
+          <button onClick={log} disabled={allDone} className={`flex-1 rounded-xl py-3 text-sm font-medium ${allDone?'bg-emerald-100 text-emerald-700 border border-emerald-200':'bg-purple-600 text-white'}`}>{allDone?'✓ All done':`Log interval ${completed+1} → rest`}</button>
+          {completed>0&&<button onClick={()=>setValue({completedReps:completed-1,done:false})} className="bg-white border border-purple-200 text-purple-700 rounded-xl px-4 flex items-center"><I.minus/></button>}
         </div>
       </div>
       <div className="flex gap-1.5 justify-end">
-        <button onClick={()=>timer.start(stage.restSec)} className="text-xs num bg-sky-50 text-sky-700 border border-sky-200 rounded-full px-3 py-1">3 min rest</button>
+        <button onClick={()=>timer.start(stage.restSec)} className="text-xs num bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-3 py-1">3 min rest</button>
         <button onClick={()=>timer.start(workSec)} className="text-xs num bg-stone-50 text-stone-600 border border-stone-200 rounded-full px-3 py-1">{workLabel} work</button>
       </div>
       <div className="grid grid-cols-3 gap-2"><Field label="Total min" value={value.duration??''} onChange={v=>setValue({duration:v})}/><Field label="Avg HR" value={value.avgHR??''} onChange={v=>setValue({avgHR:v})}/><Field label="Max HR" value={value.maxHR??''} onChange={v=>setValue({maxHR:v})}/></div>
@@ -1062,18 +1251,32 @@ function EMOMTimer({totalRounds,completed,onRoundComplete,repsPerRound}){
   );
 }
 
-function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery}){
+function CardioTrack({value,setValue}){
+  return(
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-2"><Field label="Minutes" value={value.duration??''} onChange={v=>setValue({duration:v})}/><Field label="Km" value={value.distance??''} onChange={v=>setValue({distance:v})}/><Field label="Avg HR" value={value.avgHR??''} onChange={v=>setValue({avgHR:v})}/></div>
+      <button onClick={()=>setValue({done:!value.done})} className={`w-full py-2.5 rounded-xl text-sm ${value.done?'bg-emerald-50 border border-emerald-200 text-emerald-700':'bg-stone-100 text-stone-600'}`}>{value.done?'✓ Completed':'Mark complete'}</button>
+    </div>
+  );
+}
+
+function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery,onRemove,onAddAfter}){
+  if(!value) return null;
   const showRest=['weight','reps','time','tgu'].includes(exercise.track);
-  const wrap=flat?'bg-white p-5 relative overflow-hidden':'glass rounded-2xl p-5 relative overflow-hidden';
+  const wrap=flat?'bg-white p-5 relative overflow-hidden':'bg-white border border-stone-200 rounded-2xl p-5 relative overflow-hidden';
   return(
     <div className={wrap}>
       {!flat&&<div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/>}
       <div className="flex items-start justify-between mb-1 gap-3">
-        <h3 className="serif text-xl text-stone-900 leading-tight">{exercise.name}</h3>
+        <h3 className="serif text-xl text-stone-900 leading-tight flex-1 min-w-0">{exercise.name}{exercise.added&&<span className="ml-2 align-middle text-[10px] uppercase tracking-wider text-stone-500 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded-full" style={{fontFamily:"'Inter Tight',system-ui,sans-serif"}}>Added</span>}</h3>
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className={`text-[11px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full num`}>{exercise.scheme}</span>
           {exercise.rir?<span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-100 border border-stone-200 text-stone-600 uppercase tracking-wider font-medium flex-shrink-0 num">{exercise.rir} RIR</span>:<RIRBadge exId={exercise.id} recovery={recovery} small/>}
         </div>
+        {(onAddAfter||onRemove)&&<div className="flex items-center gap-1.5 flex-shrink-0 -mr-1">
+          {onAddAfter&&<button type="button" onClick={e=>{e.stopPropagation();onAddAfter();}} aria-label={`Insert an exercise after ${exercise.name}`} className="w-9 h-9 rounded-full bg-white border border-stone-300 text-stone-600 flex items-center justify-center active:bg-stone-100" style={{touchAction:'manipulation'}}><I.plus/></button>}
+          {onRemove&&<button type="button" onClick={e=>{e.stopPropagation();onRemove();}} aria-label={`Remove ${exercise.name} from this workout`} className="w-9 h-9 rounded-full bg-white border border-stone-300 text-stone-600 flex items-center justify-center active:bg-stone-100" style={{touchAction:'manipulation'}}><I.x/></button>}
+        </div>}
       </div>
       {exercise.rest&&<div className={`text-xs ${theme.text} opacity-80 mb-1 italic`}>Rest · {exercise.rest}</div>}
       {exercise.note&&<div className="text-xs text-stone-400 mb-1">{exercise.note}</div>}
@@ -1089,6 +1292,7 @@ function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery})
         {exercise.track==='tgu'           &&<TGUInline value={value} setValue={setValue}/>}
         {exercise.track==='kb_swings'     &&<KBInline value={value} setValue={setValue}/>}
         {exercise.track==='kb_emom'       &&<KBEmomInline value={value} setValue={setValue}/>}
+        {exercise.track==='cardio'        &&<CardioTrack value={value} setValue={setValue}/>}
       </div>
       {showRest&&<RestTimerButtons theme={theme}/>}
     </div>
@@ -1097,7 +1301,7 @@ function ExerciseCard({exercise,value,setValue,lastWeights,theme,flat,recovery})
 
 // Superset grouping now uses ssGroup key — consecutive exercises sharing the same
 // non-empty ssGroup form one superset block. This fixes the "4-in-a-group" bug.
-function ExerciseList({exercises,state,setEx,data,theme,recovery}){
+function ExerciseList({exercises,state,setEx,data,theme,recovery,onRemove,onAdd,onAddAfter}){
   const items=[];let i=0;
   while(i<exercises.length){
     const ex=exercises[i];
@@ -1106,21 +1310,209 @@ function ExerciseList({exercises,state,setEx,data,theme,recovery}){
       while(i<exercises.length&&exercises[i].ssGroup===g){group.push(exercises[i]);i++;}
       if(group.length===1){
         const sex=group[0];
-        items.push(<ExerciseCard key={sex.id} exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} recovery={recovery}/>);
+        items.push(<ExerciseCard key={sex.id} exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} recovery={recovery} onRemove={onRemove?()=>onRemove(sex):undefined} onAddAfter={onAddAfter?()=>onAddAfter(sex):undefined}/>);
       }else{
         items.push(
           <div key={`ss-${g}`} className="rounded-2xl overflow-hidden border border-amber-200">
             <div className="bg-amber-50 px-5 py-2.5 flex items-center gap-2 border-b border-amber-200"><span className="text-amber-700"><I.zap/></span><span className="text-xs uppercase tracking-wider text-amber-700 font-medium">Superset</span></div>
-            {group.map((sex,si)=><div key={sex.id} className={si>0?'border-t border-amber-100':''}><ExerciseCard exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} flat recovery={recovery}/></div>)}
+            {group.map((sex,si)=><div key={sex.id} className={si>0?'border-t border-amber-100':''}><ExerciseCard exercise={sex} value={state.exercises[sex.id]} setValue={p=>setEx(sex.id,p)} lastWeights={sex.track==='weight'?getLastSets(data.sessions,sex.id,sex.sets,'weight'):null} theme={theme} flat recovery={recovery} onRemove={onRemove?()=>onRemove(sex):undefined} onAddAfter={onAddAfter?()=>onAddAfter(sex):undefined}/></div>)}
           </div>
         );
       }
     }else{
-      items.push(<ExerciseCard key={ex.id} exercise={ex} value={state.exercises[ex.id]} setValue={p=>setEx(ex.id,p)} lastWeights={ex.track==='weight'?getLastSets(data.sessions,ex.id,ex.sets,'weight'):null} theme={theme} recovery={recovery}/>);
+      items.push(<ExerciseCard key={ex.id} exercise={ex} value={state.exercises[ex.id]} setValue={p=>setEx(ex.id,p)} lastWeights={ex.track==='weight'?getLastSets(data.sessions,ex.id,ex.sets,'weight'):null} theme={theme} recovery={recovery} onRemove={onRemove?()=>onRemove(ex):undefined} onAddAfter={onAddAfter?()=>onAddAfter(ex):undefined}/>);
       i++;
     }
   }
-  return<div className="space-y-4 mb-4">{items}</div>;
+  return<div className="space-y-4 mb-4">{items}{onAdd&&<button onClick={onAdd} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-dashed border-stone-300 bg-white text-sm text-stone-700"><I.plus/>Add exercise</button>}</div>;
+}
+
+// Shared add/remove logic for DayView, WalkView and GaitSessionView.
+function useSessionEdits(session,state,setState,data){
+  const [pickerOpen,setPickerOpen]=useState(false);
+  const [askPlan,setAskPlan]=useState(false);
+  const exercises=sessionExercises(session,state);
+  const planned=sessionExercises(session,seedPlan(session,data));
+  const change={added:exercises.filter(e=>!planned.some(x=>x.id===e.id)),removed:planned.filter(e=>!exercises.some(x=>x.id===e.id))};
+  change.changed=change.added.length>0||change.removed.length>0;
+  const removedTemplate=(session.exercises||[]).filter(e=>(state.removed||[]).includes(e.id));
+  const [pendingRemove,setPendingRemove]=useState(null);
+  const anchorRef=useRef(null);
+  const openPicker=afterId=>{anchorRef.current=afterId||null;setPickerOpen(true);};
+  const addExercise=lib=>{
+    const after=anchorRef.current;
+    const tmpl=(session.exercises||[]).find(e=>e.id===lib.id);
+    // Chain the anchor so several picks in a row keep the order they were tapped in.
+    if(!tmpl) anchorRef.current=lib.id;
+    setState(s=>{
+      if(sessionExercises(session,s).some(e=>e.id===lib.id)) return s;
+      const ex=tmpl||{...libToExercise(lib),...(after?{after}:{})};
+      return {...s,removed:(s.removed||[]).filter(id=>id!==lib.id),extras:tmpl?(s.extras||[]):[...(s.extras||[]).filter(e=>e.id!==lib.id),ex],exercises:{...(s.exercises||{}),[lib.id]:buildFreshExercise(ex,data)}};
+    });
+  };
+  // No window.confirm here: native dialogs are unreliable in the home-screen app,
+  // so the ✕ opens an in-app sheet and confirmRemove does the actual removal.
+  const removeExercise=ex=>setPendingRemove(ex);
+  const confirmRemove=()=>{
+    const ex=pendingRemove; if(!ex) return;
+    setPendingRemove(null);
+    setState(s=>{
+      const exs={...(s.exercises||{})};delete exs[ex.id];
+      const isTmpl=(session.exercises||[]).some(e=>e.id===ex.id);
+      return {...s,exercises:exs,extras:(s.extras||[]).filter(e=>e.id!==ex.id),removed:isTmpl?[...new Set([...(s.removed||[]),ex.id])]:(s.removed||[])};
+    });
+  };
+  return {exercises,removedTemplate,addExercise,removeExercise,confirmRemove,pendingRemove,setPendingRemove,openPicker,pickerOpen,setPickerOpen,askPlan,setAskPlan,change};
+}
+
+function ImportExercisesSheet({data,update,onClose}){
+  const [text,setText]=useState('');
+  const [parsed,setParsed]=useState(null);
+  const [error,setError]=useState('');
+  const preview=()=>{setError('');try{setParsed(parseExerciseBlock(text));}catch(e){setParsed(null);setError(e.message||'Could not read that block.');}};
+  const known=id=>(data.customLibrary||[]).find(e=>e.id===id)||EXERCISE_LIBRARY.find(e=>e.id===id);
+  const save=()=>{if(!parsed)return;update(d=>applyExerciseBlock(d,parsed));onClose();};
+  const catLabel=c=>LIB_CATS.find(x=>x[0]===c)?.[1]||c;
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:60,background:'rgba(28,25,23,0.5)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={onClose}>
+      <div style={{background:'#fafaf9',borderRadius:20,maxWidth:448,width:'100%',padding:20,maxHeight:'88vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
+        <div className="text-[10px] uppercase tracking-widest text-stone-500 text-center">Exercise list</div>
+        <div className="serif text-xl text-stone-900 text-center mt-1 mb-4">Import exercises</div>
+        {!parsed?(
+          <>
+            <textarea value={text} onChange={e=>{setText(e.target.value);setError('');}} className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none min-h-[180px] font-mono" placeholder="Paste the exercise block from Claude here"/>
+            {error&&<div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2 mt-2">{error}</div>}
+            <button onClick={preview} disabled={!text.trim()} className="w-full bg-blue-900 text-stone-50 rounded-xl py-3 mt-3 text-sm disabled:opacity-40">Preview</button>
+          </>
+        ):(
+          <>
+            {parsed.exercises.length>0&&<div className="bg-white border border-stone-200 rounded-2xl overflow-hidden mb-3">
+              {parsed.exercises.map((e,i)=>{const old=known(e.id);return(
+                <div key={e.id} className={`px-4 py-3 ${i>0?'border-t border-stone-100':''}`}>
+                  <div className="flex items-baseline justify-between gap-3"><div className="text-sm text-stone-900">{e.name}</div><span className={`text-[10px] uppercase tracking-wider flex-shrink-0 ${old?'text-blue-700':'text-emerald-700'}`}>{old?'Updates':'New'}</span></div>
+                  <div className="text-[11px] text-stone-500 mt-0.5">{catLabel(e.cat)} · {e.muscles.join(' · ')}</div>
+                  <div className="text-[11px] text-stone-400 num">{e.scheme} · id {e.id}</div>
+                </div>
+              );})}
+            </div>}
+            {parsed.remove.length>0&&<div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-3 text-sm text-stone-800"><span className="text-red-700 font-medium">Removes · </span>{parsed.remove.map(id=>known(id)?.name||`${id} (not in the list)`).join(', ')}</div>}
+            <div className="text-[11px] text-stone-500 mb-3">Logged history is not touched.</div>
+            <div className="flex gap-2">
+              <button onClick={()=>setParsed(null)} className="flex-1 bg-white border border-stone-200 text-stone-700 rounded-xl py-3 text-sm">Back</button>
+              <button onClick={save} className="flex-1 bg-blue-900 text-white rounded-xl py-3 text-sm">Save to list</button>
+            </div>
+          </>
+        )}
+        <button onClick={onClose} className="w-full py-3 text-stone-500 text-sm mt-1">Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function ExercisePickerSheet({current,removedTemplate,onAdd,onClose,data,update}){
+  const [importOpen,setImportOpen]=useState(false);
+  const [cat,setCat]=useState('all');
+  const [muscle,setMuscle]=useState('all');
+  const [q,setQ]=useState('');
+  const inWorkout=new Set(current.map(e=>e.id));
+  const pool=fullLibrary().filter(e=>cat==='all'||e.cat===cat);
+  const muscles=MUSCLES.filter(m=>pool.some(e=>e.muscles.includes(m)));
+  const activeMuscle=muscles.includes(muscle)?muscle:'all';
+  const needle=q.trim().toLowerCase();
+  const list=pool.filter(e=>(activeMuscle==='all'||e.muscles.includes(activeMuscle))&&(!needle||e.name.toLowerCase().includes(needle))).sort((a,b)=>a.name.localeCompare(b.name));
+  const catLabel=c=>LIB_CATS.find(x=>x[0]===c)?.[1]||c;
+  const catTone={strength:'text-amber-800 bg-amber-50 border-amber-200',cardio:'text-teal-800 bg-teal-50 border-teal-200',mobility:'text-emerald-800 bg-emerald-50 border-emerald-200'};
+  const chip=on=>`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border ${on?'bg-blue-900 text-white border-blue-900':'bg-white text-stone-600 border-stone-200'}`;
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(28,25,23,0.45)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={onClose}>
+      <div style={{background:'#fafaf9',borderRadius:20,maxWidth:480,width:'100%',height:'88vh',display:'flex',flexDirection:'column',overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+        <div style={{padding:'16px 16px 10px'}}>
+          <div className="flex items-center justify-between mb-3">
+            <div><div className="text-[10px] uppercase tracking-widest text-stone-500">Exercise list</div><div className="serif text-xl text-stone-900">Add exercise</div></div>
+            <div className="flex items-center gap-2">{update&&<button onClick={()=>setImportOpen(true)} className="text-sm text-stone-700 bg-white border border-stone-300 rounded-full px-3 py-1.5 flex items-center gap-1.5"><I.upload/>Import</button>}<button onClick={onClose} className="text-sm text-white bg-blue-900 rounded-full px-4 py-1.5">Done</button></div>
+          </div>
+          <input type="search" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search" className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none mb-2.5"/>
+          <div className="flex gap-1 bg-stone-100 rounded-xl p-1 mb-2.5">
+            {[['all','All'],...LIB_CATS].map(([k,l])=><button key={k} onClick={()=>setCat(k)} className={`flex-1 py-2 text-xs rounded-lg ${cat===k?'bg-white text-stone-900 shadow-sm font-medium':'text-stone-500'}`}>{l}</button>)}
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1" style={{WebkitOverflowScrolling:'touch',scrollbarWidth:'none'}}>
+            <button onClick={()=>setMuscle('all')} className={chip(activeMuscle==='all')}>All muscles</button>
+            {muscles.map(m=><button key={m} onClick={()=>setMuscle(m)} className={chip(activeMuscle===m)}>{m}</button>)}
+          </div>
+        </div>
+        <div style={{flex:1,overflowY:'auto',padding:'4px 16px 16px',WebkitOverflowScrolling:'touch'}}>
+          {removedTemplate.length>0&&(
+            <div className="mb-3">
+              <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5">Removed from this workout</div>
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
+                {removedTemplate.map((e,i)=>(
+                  <div key={e.id} className={`flex items-center gap-3 px-4 py-3 ${i>0?'border-t border-amber-100':''}`}>
+                    <div className="flex-1 min-w-0"><div className="text-sm text-stone-900 truncate">{e.name}</div><div className="text-[11px] text-stone-500 num">{e.scheme}</div></div>
+                    <button onClick={()=>onAdd(e)} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1 flex-shrink-0">Restore</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1.5 num">{list.length} exercise{list.length===1?'':'s'}</div>
+          {list.length===0?<div className="bg-white border border-stone-200 rounded-2xl p-6 text-center text-sm text-stone-500">Nothing matches. Clear the search or pick another filter.</div>:(
+            <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+              {list.map((e,i)=>{const has=inWorkout.has(e.id);return(
+                <div key={e.id} className={`flex items-center gap-3 px-4 py-3 ${i>0?'border-t border-stone-100':''}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-stone-900">{e.name}</div>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${catTone[e.cat]}`}>{catLabel(e.cat)}</span>
+                      {e.custom&&<span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full border text-blue-800 bg-blue-50 border-blue-100">Imported</span>}
+                      <span className="text-[11px] text-stone-500">{e.muscles.join(' · ')}</span>
+                    </div>
+                    <div className="text-[11px] text-stone-400 num mt-0.5">{e.scheme}</div>
+                  </div>
+                  {has?<span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 flex-shrink-0 flex items-center gap-1"><I.check/>In workout</span>:<button onClick={()=>onAdd(e)} className="text-xs text-white bg-blue-900 rounded-full px-3.5 py-1.5 flex-shrink-0 flex items-center gap-1" aria-label={`Add ${e.name}`}><I.plus/>Add</button>}
+                </div>
+              );})}
+            </div>
+          )}
+        </div>
+      </div>
+      {importOpen&&<div onClick={e=>e.stopPropagation()}><ImportExercisesSheet data={data} update={update} onClose={()=>setImportOpen(false)}/></div>}
+    </div>
+  );
+}
+
+function RemoveExerciseSheet({exercise,onConfirm,onClose}){
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(28,25,23,0.45)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={onClose}>
+      <div style={{background:'#fafaf9',borderRadius:20,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
+        <div className="text-[10px] uppercase tracking-widest text-stone-500 text-center">Remove from this workout</div>
+        <div className="serif text-xl text-stone-900 text-center mt-1 mb-1">{exercise.name}</div>
+        <div className="text-xs text-stone-500 text-center mb-4">Anything logged for it today is dropped. You can add it back from the exercise list.</div>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 bg-white border border-stone-200 text-stone-700 rounded-xl py-3 text-sm">Keep</button>
+          <button onClick={onConfirm} className="flex-1 bg-red-600 text-white rounded-xl py-3 text-sm">Remove exercise</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function SavePlanSheet({title,change,onChoose,onClose}){
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(28,25,23,0.45)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:12}} onClick={onClose}>
+      <div style={{background:'#fafaf9',borderRadius:20,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
+        <div className="text-[10px] uppercase tracking-widest text-stone-500 text-center">You changed the exercises</div>
+        <div className="serif text-xl text-stone-900 text-center mt-1 mb-3">Keep this version of {title}?</div>
+        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 mb-3 space-y-1.5 text-sm">
+          {change.added.length>0&&<div className="text-stone-800"><span className="text-emerald-700 font-medium">Added · </span>{change.added.map(e=>e.name).join(', ')}</div>}
+          {change.removed.length>0&&<div className="text-stone-800"><span className="text-red-700 font-medium">Removed · </span>{change.removed.map(e=>e.name).join(', ')}</div>}
+        </div>
+        <div className="space-y-2">
+          <button onClick={()=>onChoose('update')} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-3.5 text-left px-4"><div className="serif text-base">Save and update the workout</div><div className="text-[11px] text-stone-300 mt-0.5">Next time it opens like this</div></button>
+          <button onClick={()=>onChoose('once')} className="w-full bg-white border border-stone-200 text-stone-900 rounded-2xl py-3.5 text-left px-4"><div className="serif text-base">Save for today only</div><div className="text-[11px] text-stone-500 mt-0.5">Next time it goes back to how it was</div></button>
+          <button onClick={onClose} className="w-full py-2.5 text-stone-500 text-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function SessionMeta({session,setSession,theme}){
@@ -1167,12 +1559,12 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   const buildInitial=useCallback(()=>{
     if(existing){
-      const m={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:existing.date,warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,rpe:existing.rpe??null,notes:existing.notes??'',recovery:existing.recovery??null,exercises:{}};
-      session.exercises.forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
+      const m={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:existing.date,warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,rpe:existing.rpe??null,notes:existing.notes??'',recovery:existing.recovery??null,exercises:{},extras:existing.extras||[],removed:existing.removed||[]};
+      sessionExercises(session,m).forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
       return m;
     }
-    const s={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:todayISO(),warmupDone:false,cooldownDone:false,exercises:{},rpe:null,notes:'',recovery:null};
-    session.exercises.forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
+    const s={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:todayISO(),warmupDone:false,cooldownDone:false,exercises:{},rpe:null,notes:'',recovery:null,...seedPlan(session,data)};
+    sessionExercises(session,s).forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
     return s;
   },[]);
 
@@ -1191,7 +1583,8 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
           // since this draft was saved, backfill fresh entries instead of crashing.
           // Also backfill sessionKey for drafts saved before that field existed.
           const patched={...draft,exercises:{...draft.exercises},sessionKey:draft.sessionKey??session.key};
-          session.exercises.forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
+          if(patched.extras===undefined&&patched.removed===undefined)Object.assign(patched,seedPlan(session,data));
+          sessionExercises(session,patched).forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
           setHadDraft(true);return patched;
         }else clearDraft(program,'session',resolvedSlot,null);
       }
@@ -1202,9 +1595,10 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   useEffect(()=>{if(!isEditing)saveDraft(program,'session',resolvedSlot,null,state);},[state]);
   const setEx=(exId,patch)=>setState(s=>({...s,exercises:{...s.exercises,[exId]:typeof patch==='function'?patch(s.exercises[exId]):{...s.exercises[exId],...patch}}}));
   const low=typeof state.recovery==='number'&&state.recovery<50;
+  const edits=useSessionEdits(session,state,setState,data);
 
-  const save=()=>{
-    if(saving)return;setSaving(true);setSaveError(null);
+  const save=choice=>{
+    if(saving)return;edits.setAskPlan(false);setSaving(true);setSaveError(null);
     const advances=calcProgressionAdvances(session,state.exercises,data.progressions);
     // Rhomboid EMOM weight persists to progression state
     let progPatch={...advances};
@@ -1218,7 +1612,7 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
     }else{
       const savedAt=new Date().toISOString();
       const nextCD=isCurrentDay?nextCycleDay(prog,data.cycleDays[program]):data.cycleDays[program];
-      const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCD},progressions:{...data.progressions,...progPatch},sessions:[...(data.sessions||[]),{...state,savedAt}]};
+      const nd={...data,...planPatch(data,session,state,choice==='update'),cycleDays:{...data.cycleDays,[program]:nextCD},progressions:{...data.progressions,...progPatch},sessions:[...(data.sessions||[]),{...state,savedAt}]};
       if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Your entry is still kept as a draft here; try freeing up space or exporting a backup from Settings, then save again.');return;}
       clearDraft(program,'session',resolvedSlot,null);
       update(()=>nd);setSaving(false);setView({name:'home'});
@@ -1227,11 +1621,17 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   return(
     <div>
-      <SubjectHero program={exProgram} eyebrow={`${exProg.name} · ${standalone?'Imported':`Day ${resolvedCycleDay??'–'} of ${exProg.cycleLength}`}`} title={session.title} subtitle={session.subtitle} chips={<>
-        <span className={heroChip}>{theme.label}</span>
-        {isEditing&&<span className={heroChip}>Editing</span>}
-        {!isEditing&&!isCurrentDay&&!standalone&&<span className="text-[10px] uppercase tracking-wider bg-amber-400 text-stone-900 rounded-full px-2 py-0.5">Out of sequence · cycle stays</span>}
-      </>}/>
+      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
+      <header className="mb-4">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · {standalone?'Imported':`Day ${resolvedCycleDay??'–'}/${exProg.cycleLength}`}</span>
+          <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
+          {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
+          {!isEditing&&!isCurrentDay&&!standalone&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}
+        </div>
+        <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
+        <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
+      </header>
       {hadDraft&&!isEditing&&(
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
           <div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div>
@@ -1246,14 +1646,17 @@ function DayView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
       {low&&<div className="bg-amber-50 border border-amber-300 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3"><span className="text-amber-700 mt-0.5"><I.warn/></span><div className="text-sm text-amber-900">Low recovery — add 1 RIR to all RIR-governed sets.</div></div>}
       {!isEditing&&(workoutStarted
         ?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">{session.title} started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>
-        :<button onClick={()=>setWorkoutStarted(true)} className="w-full glass rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={accentBg(accentFor(exProgram))}><I.play/></div><span className="serif text-xl text-stone-900">Start workout</span></div><div className="text-[10px] uppercase tracking-widest text-stone-500 mt-1.5">Warm-up starts automatically</div></button>
+        :<button onClick={()=>setWorkoutStarted(true)} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-5 mb-4 shadow-lg"><div className="flex items-center justify-center gap-2.5"><div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-blue-900"><I.play/></div><span className="serif text-xl">Start workout</span></div><div className="text-[10px] uppercase tracking-widest text-stone-400 mt-1.5">Warm-up starts automatically</div></button>
       )}
       {session.warmup&&<MobilitySection kind="warmup" data={session.warmup} done={state.warmupDone} onToggle={()=>setState(s=>({...s,warmupDone:!s.warmupDone}))} theme={theme} defaultExpanded={!state.warmupDone} autoStart={workoutStarted}/>}
-      <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={state.recovery}/>
+      <ExerciseList exercises={edits.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={state.recovery} onRemove={edits.removeExercise} onAdd={()=>edits.openPicker(null)} onAddAfter={ex=>edits.openPicker(ex.id)}/>
+      {edits.pickerOpen&&<ExercisePickerSheet current={edits.exercises} removedTemplate={edits.removedTemplate} onAdd={edits.addExercise} onClose={()=>edits.setPickerOpen(false)} data={data} update={update}/>}
+      {edits.pendingRemove&&<RemoveExerciseSheet exercise={edits.pendingRemove} onConfirm={edits.confirmRemove} onClose={()=>edits.setPendingRemove(null)}/>}
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={state.cooldownDone} onToggle={()=>setState(s=>({...s,cooldownDone:!s.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       <SessionMeta session={state} setSession={setState} theme={theme}/>
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <ActionDock program={exProgram} onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})} primary={{onClick:save,disabled:saving,label:saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance':'Save entry'}}/>
+      {edits.askPlan&&<SavePlanSheet title={session.title} change={edits.change} onChoose={save} onClose={()=>edits.setAskPlan(false)}/>}
+      <button onClick={()=>(!isEditing&&edits.change.changed)?edits.setAskPlan(true):save()} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':standalone?'Save entry':'Save entry (cycle stays)'}</button>
     </div>
   );
 }
@@ -1278,13 +1681,14 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   const buildInitial=useCallback(()=>{
     const exercises={};
-    (session.exercises||[]).forEach(ex=>{exercises[ex.id]=buildFreshExercise(ex,data);});
+    const carried=existing?{extras:existing.extras||[],removed:existing.removed||[]}:seedPlan(session,data);
+    sessionExercises(session,carried).forEach(ex=>{exercises[ex.id]=buildFreshExercise(ex,data);});
     if(existing){
-      const m={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:existing.date,distance:existing.distance??'',duration:existing.duration??'',notes:existing.notes??'',warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,recovery:existing.recovery??null,exercises};
-      (session.exercises||[]).forEach(ex=>{const le=existing.exercises?.[ex.id];if(le)m.exercises[ex.id]=le;});
+      const m={program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:existing.date,distance:existing.distance??'',duration:existing.duration??'',notes:existing.notes??'',warmupDone:existing.warmupDone??false,cooldownDone:existing.cooldownDone??false,recovery:existing.recovery??null,exercises,...carried};
+      sessionExercises(session,carried).forEach(ex=>{const le=existing.exercises?.[ex.id];if(le)m.exercises[ex.id]=le;});
       return m;
     }
-    return{program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:todayISO(),distance:'',duration:'',notes:'',warmupDone:false,cooldownDone:false,recovery:null,exercises};
+    return{program:exProgram,slot:resolvedSlot,sessionKey:session.key,cycleDay:resolvedCycleDay,date:todayISO(),distance:'',duration:'',notes:'',warmupDone:false,cooldownDone:false,recovery:null,exercises,...carried};
   },[]);
 
   const [walk,setWalk]=useState(()=>{
@@ -1295,7 +1699,8 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
         const staleTemplate=draft.sessionKey&&draft.sessionKey!==session.key;
         if(ok&&!staleTemplate){
           const patched={...draft,exercises:{...(draft.exercises||{})},sessionKey:draft.sessionKey??session.key};
-          (session.exercises||[]).forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
+          if(patched.extras===undefined&&patched.removed===undefined)Object.assign(patched,seedPlan(session,data));
+          sessionExercises(session,patched).forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
           setHadDraft(true);return patched;
         }else clearDraft(program,'walk',resolvedSlot,null);
       }
@@ -1306,9 +1711,10 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
   useEffect(()=>{if(!isEditing)saveDraft(program,'walk',resolvedSlot,null,walk);},[walk]);
   const setWalkEx=(exId,patch)=>setWalk(w=>({...w,exercises:{...w.exercises,[exId]:typeof patch==='function'?patch(w.exercises[exId]):{...w.exercises[exId],...patch}}}));
   const last=[...data.walks].reverse().find(w=>w.savedAt!==editingSavedAt);
+  const edits=useSessionEdits(session,walk,setWalk,data);
 
-  const save=()=>{
-    if(saving)return;setSaving(true);setSaveError(null);
+  const save=choice=>{
+    if(saving)return;edits.setAskPlan(false);setSaving(true);setSaveError(null);
     if(isEditing){
       const nd={...data,walks:data.walks.map(w=>w.savedAt===editingSavedAt?{...walk,savedAt:editingSavedAt}:w)};
       if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Nothing was overwritten; try again after freeing up space or exporting a backup from Settings.');return;}
@@ -1316,7 +1722,7 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
     }else{
       const savedAt=new Date().toISOString();
       const nextCD=isCurrentDay?nextCycleDay(prog,data.cycleDays[program]):data.cycleDays[program];
-      const nd={...data,cycleDays:{...data.cycleDays,[program]:nextCD},walks:[...(data.walks||[]),{...walk,savedAt}]};
+      const nd={...data,...planPatch(data,session,walk,choice==='update'),cycleDays:{...data.cycleDays,[program]:nextCD},walks:[...(data.walks||[]),{...walk,savedAt}]};
       if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Your entry is still kept as a draft here; try freeing up space or exporting a backup from Settings, then save again.');return;}
       clearDraft(program,'walk',resolvedSlot,null);
       update(()=>nd);setSaving(false);setView({name:'home'});
@@ -1325,28 +1731,31 @@ function WalkView({program,slot,cycleDay,editingSavedAt,data,update,setView}){
 
   return(
     <div>
-      <SubjectHero program={exProgram} eyebrow={`${exProg.name} · Day ${resolvedCycleDay} of ${exProg.cycleLength}`} title="Zone 2 Walk" chips={<>
-        <span className={heroChip}>{theme.label}</span>
-        {isEditing&&<span className={heroChip}>Editing</span>}
-        {!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider bg-amber-400 text-stone-900 rounded-full px-2 py-0.5">Out of sequence · cycle stays</span>}
-      </>}/>
+      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
+      <header className="mb-4">
+        <div className="flex items-center gap-2 mb-2 flex-wrap"><span className="text-xs uppercase tracking-widest text-stone-500">{exProg.name} · Day {resolvedCycleDay}/{exProg.cycleLength}</span><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>{!isEditing&&!isCurrentDay&&<span className="text-[10px] uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">Out of sequence — cycle won't move</span>}</div>
+        <h1 className="serif text-4xl text-stone-900">Zone 2 Walk</h1>
+      </header>
       {hadDraft&&!isEditing&&<div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div><button onClick={()=>{clearDraft(program,'walk',resolvedSlot,null);setWalk(buildInitial());setHadDraft(false);}} className="text-xs text-amber-900 bg-white border border-amber-200 rounded-full px-3 py-1">Start over</button></div>}
       <div className={`${theme.bg} border ${theme.border} rounded-2xl px-4 py-3 mb-4 flex items-center justify-between`}><div className={`text-xs uppercase tracking-wider ${theme.text}`}>Logged on</div><input type="date" value={walk.date} onChange={e=>setWalk(w=>({...w,date:e.target.value}))} className="bg-transparent text-sm num focus:outline-none text-right text-stone-900"/></div>
       <RecoveryInput value={walk.recovery} onChange={v=>setWalk(w=>({...w,recovery:v}))}/>
-      {!isEditing&&(workoutStarted?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">Walk started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>:<button onClick={()=>setWorkoutStarted(true)} className="w-full glass rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={accentBg(accentFor(exProgram))}><I.play/></div><span className="serif text-xl text-stone-900">Start walk</span></div><div className="text-[10px] uppercase tracking-widest text-stone-500 mt-1.5">Warm-up starts automatically</div></button>)}
+      {!isEditing&&(workoutStarted?<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0"><I.check/></div><div className="flex-1 text-sm text-emerald-900 serif">Walk started</div><button onClick={()=>setWorkoutStarted(false)} className="text-xs text-emerald-700">Reset</button></div>:<button onClick={()=>setWorkoutStarted(true)} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-5 mb-4"><div className="flex items-center justify-center gap-2.5"><div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-blue-900"><I.play/></div><span className="serif text-xl">Start walk</span></div><div className="text-[10px] uppercase tracking-widest text-stone-400 mt-1.5">Warm-up starts automatically</div></button>)}
       {session.warmup&&<MobilitySection kind="warmup" data={session.warmup} done={walk.warmupDone} onToggle={()=>setWalk(w=>({...w,warmupDone:!w.warmupDone}))} theme={theme} defaultExpanded={!walk.warmupDone} autoStart={workoutStarted}/>}
-      <div className="glass rounded-2xl p-5 space-y-4 relative overflow-hidden mb-4">
+      <div className="bg-white border border-stone-200 rounded-2xl p-5 space-y-4 relative overflow-hidden mb-4">
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/>
         <Field label="Distance (km)" value={walk.distance} onChange={v=>setWalk(w=>({...w,distance:v}))}/>
         <Field label="Duration (min)" value={walk.duration} onChange={v=>setWalk(w=>({...w,duration:v}))}/>
         {session.walkNotes&&<div className={`text-xs ${theme.text} opacity-80 pt-1 space-y-1`}>{session.walkNotes.map((n,i)=><div key={i}>· {n}</div>)}</div>}
         <div><label className="text-xs uppercase tracking-wider text-stone-500 block mb-1.5">Notes</label><textarea value={walk.notes} onChange={e=>setWalk(w=>({...w,notes:e.target.value}))} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none min-h-[60px]" placeholder="Route, effort, HR…"/></div>
       </div>
-      {session.exercises&&session.exercises.length>0&&<div className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-3">After your walk</div><ExerciseList exercises={session.exercises} state={walk} setEx={setWalkEx} data={data} theme={theme} recovery={walk.recovery}/></div>}
+      <div className="mb-4">{edits.exercises.length>0&&<div className="text-xs uppercase tracking-widest text-stone-500 mb-3">After your walk</div>}<ExerciseList exercises={edits.exercises} state={walk} setEx={setWalkEx} data={data} theme={theme} recovery={walk.recovery} onRemove={edits.removeExercise} onAdd={()=>edits.openPicker(null)} onAddAfter={ex=>edits.openPicker(ex.id)}/></div>
+      {edits.pickerOpen&&<ExercisePickerSheet current={edits.exercises} removedTemplate={edits.removedTemplate} onAdd={edits.addExercise} onClose={()=>edits.setPickerOpen(false)} data={data} update={update}/>}
+      {edits.pendingRemove&&<RemoveExerciseSheet exercise={edits.pendingRemove} onConfirm={edits.confirmRemove} onClose={()=>edits.setPendingRemove(null)}/>}
       {session.cooldown&&<MobilitySection kind="cooldown" data={session.cooldown} done={walk.cooldownDone} onToggle={()=>setWalk(w=>({...w,cooldownDone:!w.cooldownDone}))} theme={theme} defaultExpanded={false}/>}
       {last&&<div className="mt-4 text-xs text-stone-500 text-center">Last walk: <span className="num text-stone-700">{last.distance}km / {last.duration}min</span> · {last.date}</div>}
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <ActionDock program={exProgram} onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})} primary={{onClick:save,disabled:saving,label:saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance':'Save entry'}}/>
+      {edits.askPlan&&<SavePlanSheet title={session.title} change={edits.change} onChoose={save} onClose={()=>edits.setAskPlan(false)}/>}
+      <button onClick={()=>(!isEditing&&edits.change.changed)?edits.setAskPlan(true):save()} disabled={saving} className="w-full bg-blue-900 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':isCurrentDay?'Save & advance cycle':'Save entry (cycle stays)'}</button>
     </div>
   );
 }
@@ -1367,12 +1776,12 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
 
   const buildInitial=useCallback(()=>{
     if(existing){
-      const m={program:'gait',phase:resolvedPhase,date:existing.date,rpe:existing.rpe??null,notes:existing.notes??'',exercises:{}};
-      session.exercises.forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
+      const m={program:'gait',phase:resolvedPhase,date:existing.date,rpe:existing.rpe??null,notes:existing.notes??'',exercises:{},extras:existing.extras||[],removed:existing.removed||[]};
+      sessionExercises(session,m).forEach(ex=>{const le=existing.exercises?.[ex.id];m.exercises[ex.id]=le??buildFreshExercise(ex,data);});
       return m;
     }
-    const s={program:'gait',phase:resolvedPhase,date:todayISO(),exercises:{},rpe:null,notes:''};
-    session.exercises.forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
+    const s={program:'gait',phase:resolvedPhase,date:todayISO(),exercises:{},rpe:null,notes:'',...seedPlan(session,data)};
+    sessionExercises(session,s).forEach(ex=>{s.exercises[ex.id]=buildFreshExercise(ex,data);});
     return s;
   },[]);
 
@@ -1383,7 +1792,8 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
         const ok=!(data.sessions||[]).some(s=>s.savedAt&&draft.savedAt&&s.savedAt===draft.savedAt);
         if(ok){
           const patched={...draft,exercises:{...draft.exercises}};
-          session.exercises.forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
+          if(patched.extras===undefined&&patched.removed===undefined)Object.assign(patched,seedPlan(session,data));
+          sessionExercises(session,patched).forEach(ex=>{if(!patched.exercises[ex.id])patched.exercises[ex.id]=buildFreshExercise(ex,data);});
           setHadDraft(true);return patched;
         }else clearDraft('gait','session',resolvedPhase,null);
       }
@@ -1393,9 +1803,10 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
 
   useEffect(()=>{if(!isEditing)saveDraft('gait','session',resolvedPhase,null,state);},[state]);
   const setEx=(exId,patch)=>setState(s=>({...s,exercises:{...s.exercises,[exId]:typeof patch==='function'?patch(s.exercises[exId]):{...s.exercises[exId],...patch}}}));
+  const edits=useSessionEdits(session,state,setState,data);
 
-  const save=()=>{
-    if(saving)return;setSaving(true);setSaveError(null);
+  const save=choice=>{
+    if(saving)return;edits.setAskPlan(false);setSaving(true);setSaveError(null);
     if(isEditing){
       const nd={...data,sessions:data.sessions.map(s=>s.savedAt===editingSavedAt?{...state,savedAt:editingSavedAt}:s)};
       if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Nothing was overwritten; try again after freeing up space or exporting a backup from Settings.');return;}
@@ -1403,7 +1814,7 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
       setView({name:'history-detail',savedAt:editingSavedAt});
     }else{
       const savedAt=new Date().toISOString();
-      const nd={...data,sessions:[...(data.sessions||[]),{...state,savedAt}]};
+      const nd={...data,...planPatch(data,session,state,choice==='update'),sessions:[...(data.sessions||[]),{...state,savedAt}]};
       if(!saveData(nd)){setSaving(false);setSaveError('Could not save — your device storage may be full. Your entry is still kept as a draft here; try freeing up space or exporting a backup from Settings, then save again.');return;}
       clearDraft('gait','session',resolvedPhase,null);
       update(()=>nd);setSaving(false);setView({name:'home'});
@@ -1412,10 +1823,16 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
 
   return(
     <div>
-      <SubjectHero program="gait" eyebrow={`Gait Corrective · Phase ${resolvedPhase} of 3`} title={session.title.replace(/^Phase \d+ — /,'')} subtitle={session.subtitle} chips={<>
-        <span className={heroChip}>{theme.label}</span>
-        {isEditing&&<span className={heroChip}>Editing</span>}
-      </>}/>
+      <TopBar onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})}/>
+      <header className="mb-4">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="text-xs uppercase tracking-widest text-stone-500">Gait Corrective · Phase {resolvedPhase} of 3</span>
+          <span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{theme.label}</span>
+          {isEditing&&<span className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Editing</span>}
+        </div>
+        <h1 className="serif text-4xl text-stone-900 leading-tight">{session.title}</h1>
+        <p className="text-stone-500 text-sm mt-1">{session.subtitle}</p>
+      </header>
       {hadDraft&&!isEditing&&(
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
           <div className="flex-1 text-sm text-amber-900">Resumed from where you left off.</div>
@@ -1426,10 +1843,13 @@ function GaitSessionView({phase,editingSavedAt,data,update,setView}){
         <div className={`text-xs uppercase tracking-wider ${theme.text}`}>Logged on</div>
         <input type="date" value={state.date} onChange={e=>setState(s=>({...s,date:e.target.value}))} className="bg-transparent text-sm num focus:outline-none text-right text-stone-900"/>
       </div>
-      <ExerciseList exercises={session.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={null}/>
+      <ExerciseList exercises={edits.exercises} state={state} setEx={setEx} data={data} theme={theme} recovery={null} onRemove={edits.removeExercise} onAdd={()=>edits.openPicker(null)} onAddAfter={ex=>edits.openPicker(ex.id)}/>
+      {edits.pickerOpen&&<ExercisePickerSheet current={edits.exercises} removedTemplate={edits.removedTemplate} onAdd={edits.addExercise} onClose={()=>edits.setPickerOpen(false)} data={data} update={update}/>}
+      {edits.pendingRemove&&<RemoveExerciseSheet exercise={edits.pendingRemove} onConfirm={edits.confirmRemove} onClose={()=>edits.setPendingRemove(null)}/>}
       <SessionMeta session={state} setSession={setState} theme={theme}/>
       {saveError&&<div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 mt-4 flex items-start gap-3"><span className="text-red-700 mt-0.5"><I.warn/></span><div className="text-sm text-red-900">{saveError}</div></div>}
-      <ActionDock program="gait" onBack={()=>setView(isEditing?{name:'history-detail',savedAt:editingSavedAt}:{name:'home'})} primary={{onClick:save,disabled:saving,label:saving?'Saving…':isEditing?'Save changes':'Save session'}}/>
+      {edits.askPlan&&<SavePlanSheet title={session.title} change={edits.change} onChoose={save} onClose={()=>edits.setAskPlan(false)}/>}
+      <button onClick={()=>(!isEditing&&edits.change.changed)?edits.setAskPlan(true):save()} disabled={saving} className="w-full bg-emerald-700 text-stone-50 rounded-2xl py-4 mt-6 serif text-lg disabled:opacity-60">{saving?'Saving…':isEditing?'Save changes':'Save session'}</button>
     </div>
   );
 }
@@ -1440,17 +1860,17 @@ function ProgressionView({title,subtitle,stages,stageKey,setView,data,update,ren
   const setStage=n=>update(d=>({...d,progressions:{...d.progressions,[stageKey]:Math.max(0,Math.min(stages.length-1,n))}}));
   return(
     <div>
-      <ActionDock program={data.activeProgram} onBack={()=>setView({name:'home'})}/>
-      <header className="mb-5"><div className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-1">Progression</div><h1 className="serif text-3xl text-stone-900">{title}</h1>{subtitle&&<p className="text-stone-500 text-sm mt-1">{subtitle}</p>}</header>
-      <div className="text-stone-50 rounded-3xl p-6 mb-6" style={{...accentBg(accentFor(data.activeProgram)),boxShadow:`0 24px 48px -16px ${accentFor(data.activeProgram).glow}`}}>
+      <TopBar onBack={()=>setView({name:'home'})}/>
+      <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Progression</div><h1 className="serif text-4xl text-stone-900">{title}</h1>{subtitle&&<p className="text-stone-500 text-sm mt-2">{subtitle}</p>}</header>
+      <div className="bg-blue-900 text-stone-50 rounded-2xl p-6 mb-6">
         <div className="text-xs uppercase tracking-widest text-stone-300 mb-2">Stage {idx+1} of {stages.length}</div>
         {renderHero(stages[idx])}
         <div className="flex gap-2 mt-4">
-          <button onClick={()=>setStage(idx-1)} disabled={idx===0} className="flex-1 py-2.5 rounded-xl bg-white/15 text-white text-sm disabled:opacity-30">← Regress</button>
+          <button onClick={()=>setStage(idx-1)} disabled={idx===0} className="flex-1 py-2.5 rounded-xl bg-blue-800 text-stone-300 text-sm disabled:opacity-30">← Regress</button>
           <button onClick={()=>setStage(idx+1)} disabled={idx===stages.length-1} className="flex-1 py-2.5 rounded-xl bg-amber-600 text-white text-sm disabled:opacity-30">Advance →</button>
         </div>
       </div>
-      <div className="glass rounded-2xl overflow-hidden">
+      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
         {stages.map((s,i)=>(
           <button key={i} onClick={()=>setStage(i)} className={`w-full flex items-center gap-4 px-5 py-3.5 text-left ${i>0?'border-t border-stone-100':''} ${i===idx?'bg-blue-50':''}`}>
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs num flex-shrink-0 ${i<idx?'bg-emerald-600 text-white':i===idx?'bg-blue-900 text-white':'bg-stone-100 text-stone-500'}`}>{i<idx?<I.check/>:i+1}</div>
@@ -1477,18 +1897,18 @@ function HistoryView({data,update,setView}){
     ...(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type)).map(e=>({...e,_kind:'event'})),
   ].sort((a,b)=>{const ad=a.date||'',bd=b.date||'';return ad!==bd?bd.localeCompare(ad):(b.savedAt||'').localeCompare(a.savedAt||'');});
   if(filter!=='all') all=all.filter(x=>progOf(x)===filter);
-  const badgeClass=p=>p==='rhomboid'?'text-stone-700 bg-stone-100 border border-stone-300':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
+  const badgeClass=p=>p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
   const badgeLabel=p=>p==='rhomboid'?'Injury':p==='gait'?'Gait Corrective':'Ganbaru';
   return(
     <div>
-      <ActionDock program={data.activeProgram} onBack={()=>setView({name:'home'})}/>
+      <TopBar onBack={()=>setView({name:'home'})}/>
       <header className="mb-4"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Log</div><h1 className="serif text-4xl text-stone-900">History</h1></header>
       <div className="flex gap-1.5 mb-5 bg-stone-100 rounded-xl p-1">
         {[['all','All'],['ganbaru','Ganbaru'],['rhomboid','Injury'],['gait','Gait']].map(([k,l])=>(
           <button key={k} onClick={()=>setFilter(k)} className={`flex-1 py-2 text-xs rounded-lg ${filter===k?'bg-white text-stone-900 shadow-sm font-medium':'text-stone-500'}`}>{l}</button>
         ))}
       </div>
-      {all.length===0?<div className="glass rounded-2xl p-8 text-center text-stone-500 text-sm">Nothing logged yet.</div>:<div className="space-y-3">{all.map((s,i)=>{
+      {all.length===0?<div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500 text-sm">Nothing logged yet.</div>:<div className="space-y-3">{all.map((s,i)=>{
         const p=progOf(s);
         if(s._kind==='event'){
           const sess=templateFor(p,s);
@@ -1504,7 +1924,7 @@ function HistoryView({data,update,setView}){
         const title=s._kind==='walk'?'Zone 2 Walk':(sess?.title||'Session');
         const lowRec=typeof s.recovery==='number'&&s.recovery<50;
         return(
-          <button key={i} onClick={()=>setView({name:'history-detail',savedAt:s.savedAt})} className="w-full text-left glass rounded-2xl p-4 relative overflow-hidden">
+          <button key={i} onClick={()=>setView({name:'history-detail',savedAt:s.savedAt})} className="w-full text-left bg-white border border-stone-200 rounded-2xl p-4 relative overflow-hidden">
             <div className={`absolute left-0 top-0 bottom-0 w-1 ${t.stripe}`}/>
             <div className="flex items-baseline justify-between mb-1 gap-3">
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -1527,15 +1947,16 @@ function HistoryView({data,update,setView}){
 
 function HistoryDetailView({savedAt,data,setView}){
   const session=data.sessions.find(s=>s.savedAt===savedAt),walk=data.walks.find(w=>w.savedAt===savedAt),item=session||walk;
-  if(!item)return<div><ActionDock program={data.activeProgram} onBack={()=>setView({name:'history'})}/><div className="glass rounded-2xl p-8 text-center text-stone-500">Not found.</div></div>;
+  if(!item)return<div><TopBar onBack={()=>setView({name:'history'})}/><div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-stone-500">Not found.</div></div>;
   const isWalk=!!walk;const p=item.program??'ganbaru';const isGaitItem=p==='gait';
   const template=templateFor(p,item),theme=template?THEMES[template.kind]:THEMES.rest;
   const lowRec=typeof item.recovery==='number'&&item.recovery<50;
-  const badgeClass=p==='rhomboid'?'text-stone-700 bg-stone-100 border border-stone-300':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
+  const histExercises=template?sessionExercises(template,item):(item.extras||[]);
+  const badgeClass=p==='rhomboid'?'text-purple-700 bg-purple-50 border border-purple-200':p==='gait'?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-blue-700 bg-blue-50 border border-blue-100';
   const editTarget=isWalk?'walk':(isGaitItem?'gait-session':'day');
   return(
     <div>
-      <ActionDock program={p} onBack={()=>setView({name:'history'})} primary={{label:'Edit',onClick:()=>setView({name:editTarget,phase:isGaitItem?item.phase:undefined,editingSavedAt:item.savedAt})}}/>
+      <TopBar onBack={()=>setView({name:'history'})} right={<button onClick={()=>setView({name:editTarget,phase:isGaitItem?item.phase:undefined,editingSavedAt:item.savedAt})} className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">Edit</button>}/>
       <header className="mb-4">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${badgeClass}`}>{PROGRAMS[p]?.name}</span>
@@ -1548,9 +1969,9 @@ function HistoryDetailView({savedAt,data,setView}){
         {template?.subtitle&&<p className="text-stone-500 text-sm mt-1">{template.subtitle}</p>}
         <p className="text-xs text-stone-500 num mt-2">{item.date}</p>
       </header>
-      {isWalk&&<div className="glass rounded-2xl p-5 mb-4 relative overflow-hidden"><div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/><div className="grid grid-cols-2 gap-4"><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Distance</div><div className="serif text-2xl num text-stone-900">{item.distance||'—'}<span className="text-stone-400 text-base"> km</span></div></div><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Duration</div><div className="serif text-2xl num text-stone-900">{item.duration||'—'}<span className="text-stone-400 text-base"> min</span></div></div></div></div>}
-      {template?.exercises&&<div className="space-y-3 mb-4">{template.exercises.map(ex=>{const logged=item.exercises?.[ex.id];if(!logged)return null;return(
-        <div key={ex.id} className="glass rounded-2xl p-4 relative overflow-hidden">
+      {isWalk&&<div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4 relative overflow-hidden"><div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/><div className="grid grid-cols-2 gap-4"><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Distance</div><div className="serif text-2xl num text-stone-900">{item.distance||'—'}<span className="text-stone-400 text-base"> km</span></div></div><div><div className="text-xs uppercase tracking-wider text-stone-500 mb-1">Duration</div><div className="serif text-2xl num text-stone-900">{item.duration||'—'}<span className="text-stone-400 text-base"> min</span></div></div></div></div>}
+      {histExercises.length>0&&<div className="space-y-3 mb-4">{histExercises.map(ex=>{const logged=item.exercises?.[ex.id];if(!logged)return null;return(
+        <div key={ex.id} className="bg-white border border-stone-200 rounded-2xl p-4 relative overflow-hidden">
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.stripe}`}/>
           <div className="flex items-start justify-between gap-3 mb-2"><h3 className="serif text-lg text-stone-900">{ex.name}</h3><span className={`text-[10px] uppercase tracking-wider ${theme.text} ${theme.bg} border ${theme.border} px-2 py-0.5 rounded-full`}>{ex.scheme}</span></div>
           {ex.track==='weight'&&<div className="space-y-1">{logged.sets?.map((s,i)=><div key={i} className="flex items-center gap-3 text-sm"><span className="w-5 text-stone-400 num">{i+1}</span><span className="num text-stone-900">{(s.weight??logged.weight)?`${s.weight??logged.weight}kg`:'–'} × {s.reps||'–'}</span>{s.done&&<span className="text-emerald-600 ml-auto"><I.check/></span>}</div>)}</div>}
@@ -1564,6 +1985,7 @@ function HistoryDetailView({savedAt,data,setView}){
           {ex.track==='tgu'&&<div className="text-sm text-stone-700 num">{TGU_STAGES[logged.stageIndex]?.label} {logged.done&&'✓'}</div>}
           {ex.track==='kb_swings'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/{logged.rounds} rounds {logged.done&&'✓'}</div>}
           {ex.track==='kb_emom'&&<div className="text-sm text-stone-700 num">{logged.weight}kg · {logged.completed}/10 rounds × 10 {logged.done&&'✓'}</div>}
+          {ex.track==='cardio'&&<div className="text-sm text-stone-700 num">{logged.duration||'–'} min{logged.distance?` · ${logged.distance} km`:''}{logged.avgHR?` · avg HR ${logged.avgHR}`:''} {logged.done&&'✓'}</div>}
         </div>
       );})}</div>}
       {(item.rpe||item.notes)&&<div className={`${theme.bg} border ${theme.border} rounded-2xl p-5 space-y-4`}>{item.rpe&&<div><div className={`text-xs uppercase tracking-wider ${theme.text} mb-1`}>RPE</div><div className="serif text-2xl num text-stone-900">{item.rpe}/10</div></div>}{item.notes&&<div><div className={`text-xs uppercase tracking-wider ${theme.text} mb-1`}>Notes</div><div className="text-sm text-stone-700 whitespace-pre-wrap">{item.notes}</div></div>}</div>}
@@ -1577,8 +1999,10 @@ function SettingsView({program,data,update,setView}){
   const isGait=!!prog.isPhaseProgram;
   const cycle=isGait?[]:buildCycle(prog);
   const [copyStatus,setCopyStatus]=useState(null),[importOpen,setImportOpen]=useState(false),[importText,setImportText]=useState(''),[importStatus,setImportStatus]=useState(null),[importError,setImportError]=useState('');
+  const [resetArmed,setResetArmed]=useState(false);
+  const [libImportOpen,setLibImportOpen]=useState(false);
   const exportJSON=()=>{
-    const exportable={exportVersion:4,exportedAt:new Date().toISOString(),activeProgram:data.activeProgram,cycleDays:data.cycleDays,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],customSessions:data.customSessions||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
+    const exportable={exportVersion:4,exportedAt:new Date().toISOString(),activeProgram:data.activeProgram,cycleDays:data.cycleDays,progressions:data.progressions,sessions:data.sessions||[],walks:data.walks||[],customSessions:data.customSessions||[],overrides:data.overrides||{},setCounts:data.setCounts||{},customLibrary:data.customLibrary||[],hiddenLibrary:data.hiddenLibrary||[],cycleEvents:(data.cycleEvents||[]).filter(e=>!['rest','rest_off_cycle'].includes(e.type))};
     const text=JSON.stringify(exportable,null,2);
     if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>{setCopyStatus('copied');setTimeout(()=>setCopyStatus(null),3000);},()=>dl(text));else dl(text);
   };
@@ -1591,22 +2015,22 @@ function SettingsView({program,data,update,setView}){
       // v3 (single-program) imports: tag everything as ganbaru
       const tag=arr=>Array.isArray(arr)?arr.map(x=>({...x,program:x.program??'ganbaru'})):arr;
       const cycleDays=p.cycleDays?p.cycleDays:{ganbaru:p.cycleDay??1,rhomboid:1};
-      update(d=>({...d,activeProgram:p.activeProgram??d.activeProgram,cycleDays:{...d.cycleDays,...cycleDays},progressions:{...d.progressions,...(p.progressions||{})},sessions:tag(p.sessions)||d.sessions,walks:tag(p.walks)||d.walks,cycleEvents:tag(p.cycleEvents)||(d.cycleEvents||[]),customSessions:Array.isArray(p.customSessions)?p.customSessions:(d.customSessions||[])}));
+      update(d=>({...d,activeProgram:p.activeProgram??d.activeProgram,cycleDays:{...d.cycleDays,...cycleDays},progressions:{...d.progressions,...(p.progressions||{})},sessions:tag(p.sessions)||d.sessions,walks:tag(p.walks)||d.walks,cycleEvents:tag(p.cycleEvents)||(d.cycleEvents||[]),customSessions:Array.isArray(p.customSessions)?p.customSessions:(d.customSessions||[]),overrides:p.overrides&&typeof p.overrides==='object'?p.overrides:(d.overrides||{}),setCounts:p.setCounts&&typeof p.setCounts==='object'?p.setCounts:(d.setCounts||{}),customLibrary:Array.isArray(p.customLibrary)?p.customLibrary:(d.customLibrary||[]),hiddenLibrary:Array.isArray(p.hiddenLibrary)?p.hiddenLibrary:(d.hiddenLibrary||[])}));
       setImportStatus('success');setImportText('');setTimeout(()=>{setImportStatus(null);setImportOpen(false);},2000);
     }catch(e){setImportStatus('error');setImportError(e.message||'Could not parse');}
   };
   return(
     <div>
-      <ActionDock program={program} onBack={()=>setView({name:'home'})}/>
+      <TopBar onBack={()=>setView({name:'home'})}/>
       <header className="mb-6"><div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Settings · {prog.name}</div><h1 className="serif text-4xl text-stone-900">{isGait?'Phase control':'Cycle position'}</h1></header>
       {isGait?(
-        <div className="glass rounded-2xl p-5 mb-8">
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-8">
           <p className="text-stone-600 text-sm">Gait Corrective doesn't run on a rolling cycle — Phase 1 is daily and Phases 2/3 advance manually when you're ready. Set your current phase from the Home screen.</p>
         </div>
       ):(
         <>
           <p className="text-stone-500 text-sm mb-4">Set which day of {prog.name} comes next.</p>
-          <div className="glass rounded-2xl overflow-hidden mb-8">
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden mb-8">
             {cycle.map((c,i)=>{const s=prog.sessions[c.slot],t=THEMES[s.kind],isCurrent=c.day===data.cycleDays[program];return(
               <button key={c.day} onClick={()=>update(d=>({...d,cycleDays:{...d.cycleDays,[program]:c.day}}))} className={`w-full flex items-center gap-4 px-5 py-4 text-left ${i>0?'border-t border-stone-100':''} ${isCurrent?'bg-blue-50':''}`}>
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${isCurrent?'border-blue-900 bg-blue-900':'border-stone-300'}`}>{isCurrent&&<div className="w-2 h-2 rounded-full bg-white"/>}</div>
@@ -1616,14 +2040,49 @@ function SettingsView({program,data,update,setView}){
           </div>
         </>
       )}
+      {(Object.keys(data.overrides||{}).length>0||Object.keys(data.setCounts||{}).length>0)&&(
+        <div className="mb-8">
+          <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-2">Workout changes</h2>
+          <div className="bg-white border border-stone-200 rounded-2xl p-4">
+            <div className="text-sm text-stone-700 mb-3 num">{Object.keys(data.overrides||{}).length} workout{Object.keys(data.overrides||{}).length===1?'':'s'} with a changed exercise list · {Object.keys(data.setCounts||{}).length} exercise{Object.keys(data.setCounts||{}).length===1?'':'s'} with a changed set count</div>
+            <button onClick={()=>{if(!resetArmed){setResetArmed(true);return;}setResetArmed(false);update(d=>({...d,overrides:{},setCounts:{}}));}} className={`w-full rounded-xl py-3 text-sm ${resetArmed?'bg-red-600 text-white':'bg-white border border-stone-300 text-stone-700'}`}>{resetArmed?'Tap again to reset. History is not touched':'Reset all to original program'}</button>
+          </div>
+        </div>
+      )}
+      <div className="mb-8">
+        <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-2">Exercise list</h2>
+        <div className="bg-white border border-stone-200 rounded-2xl p-4">
+          <div className="flex items-baseline justify-between mb-3"><div className="text-xs uppercase tracking-wider text-stone-500">In the list</div><div className="text-xs text-stone-700 num">{fullLibrary().length} exercises · {(data.customLibrary||[]).length} imported</div></div>
+          <button onClick={()=>setLibImportOpen(true)} className="w-full flex items-center justify-center gap-2 bg-blue-900 text-stone-50 rounded-xl py-3"><I.upload/><span className="text-sm">Import exercises from Claude</span></button>
+          {(data.customLibrary||[]).length>0&&<div className="mt-3">
+            <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1">Imported</div>
+            {(data.customLibrary||[]).map(e=>(
+              <div key={e.id} className="flex items-center gap-3 py-2 border-t border-stone-100">
+                <div className="flex-1 min-w-0"><div className="text-sm text-stone-900 truncate">{e.name}</div><div className="text-[11px] text-stone-500 truncate">{LIB_CATS.find(c=>c[0]===e.cat)?.[1]} · {e.muscles.join(' · ')}</div></div>
+                <button onClick={()=>update(d=>({...d,customLibrary:(d.customLibrary||[]).filter(x=>x.id!==e.id)}))} className="text-xs text-stone-600 bg-white border border-stone-300 rounded-full px-3 py-1 flex-shrink-0" aria-label={`Delete ${e.name} from the list`}>Delete</button>
+              </div>
+            ))}
+          </div>}
+          {(data.hiddenLibrary||[]).length>0&&<div className="mt-3">
+            <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1">Removed from the list</div>
+            {(data.hiddenLibrary||[]).map(id=>(
+              <div key={id} className="flex items-center gap-3 py-2 border-t border-stone-100">
+                <div className="flex-1 min-w-0 text-sm text-stone-500 truncate">{EXERCISE_LIBRARY.find(e=>e.id===id)?.name||id}</div>
+                <button onClick={()=>update(d=>({...d,hiddenLibrary:(d.hiddenLibrary||[]).filter(x=>x!==id)}))} className="text-xs text-stone-600 bg-white border border-stone-300 rounded-full px-3 py-1 flex-shrink-0">Restore</button>
+              </div>
+            ))}
+          </div>}
+        </div>
+        {libImportOpen&&<ImportExercisesSheet data={data} update={update} onClose={()=>setLibImportOpen(false)}/>}
+      </div>
       <h2 className="text-xs uppercase tracking-widest text-stone-500 mb-2">Backup & restore</h2>
-      <div className="glass rounded-2xl p-4 mb-3">
+      <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
         <div className="flex items-baseline justify-between mb-3"><div className="text-xs uppercase tracking-wider text-stone-500">All data</div><div className="text-xs text-stone-700 num">{data.sessions?.length||0} sessions · {data.walks?.length||0} walks</div></div>
         <button onClick={exportJSON} className="w-full flex items-center justify-center gap-2 bg-blue-900 text-stone-50 rounded-xl py-3"><I.download/><span className="text-sm">Export backup</span></button>
         {copyStatus==='copied'&&<div className="text-xs text-emerald-700 mt-2 text-center">✓ Copied to clipboard.</div>}
         {copyStatus==='downloaded'&&<div className="text-xs text-emerald-700 mt-2 text-center">✓ Downloaded.</div>}
       </div>
-      <div className="glass rounded-2xl p-4">
+      <div className="bg-white border border-stone-200 rounded-2xl p-4">
         <button onClick={()=>setImportOpen(o=>!o)} className="w-full flex items-center justify-between text-left"><div className="flex items-center gap-2"><I.upload/><span className="text-sm text-stone-900">Restore from backup</span></div><span className={`text-stone-400 inline-block transition-transform ${importOpen?'rotate-180':''}`}><I.chevDown/></span></button>
         {importOpen&&<div className="mt-3 space-y-2">
           <div className="text-xs text-stone-500">Paste JSON. This <span className="text-red-700">replaces all data</span>.</div>
@@ -1654,7 +2113,9 @@ function ImportSessionSheet({data,update,onClose}){
       const list=(d.customSessions||[]).map(c=>(parsed.replaces&&c.replaces===parsed.replaces&&c.key!==parsed.key)?{...c,replaces:null}:c);
       const i=list.findIndex(c=>c.key===parsed.key);
       const next=i>=0?list.map((c,j)=>j===i?{...parsed,importedAt:c.importedAt||parsed.importedAt,updatedAt:new Date().toISOString()}:c):[...list,parsed];
-      return {...d,customSessions:next};
+      const overrides={...(d.overrides||{})};delete overrides[parsed.key];
+      const setCounts=Object.fromEntries(Object.entries(d.setCounts||{}).filter(([k])=>!k.startsWith(parsed.key+':')));
+      return {...d,customSessions:next,overrides,setCounts};
     });
     onClose();
   };
@@ -1671,7 +2132,7 @@ function ImportSessionSheet({data,update,onClose}){
           </>
         ):(
           <>
-            <div className="glass rounded-2xl p-4 mb-3">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-3">
               <div className="serif text-lg text-stone-900">{parsed.title}</div>
               {parsed.subtitle&&<div className="text-xs text-stone-500 mt-0.5">{parsed.subtitle}</div>}
               <div className="text-[10px] uppercase tracking-wider text-stone-500 mt-2">{replacedTitle?`Takes the ${replacedTitle} slot in the cycle`:'Separate session · cycle stays'}{parsed.warmup?` · warm-up ${parsed.warmup.items.length} items`:''}</div>
@@ -1683,7 +2144,7 @@ function ImportSessionSheet({data,update,onClose}){
             {displaced.length>0&&<div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-2">"{displaced.map(c=>c.title).join('", "')}" moves out of the cycle and stays in your imported list until you remove it.</div>}
             <div className="flex gap-2">
               <button onClick={()=>setParsed(null)} className="flex-1 bg-white border border-stone-200 text-stone-700 rounded-xl py-3 text-sm">Back</button>
-              <button onClick={save} className="flex-1 bg-stone-900 text-white rounded-xl py-3 text-sm">{existing?'Update session':'Save session'}</button>
+              <button onClick={save} className="flex-1 bg-purple-700 text-white rounded-xl py-3 text-sm">{existing?'Update session':'Save session'}</button>
             </div>
           </>
         )}
@@ -1733,9 +2194,10 @@ function HomeView({data,update,setView}){
   const p=data.progressions;
 
   // ── Three planes: background (fixed), content (floating cards), controls (floating dock)
-  const acc=accentFor(program);
+  const ACCENT={rhomboid:{from:'#6b21a8',to:'#a855f7',glow:'rgba(126,34,206,0.38)',blobA:'rgba(168,85,247,0.30)',blobB:'rgba(251,191,36,0.20)',chip:'text-purple-700'},ganbaru:{from:'#1e3a8a',to:'#3b82f6',glow:'rgba(30,58,138,0.36)',blobA:'rgba(59,130,246,0.28)',blobB:'rgba(251,191,36,0.20)',chip:'text-blue-800'},gait:{from:'#065f46',to:'#10b981',glow:'rgba(4,120,87,0.34)',blobA:'rgba(16,185,129,0.28)',blobB:'rgba(163,230,53,0.20)',chip:'text-emerald-700'}};
+  const acc=ACCENT[program]||ACCENT.ganbaru;
   const heroStyle={background:`linear-gradient(140deg, ${acc.from} 0%, ${acc.to} 100%)`,boxShadow:`0 24px 48px -16px ${acc.glow}, 0 2px 6px -2px rgba(28,25,23,0.15)`};
-  const heroEx=isGait?(gaitSession?.exercises||[]):(session?.exercises||[]);
+  const heroEx=sessionExercises(isGait?gaitSession:session,seedPlan(isGait?gaitSession:session,data));
   const exPreview=heroEx.slice(0,4).map(e=>e.name);
   const exMore=Math.max(0,heroEx.length-4);
   const dockBtn='flex flex-col items-center justify-center gap-1 w-12 h-14 rounded-2xl text-stone-600 active:scale-95 transition-transform';
@@ -1743,10 +2205,16 @@ function HomeView({data,update,setView}){
 
   return(
     <div>
+      {/* Plane 1 · background */}
+      <div aria-hidden="true" style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',background:'linear-gradient(180deg,#f5f5f4 0%,#fafaf9 45%,#f5f5f4 100%)'}}>
+        <div style={{position:'absolute',top:'-12%',left:'-20%',width:'75vw',height:'75vw',maxWidth:520,maxHeight:520,borderRadius:'50%',background:acc.blobA,filter:'blur(70px)',transition:'background 0.4s'}}/>
+        <div style={{position:'absolute',bottom:'-10%',right:'-25%',width:'80vw',height:'80vw',maxWidth:560,maxHeight:560,borderRadius:'50%',background:acc.blobB,filter:'blur(80px)'}}/>
+      </div>
+
       {/* Plane 2 · content */}
       <div style={{position:'relative',zIndex:1}}>
         <header className="mb-4 flex items-end justify-between gap-3">
-          <div><div className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-1">Ganburu V16</div><h1 className="serif text-3xl text-stone-900 leading-tight">Today.</h1></div>
+          <div><div className="text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-1">Ganburu V19</div><h1 className="serif text-3xl text-stone-900 leading-tight">Today.</h1></div>
           <div className="text-xs text-stone-500 num pb-1">{new Date().toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}</div>
         </header>
 
@@ -1806,7 +2274,7 @@ function HomeView({data,update,setView}){
           const open=c=>{const slot=slotForKey(prog,c.key);if(slot<0)return;const inCycle=slot<prog.cycleLength;setView({name:'day',slot,cycleDay:inCycle?slot+1:undefined});};
           return(
             <section className="mb-5">
-              <div className="flex items-baseline justify-between mb-2 px-1"><h2 className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Imported sessions</h2><button onClick={()=>setImportOpen(true)} className="text-xs text-stone-800 bg-white/80 border border-stone-300 rounded-full px-3 py-1 flex items-center gap-1 shadow-sm"><I.plus/>Import</button></div>
+              <div className="flex items-baseline justify-between mb-2 px-1"><h2 className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Imported sessions</h2><button onClick={()=>setImportOpen(true)} className="text-xs text-purple-700 bg-white/80 border border-purple-200 rounded-full px-3 py-1 flex items-center gap-1 shadow-sm"><I.plus/>Import</button></div>
               {active.length===0?(
                 <div className="glass rounded-2xl p-5 text-center text-sm text-stone-500">Paste a session block from Claude to add this week's workout.</div>
               ):(
@@ -1879,9 +2347,9 @@ function HomeView({data,update,setView}){
           <div className="glass-strong" style={{borderRadius:24,maxWidth:448,width:'100%',padding:20}} onClick={e=>e.stopPropagation()}>
             <div className="text-center mb-3"><div className="text-[10px] uppercase tracking-widest text-stone-500">Day {cycleDay} · {prog.name}</div><div className="serif text-xl text-stone-900 mt-1">{session.title}</div></div>
             <div className="space-y-2.5">
-              <button onClick={()=>{advanceCycle('skipped');setSkipOpen(false);}} className="w-full glass rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700"><I.skip/></div><div><div className="serif text-base text-stone-900">Skip entirely</div><div className="text-xs text-stone-500 mt-0.5">Advance to Day {nextCycleDay(prog,cycleDay)}</div></div></button>
-              <button onClick={()=>setSkipOpen(false)} className="w-full glass rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700"><I.cal/></div><div><div className="serif text-base text-stone-900">Come back to it</div><div className="text-xs text-stone-500 mt-0.5">Cycle stays</div></div></button>
-              {!isRest&&<button onClick={()=>{logRest();setSkipOpen(false);}} className="w-full glass rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600"><I.coffee/></div><div><div className="serif text-base text-stone-900">Take a rest day</div><div className="text-xs text-stone-500 mt-0.5">Logs a rest, cycle stays</div></div></button>}
+              <button onClick={()=>{advanceCycle('skipped');setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700"><I.skip/></div><div><div className="serif text-base text-stone-900">Skip entirely</div><div className="text-xs text-stone-500 mt-0.5">Advance to Day {nextCycleDay(prog,cycleDay)}</div></div></button>
+              <button onClick={()=>setSkipOpen(false)} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700"><I.cal/></div><div><div className="serif text-base text-stone-900">Come back to it</div><div className="text-xs text-stone-500 mt-0.5">Cycle stays</div></div></button>
+              {!isRest&&<button onClick={()=>{logRest();setSkipOpen(false);}} className="w-full bg-white border border-stone-200 rounded-2xl p-4 text-left flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600"><I.coffee/></div><div><div className="serif text-base text-stone-900">Take a rest day</div><div className="text-xs text-stone-500 mt-0.5">Logs a rest, cycle stays</div></div></button>}
               <button onClick={()=>setSkipOpen(false)} className="w-full py-3 text-stone-500 text-sm">Cancel</button>
             </div>
           </div>
@@ -1897,13 +2365,15 @@ function App(){
   const [view,setView]=useState({name:'home'});
   const update=useCallback(patch=>setData(prev=>{const next=typeof patch==='function'?patch(prev):{...prev,...patch};saveData(next);return next;}),[]);
   CUSTOM_SESSIONS=Array.isArray(data.customSessions)?data.customSessions:[];
+  SET_COUNTS=data.setCounts||{};
+  CUSTOM_LIBRARY=Array.isArray(data.customLibrary)?data.customLibrary:[];
+  HIDDEN_LIBRARY=Array.isArray(data.hiddenLibrary)?data.hiddenLibrary:[];
   const program=data.activeProgram??'ganbaru';
   const shared={data,update,setView,program};
   return(
     <RestTimerProvider>
       <div style={{minHeight:'100vh',background:'#fafaf9',paddingTop:'env(safe-area-inset-top)'}}>
-        <BackgroundPlane program={view.name==='gait-session'?'gait':program}/>
-        <div style={{maxWidth:576,margin:'0 auto',padding:'24px 20px',paddingBottom:'calc(env(safe-area-inset-bottom) + 8rem)',position:'relative',zIndex:1}}>
+        <div style={{maxWidth:576,margin:'0 auto',padding:'24px 20px',paddingBottom:'calc(env(safe-area-inset-bottom) + 8rem)'}}>
           {view.name==='home'           &&<HomeView {...shared}/>}
           {view.name==='day'            &&<DayView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
           {view.name==='walk'           &&<WalkView program={program} slot={view.slot} cycleDay={view.cycleDay} editingSavedAt={view.editingSavedAt} {...shared}/>}
